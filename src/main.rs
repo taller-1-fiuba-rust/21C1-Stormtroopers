@@ -3,22 +3,24 @@ use std::io::{BufRead, BufReader};
 use std::net::{TcpListener, TcpStream};
 
 use std::io::prelude::*;
+use crate::threadpool::ThreadPool;
+use crate::command::CommandBuilder;
+
 
 mod threadpool;
+mod command;
 
 static SERVER_ARGS: usize = 3;
 static THREAD_POOL_COUNT: usize = 2;
 
 static END_FLAG: &str = "EOF";
-static ERROR_INVALID_COMMAND: &str = "ERROR INVALID COMMAND\n";
-
 static RESPONSE_COMMAND_PING: &str = "PONG\n";
-static REQUEST_COMMAND_PING: &str = "PING";
+
 
 fn main() -> Result<(), ()> {
     let argv = args().collect::<Vec<String>>();
     if argv.len() != SERVER_ARGS {
-        println!("Cantidad de argumentos inválido");
+        println!("Count of arguments invalid");
         return Err(());
     }
     let app_name = &argv[0];
@@ -27,8 +29,9 @@ fn main() -> Result<(), ()> {
     println!("Server {} is up!",app_name);
 
     let mut address = argv[1].clone();
+    let port = argv[2].clone();
     address.push_str(":");
-    address.push_str("8080");
+    address.push_str(&port);
 
     println!("Server address: {}", &address);
 
@@ -55,9 +58,8 @@ fn handle_connection(mut stream: TcpStream) {
     handle_client(&mut stream);
 }
 
-//fn handle_client(stream: &mut dyn Read) -> std::io::Result<()> {
 fn handle_client(stream: &mut TcpStream) {
-    let stream_reader = stream.try_clone().expect("Cannot clone stream");
+    let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
 
     let mut lines = reader.lines();
@@ -70,16 +72,17 @@ fn handle_client(stream: &mut TcpStream) {
             return
         }
         println!("Server receive: {:?}", request);
-        let response = process_request(request);
 
-        (*stream).write(response.as_bytes()).unwrap();
+        let response = process_request(request);
+        (*stream).write(response.as_bytes()).unwrap_or(0);
     }
     println!("End handle client");
 }
 
 fn process_request(request: String) -> String {
-    if request == String::from(REQUEST_COMMAND_PING) {
-        return String::from(RESPONSE_COMMAND_PING)
-    }
-    return String::from(ERROR_INVALID_COMMAND)
+    let mut builder = CommandBuilder::new();
+    println!("request: {}", request);
+    let mut command = builder.get_command(&mut String::from(request.trim()));
+
+    return command.to_string()
 }

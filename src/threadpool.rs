@@ -65,30 +65,12 @@ impl Worker {
 }
 
 #[test]
-fn test_sum(){
-    1 + 1;
-}
 fn test_new_ThreadPool(){
     let threadpool = ThreadPool::new(1);
-    threadpool.execute(test_sum );
+    threadpool.execute(_test_sum );
     assert!(true);
 }
 
-/*
-pub struct Request {
-    pub other: (bool, String),
-    pub body: (bool, String),
+fn _test_sum(){
+    let _ = 1 + 1;
 }
-
-impl Request {
-    pub fn new() -> Request {
-        let body = (false,String::from(""));
-        let other = (false,String::from(""));
-        Request {
-            other,
-            body,
-        }
-    }
-}
- */
-
