@@ -14,8 +14,6 @@ static SERVER_ARGS: usize = 3;
 static THREAD_POOL_COUNT: usize = 2;
 
 static END_FLAG: &str = "EOF";
-static RESPONSE_COMMAND_PING: &str = "PONG\n";
-
 
 fn main() -> Result<(), ()> {
     let argv = args().collect::<Vec<String>>();
@@ -34,7 +32,7 @@ fn main() -> Result<(), ()> {
     address.push_str(&port);
 
     println!("Server address: {}", &address);
-
+    println!();
     println!("Execute listener ...");
     let _listener = exec(&address);
 
@@ -80,9 +78,7 @@ fn handle_client(stream: &mut TcpStream) {
 }
 
 fn process_request(request: String) -> String {
-    let mut builder = CommandBuilder::new();
-    println!("request: {}", request);
-    let mut command = builder.get_command(&mut String::from(request.trim()));
-
-    return command.to_string()
+    let mut commandBuilder = CommandBuilder::new();
+    let mut comm = commandBuilder.get_command(&mut String::from(request.trim()));
+    String::from(comm.str_response())
 }
