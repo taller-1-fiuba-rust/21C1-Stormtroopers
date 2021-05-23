@@ -1,10 +1,13 @@
 <article align="center"><h1>Redis Server</h1></article>
 Taller 1 - Proyecto para armar un servidor Redis en Rust
+
 ## Secciones
- - [Instalación](#Instalación)
- - [Quick reference](#quick-reference)
- - [Otras tareas](#otras-tareas)
- - [Documentacion](#documentacion)
+ - [Instalación 🔧](#instalación)
+ - [Referencia rápida](#referencia-rápida)
+ - [Comenzando 🚀](#comenzando)
+ - [Documentación 📖](#documentación)
+ - [Versionado 📌](#versionado)
+ - [Autores ✒️](#autores)
 
 ## Stack tecnológico 
 Los frameworks y librerías que utilizaremos son:
@@ -12,7 +15,7 @@ Los frameworks y librerías que utilizaremos son:
  - cargo 1.51.0
  - git
 
-### Instalación 
+## Instalación 
  - Cargo: https://www.rust-lang.org/es/tools/install
  - git: https://git-scm.com/downloads
 
@@ -34,11 +37,15 @@ $ git config user.name '$tu-nombre' && git config user.email '$tu-email'
 ```
 Puedes verificar las variables con el comando: `$git config -l`
 
-## Comenzando 🚀
+## Comenzando
 
 Compila el proyecto:
 ```bash
 cargo build
+```
+Correr los tests:
+```bash
+cargo test
 ```
 Ejecuta el archivo binario compilado:
 ```bash
@@ -46,3 +53,12 @@ Ejecuta el archivo binario compilado:
 ```
 
 ## Referencia rápida
+
+## Documentación
+
+## Versionado
+
+## Autores
+* **Cristian Queirolo** - *Trabajo Inicial* - [cristianqueirolo](https://github.com/cqueirolo)
+* **Gonzalo Sabatino** - *Trabajo Inicial* - [gonzalosabatino](https://github.com/gsabatino9)
+* **Lucas Verón** - *Trabajo Inicial* - [lucasveron](https://github.com/lucasveron)
