@@ -5,41 +5,60 @@ use std::net::{TcpListener, TcpStream};
 use std::io::prelude::*;
 use crate::threadpool::ThreadPool;
 use crate::command::CommandBuilder;
+use crate::configserver::ConfigServer;
+//use crate::constants::{INFO_LOAD_CONFIG_FILE, INFO_LOAD_CONFIG_FILE_DEFAULT};
 
 
 mod threadpool;
 mod command;
+mod configserver;
+//mod constants;
 
-static SERVER_ARGS: usize = 3;
-static THREAD_POOL_COUNT: usize = 2;
+//static SERVER_ARGS_WITHOUT_CONFIG: usize = 1;
+//static SERVER_ARGS_WITH_CONFIG: usize = 2;
+static THREAD_POOL_COUNT: usize = 4;
 
 static END_FLAG: &str = "EOF";
 
+pub static INFO_LOAD_CONFIG_FILE: &str = "Load file config ...";
+
 fn main() -> Result<(), ()> {
     let argv = args().collect::<Vec<String>>();
-    if argv.len() != SERVER_ARGS {
-        println!("Count of arguments invalid");
-        return Err(());
+    let mut config_server = ConfigServer::new();
+    match argv.len() {
+        2 => {
+            println!("Load file config ...");
+            config_server.load_config_server_with_path(argv[1].as_str());
+        }
+        1 => {
+            println!("Load file config server default ...");
+            config_server.load_config_server();
+        }
+        _ => { println!("Error count args");}
     }
     let app_name = &argv[0];
     println!("Serger args: {:?}",  &argv);
-
     println!("Server {} is up!",app_name);
 
-    let mut address = argv[1].clone();
-    let port = argv[2].clone();
-    address.push_str(":");
-    address.push_str(&port);
+    let server = config_server.get_prop("server");
+    let port = config_server.get_prop("port");
 
-    println!("Server address: {}", &address);
+    let mut path = String::from(server);
+    path.push_str(":");
+    path.push_str(&port);
+
     println!();
+    println!("Server address: {}", &path);
+    println!();
+
     println!("Execute listener ...");
-    let _listener = exec(&address);
+
+    let _listener = exec_server(&path);
 
     Ok(())
 }
 
-fn exec(address: &String) -> Result<(),()>{
+fn exec_server(address: &String) -> Result<(),()>{
     let threadpool = threadpool::ThreadPool::new(THREAD_POOL_COUNT.clone());
     let listener = TcpListener::bind(&address).unwrap();
     for stream in listener.incoming() {
@@ -78,7 +97,7 @@ fn handle_client(stream: &mut TcpStream) {
 }
 
 fn process_request(request: String) -> String {
-    let mut commandBuilder = CommandBuilder::new();
-    let mut comm = commandBuilder.get_command(&mut String::from(request.trim()));
+    let mut command_builder = CommandBuilder::new();
+    let comm = command_builder.get_command(&mut String::from(request.trim()));
     String::from(comm.str_response())
 }
