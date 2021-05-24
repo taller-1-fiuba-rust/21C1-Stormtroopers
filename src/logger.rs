@@ -6,7 +6,6 @@ use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::SystemTime;
-use crate::config_server::ConfigServer;
 
 pub trait Loggable {
     fn get_id_client(&self) -> i32;
@@ -26,7 +25,7 @@ impl Clone for Logger<String> {
     fn clone(&self) -> Self {
         let sender = self.sender.clone();
         let receiver = self.receiver.clone();
-        let file = self.file.try_clone().unwrap();
+        let file = self.file.try_clone().expect("ERROR CREATING FILE");
         Self {
             file,
             sender,
@@ -62,9 +61,9 @@ impl Logger<String> {
         })
     }
 
-    pub fn set_new_file_name(&mut self, name_file: String) {
+    /*pub fn set_new_file_name(&mut self, name_file: String) {
         self.file = File::create(name_file).unwrap();
-    }
+    }*/
 
     fn load_info(&mut self) -> Result<(), Error> {
         let msg = self.receiver.lock().unwrap().recv().unwrap();
@@ -83,8 +82,8 @@ impl Logger<String> {
             log.sender.send(msg).unwrap();
             log.load_info().unwrap();
         })
-            .join()
-            .unwrap();
+        .join()
+        .unwrap();
 
         Ok(())
     }
@@ -129,7 +128,7 @@ mod tests {
             "prueba.txt".to_string(),
             "/home/gonzalosabatino/Escritorio".to_string(), //no sé qué otro path ponerle
         )
-            .unwrap();
+        .unwrap();
 
         log.info(&Client(1, 1), "hola").unwrap();
         log.info(&Client(2, 1), "hola").unwrap();

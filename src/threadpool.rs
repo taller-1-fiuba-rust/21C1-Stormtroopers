@@ -1,8 +1,9 @@
-use std::thread;
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::thread;
 
+#[allow(dead_code)]
 pub struct ThreadPool {
     workers: Vec<Worker>,
     sender: mpsc::Sender<Job>,
@@ -23,23 +24,20 @@ impl ThreadPool {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
 
-        ThreadPool {
-            workers,
-            sender,
-        }
+        ThreadPool { workers, sender }
     }
 
     pub fn execute<F>(&self, f: F)
-        where
-            F: FnOnce() + Send + 'static
+    where
+        F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
 
         self.sender.send(job).unwrap();
     }
-
 }
 
+#[allow(dead_code)]
 struct Worker {
     id: usize,
     thread: thread::JoinHandle<()>,
@@ -47,30 +45,25 @@ struct Worker {
 
 impl Worker {
     fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
-        let thread = thread::spawn(move || {
-            loop {
-                let job = receiver.lock().unwrap().recv().unwrap();
+        let thread = thread::spawn(move || loop {
+            let job = receiver.lock().unwrap().recv().unwrap();
 
-                println!("Worker {} job; executing...", id);
+            println!("Worker {} job; executing...", id);
 
-                job();
-            }
+            job();
         });
 
-        Worker {
-            id,
-            thread,
-        }
+        Worker { id, thread }
     }
 }
 
 #[test]
-fn test_new_ThreadPool(){
+fn test_new_thread_pool() {
     let threadpool = ThreadPool::new(1);
-    threadpool.execute(_test_sum );
+    threadpool.execute(_test_sum);
     assert!(true);
 }
 
-fn _test_sum(){
+fn _test_sum() {
     let _ = 1 + 1;
 }

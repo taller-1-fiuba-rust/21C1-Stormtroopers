@@ -1,9 +1,9 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use std::collections::HashMap;
 
-use  super::{LOG_NAME,LOG_PATH};
+//use super::{LOG_NAME, LOG_PATH};
 use crate::logger::{Loggable, Logger};
 use std::time::SystemTime;
 
@@ -17,7 +17,9 @@ use std::time::SystemTime;
  */
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-    where P: AsRef<Path>, {
+where
+    P: AsRef<Path>,
+{
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
 }
@@ -37,47 +39,61 @@ impl Loggable for ConfigServer {
 
 pub struct ConfigServer {
     pub props: HashMap<String, String>,
-    logger: Logger<String>,
+}
+
+impl Clone for ConfigServer {
+    fn clone(&self) -> Self {
+        let props = self.props.clone();
+        Self { props }
+    }
 }
 
 impl ConfigServer {
-
     pub fn new() -> ConfigServer {
-
         let map = HashMap::new();
-        let logger = Logger::new(String::from(LOG_NAME), String::from(LOG_PATH)).unwrap();
-        ConfigServer {
-            props: map,
-            logger: logger,
-        }
+        ConfigServer { props: map }
     }
-    pub fn load_config_server_with_path(&mut self, path_file: &str) {
+
+    pub fn load_config_server_with_path(
+        &mut self,
+        path_file: &str,
+        logger: Logger<String>,
+    ) -> Result<(), std::io::Error> {
         //println!("Init load file config ...");
-        self.logger.info(self, "Init load file config ...");
+        logger.info(self, "Init load file config ...")?;
         if let Ok(lines) = read_lines(path_file) {
             for line in lines {
                 if let Ok(prop) = line {
-                    let prop3:Vec<&str> = prop.split("=").collect();
+                    let prop3: Vec<&str> = prop.split("=").collect();
                     if prop3.len() == 2 {
-                        self.props.insert(String::from(prop3[0]),String::from(prop3[1]));
+                        self.props
+                            .insert(String::from(prop3[0]), String::from(prop3[1]));
                     }
                 }
             }
             //println!("Load file config OK");
-            self.logger.info(self, "Load file config OK");
+            return logger.info(self, "Load file config OK");
         }
+        Ok(())
     }
 
-    pub fn load_config_server(&mut self) {
-        self.load_config_server_with_path("./redis.config");
+    pub fn load_config_server(&mut self, logger: Logger<String>) -> Result<(), std::io::Error> {
+        self.load_config_server_with_path("./redis.config", logger)
     }
 
-    pub fn get_prop(&self, prop_name: &str) -> String {
-        if let Some(prop) = self.props.get(prop_name){
-            self.logger.info(self, format!("Getting property: {}", prop).as_str());
+    pub fn get_prop(&self, prop_name: &str, logger: Logger<String>) -> String {
+        if let Some(prop) = self.props.get(prop_name) {
+            logger
+                .info(self, format!("Getting property: {}", prop).as_str())
+                .expect("ERROR GETTING PROPERTY");
             return String::from(prop.as_str());
         };
-        self.logger.info(self, format!("Getting property default: {}", prop_name).as_str());
+        logger
+            .info(
+                self,
+                format!("Getting property default: {}", prop_name).as_str(),
+            )
+            .expect("ERROR GETTING PROPERTY DEFAULT");
         String::from(prop_name)
     }
 }
