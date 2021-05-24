@@ -3,6 +3,10 @@ use std::io::{self, BufRead};
 use std::path::Path;
 use std::collections::HashMap;
 
+use  super::{LOG_NAME,LOG_PATH};
+use crate::logger::{Loggable, Logger};
+use std::time::SystemTime;
+
 /*
  * Min redis.config props
  *  verbose: "false",
@@ -18,19 +22,38 @@ fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
     Ok(io::BufReader::new(file).lines())
 }
 
+impl Loggable for ConfigServer {
+    fn get_id_client(&self) -> i32 {
+        1414
+    }
+    fn get_id_thread(&self) -> i32 {
+        14
+    }
+
+    fn get_timestamp(&self) -> SystemTime {
+        SystemTime::now()
+    }
+}
+
 pub struct ConfigServer {
     pub props: HashMap<String, String>,
+    logger: Logger<String>,
 }
 
 impl ConfigServer {
+
     pub fn new() -> ConfigServer {
+
         let map = HashMap::new();
+        let logger = Logger::new(String::from(LOG_NAME), String::from(LOG_PATH)).unwrap();
         ConfigServer {
             props: map,
+            logger: logger,
         }
     }
     pub fn load_config_server_with_path(&mut self, path_file: &str) {
-        println!("Init load file config ...");
+        //println!("Init load file config ...");
+        self.logger.info(self, "Init load file config ...");
         if let Ok(lines) = read_lines(path_file) {
             for line in lines {
                 if let Ok(prop) = line {
@@ -40,7 +63,8 @@ impl ConfigServer {
                     }
                 }
             }
-            println!("Load file config OK");
+            //println!("Load file config OK");
+            self.logger.info(self, "Load file config OK");
         }
     }
 
@@ -50,8 +74,10 @@ impl ConfigServer {
 
     pub fn get_prop(&self, prop_name: &str) -> String {
         if let Some(prop) = self.props.get(prop_name){
+            self.logger.info(self, format!("Getting property: {}", prop).as_str());
             return String::from(prop.as_str());
         };
+        self.logger.info(self, format!("Getting property default: {}", prop_name).as_str());
         String::from(prop_name)
     }
 }

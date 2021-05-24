@@ -6,20 +6,32 @@ use std::io::prelude::*;
 use crate::threadpool::ThreadPool;
 use crate::config_server::ConfigServer;
 use crate::command_builder::CommandBuilder;
+use crate::logger::Logger;
 
 mod threadpool;
 mod command_builder;
 mod config_server;
+mod logger;
 
 static THREAD_POOL_COUNT: usize = 4;
 
 static END_FLAG: &str = "EOF";
 
-pub static INFO_LOAD_CONFIG_FILE: &str = "Load file config ...";
+//pub static INFO_LOAD_CONFIG_FILE: &str = "Load file config ...";
+
+const LOG_NAME: &str = "log";
+const  LOG_PATH: &str = "./";
+
+use std::cell::RefCell;
+use std::thread;
+
+
+
 
 fn main() -> Result<(), ()> {
     let argv = args().collect::<Vec<String>>();
     let mut config_server = ConfigServer::new();
+    //static LOGGER: Logger<String> = Logger::new(LOG_NAME, LOG_RELATIVE_PATH).unwrap();
     match argv.len() {
         2 => {
             println!("Load file config ...");
