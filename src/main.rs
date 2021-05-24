@@ -5,17 +5,12 @@ use std::net::{TcpListener, TcpStream};
 use std::io::prelude::*;
 use crate::threadpool::ThreadPool;
 use crate::command::CommandBuilder;
-use crate::configserver::ConfigServer;
-//use crate::constants::{INFO_LOAD_CONFIG_FILE, INFO_LOAD_CONFIG_FILE_DEFAULT};
-
+use crate::config_server::ConfigServer;
 
 mod threadpool;
-mod command;
-mod configserver;
-//mod constants;
+mod command_builder;
+mod config_server;
 
-//static SERVER_ARGS_WITHOUT_CONFIG: usize = 1;
-//static SERVER_ARGS_WITH_CONFIG: usize = 2;
 static THREAD_POOL_COUNT: usize = 4;
 
 static END_FLAG: &str = "EOF";

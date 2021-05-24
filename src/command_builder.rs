@@ -44,7 +44,6 @@ impl  CommandBuilder {
         }
     }
 
-/*
     pub fn get_command_response(&mut self, command_name: &mut String) -> &'static str {
         if self.commands.contains_key(command_name.as_str()){
             /* This unwrap is safed ! */
@@ -52,7 +51,6 @@ impl  CommandBuilder {
         }
         return (self.commands.get_mut("").unwrap()).response.clone();
     }
- */
 
     pub fn get_command(&mut self, command_name: &mut String) -> &mut Command {
         if self.commands.contains_key(command_name.as_str()){
@@ -60,5 +58,13 @@ impl  CommandBuilder {
             return self.commands.get_mut(command_name.as_str()).unwrap();
         }
         return self.commands.get_mut("").unwrap();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn should_always_pass() {
+        assert_eq!(true, true);
     }
 }
