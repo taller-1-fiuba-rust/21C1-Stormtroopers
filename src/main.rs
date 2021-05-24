@@ -84,6 +84,7 @@ fn main() -> Result<(), std::io::Error> {
             println!("Error count args");
         }
     }
+
     let app_name = &argv[0];
     println!("Serger args: {:?}", &argv);
     println!("Server {} is up!", app_name);
