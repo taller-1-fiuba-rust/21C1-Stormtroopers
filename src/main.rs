@@ -4,8 +4,8 @@ use std::net::{TcpListener, TcpStream};
 
 use std::io::prelude::*;
 use crate::threadpool::ThreadPool;
-use crate::command::CommandBuilder;
 use crate::config_server::ConfigServer;
+use crate::command_builder::CommandBuilder;
 
 mod threadpool;
 mod command_builder;
