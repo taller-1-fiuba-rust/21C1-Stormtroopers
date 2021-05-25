@@ -3,105 +3,45 @@ use std::io::{BufRead, BufReader};
 use std::net::{TcpListener, TcpStream};
 
 use crate::command_builder::CommandBuilder;
-use crate::config_server::ConfigServer;
+use std::io::prelude::*;
 #[allow(unused_imports)]
 use crate::logger::Logger;
-//use crate::threadpool::ThreadPool;
-use std::io::prelude::*;
+use crate::server::Server;
 
 mod command_builder;
 mod config_server;
 mod logger;
 mod threadpool;
+mod server;
 
 static THREAD_POOL_COUNT: usize = 4;
 
 static END_FLAG: &str = "EOF";
 
-//pub static INFO_LOAD_CONFIG_FILE: &str = "Load file config ...";
-
 const LOG_NAME: &str = "log";
 const LOG_PATH: &str = "./";
-
-//use std::cell::RefCell;
-//use std::thread;
-
-struct Server {
-    config_server: ConfigServer,
-    logger: Logger<String>,
-    command_builder: CommandBuilder,
-}
-
-impl Clone for Server {
-    fn clone(&self) -> Server {
-        let config_server = self.config_server.clone();
-        let logger = self.logger.clone();
-        let command_builder = self.command_builder.clone();
-
-        Self {
-            config_server,
-            logger,
-            command_builder,
-        }
-    }
-}
-
-impl Server {
-    pub fn new() -> Self {
-        let config_server = ConfigServer::new();
-        let logger =
-            Logger::new(LOG_NAME.to_string(), LOG_PATH.to_string()).expect("ERROR CREATING LOGGER");
-        let command_builder = CommandBuilder::new();
-        Self {
-            config_server,
-            logger,
-            command_builder,
-        }
-    }
-
-    pub fn get_logger(&self) -> Logger<String> {
-        self.logger.clone()
-    }
-}
+const ERROR_LOG_CREATE: &str = "Error creating Logger";
 
 fn main() -> Result<(), std::io::Error> {
     let argv = args().collect::<Vec<String>>();
-    let mut server = Server::new();
-    match argv.len() {
-        2 => {
-            println!("Load file config ...");
-            server
-                .config_server
-                .load_config_server_with_path(argv[1].as_str(), server.get_logger())?;
-        }
-        1 => {
-            println!("Load file config server default ...");
-            server
-                .config_server
-                .load_config_server(server.get_logger())?;
-        }
-        _ => {
-            println!("Error count args");
-        }
-    }
+    let mut server = Server::new(argv.clone());
 
-    let app_name = &argv[0];
-    println!("Serger args: {:?}", &argv);
-    println!("Server {} is up!", app_name);
+    server.load_config(argv)?;
 
-    let port = server.config_server.get_prop("port", server.get_logger());
+    //println!("Serger args: {:?}", &argv);
+    println!("Server {} is up!", server.server_name());
 
-    let mut path = String::from(server.config_server.get_prop("server", server.get_logger()));
-    path.push_str(":");
-    path.push_str(&port);
+    let config_server = server.get_config_server();
+
+    let server_port = config_server.get_server_port(server.get_logger());
 
     println!();
-    println!("Server address: {}", &path);
+    println!("Server address: {}", server_port);
     println!();
 
     println!("Execute listener ...");
 
-    let _listener = exec_server(&path, &server);
+    let _listener = exec_server(&server_port, &server);
 
     Ok(())
 }

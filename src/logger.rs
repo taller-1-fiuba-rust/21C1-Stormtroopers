@@ -7,6 +7,10 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::SystemTime;
 
+const ERROR_LOG_CREATE_FILE: &str = "Error creating file";
+
+//TODO: ver de cambiar el id_client por un String que indique el nombre del servicio
+//TODO: por ahi el timestamp puede ser calculado por el Logger directamente
 pub trait Loggable {
     fn get_id_client(&self) -> i32;
 
@@ -25,7 +29,7 @@ impl Clone for Logger<String> {
     fn clone(&self) -> Self {
         let sender = self.sender.clone();
         let receiver = self.receiver.clone();
-        let file = self.file.try_clone().expect("ERROR CREATING FILE");
+        let file = self.file.try_clone().expect(ERROR_LOG_CREATE_FILE);
         Self {
             file,
             sender,
@@ -60,10 +64,6 @@ impl Logger<String> {
             receiver,
         })
     }
-
-    /*pub fn set_new_file_name(&mut self, name_file: String) {
-        self.file = File::create(name_file).unwrap();
-    }*/
 
     fn load_info(&mut self) -> Result<(), Error> {
         let msg = self.receiver.lock().unwrap().recv().unwrap();

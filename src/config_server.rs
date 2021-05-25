@@ -3,7 +3,6 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-//use super::{LOG_NAME, LOG_PATH};
 use crate::logger::{Loggable, Logger};
 use std::time::SystemTime;
 
@@ -59,19 +58,17 @@ impl ConfigServer {
         path_file: &str,
         logger: Logger<String>,
     ) -> Result<(), std::io::Error> {
-        //println!("Init load file config ...");
         logger.info(self, "Init load file config ...")?;
         if let Ok(lines) = read_lines(path_file) {
             for line in lines {
                 if let Ok(prop) = line {
-                    let prop3: Vec<&str> = prop.split("=").collect();
-                    if prop3.len() == 2 {
+                    let prop_slited: Vec<&str> = prop.split("=").collect();
+                    if prop_slited.len() == 2 {
                         self.props
-                            .insert(String::from(prop3[0]), String::from(prop3[1]));
+                            .insert(String::from(prop_slited[0]), String::from(prop_slited[1]));
                     }
                 }
             }
-            //println!("Load file config OK");
             return logger.info(self, "Load file config OK");
         }
         Ok(())
@@ -79,6 +76,17 @@ impl ConfigServer {
 
     pub fn load_config_server(&mut self, logger: Logger<String>) -> Result<(), std::io::Error> {
         self.load_config_server_with_path("./redis.config", logger)
+    }
+
+    pub fn get_server_port(&self, logger: Logger<String>) -> String {
+        let logger2 = logger.clone();
+        let port = self.get_prop("port", logger);
+
+        let mut path_server_port = String::from(self.get_prop("server", logger2));
+
+        path_server_port.push_str(":");
+        path_server_port.push_str(&port);
+        path_server_port
     }
 
     pub fn get_prop(&self, prop_name: &str, logger: Logger<String>) -> String {
