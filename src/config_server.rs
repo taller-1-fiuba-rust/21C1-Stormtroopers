@@ -29,11 +29,11 @@ where
 }
 
 impl Loggable for ConfigServer {
-    fn get_id_client(&self) -> i32 {
-        1414
+    fn get_id_client(&self) -> &str {
+        "ConfigServer"
     }
-    fn get_id_thread(&self) -> i32 {
-        14
+    fn get_id_thread(&self) -> u32 {
+        14_u32
     }
 
     fn get_timestamp(&self) -> SystemTime {

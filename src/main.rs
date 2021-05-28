@@ -55,24 +55,26 @@ fn exec_server(address: &String, server: &Server) -> Result<(), std::io::Error> 
         println!("Handler stream request ...");
         let server = server.clone();
         let stream = stream?;
-        threadpool.execute(move || {
+        let _id_global = -1;
+        threadpool.execute(move |_id_global| {
             //let stream = stream.unwrap();
-            handle_connection(stream, &server);
+
+            handle_connection(stream, &server,_id_global);
         });
     }
     Ok(())
 }
 
-fn handle_connection(mut stream: TcpStream, server: &Server) {
-    handle_client(&mut stream, server);
+fn handle_connection(mut stream: TcpStream, server: &Server, id: u32) {
+    handle_client(&mut stream, server, id);
 }
 
-fn handle_client(stream: &mut TcpStream, server: &Server) {
+fn handle_client(stream: &mut TcpStream, server: &Server, id: u32) {
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
 
     let mut lines = reader.lines();
-    println!("Reading stream conections ...");
+    println!("Reading stream conections, job {} ...", id);
 
     while let Some(line) = lines.next() {
         let request = line.unwrap_or(String::from(END_FLAG));
@@ -80,16 +82,17 @@ fn handle_client(stream: &mut TcpStream, server: &Server) {
         if request == END_FLAG {
             return;
         }
-        println!("Server receive: {:?}", request);
 
-        let response = process_request(request, server);
+        println!("Server job {}, receive: {:?}", id, request);
+
+        let response = process_request(request, server, id.clone());
         (*stream).write(response.as_bytes()).unwrap_or(0);
     }
-    println!("End handle client");
+    println!("End handle client, job {}", id);
 }
 
-fn process_request(request: String, server: &Server) -> String {
-    let mut command_builder = CommandBuilder::new();
+fn process_request(request: String, server: &Server, id_job: u32) -> String {
+    let mut command_builder = CommandBuilder::new(id_job);
     let comm = command_builder.get_command(&mut String::from(request.trim()));
     String::from(comm.str_response(server.get_logger()))
 }

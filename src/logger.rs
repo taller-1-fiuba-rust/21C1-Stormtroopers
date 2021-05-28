@@ -14,9 +14,9 @@ const ERROR_LOG_CREATE_FILE: &str = "Error creating file";
 //TODO: ver de cambiar el id_client por un String que indique el nombre del servicio
 //TODO: por ahi el timestamp puede ser calculado por el Logger directamente
 pub trait Loggable {
-    fn get_id_client(&self) -> i32;
+    fn get_id_client(&self) -> &str;
 
-    fn get_id_thread(&self) -> i32;
+    fn get_id_thread(&self) -> u32;
 
     fn get_timestamp(&self) -> SystemTime;
 }
@@ -97,7 +97,7 @@ fn generate_menssage(service: &dyn Loggable, message_info: &str) -> String {
     let _timestamp = service.get_timestamp();
 
     format!(
-        "{:04?} -- [{:04?} -- {:?}] -- {}\n",
+        "[#{:20?}# -- {:03?} -- {:?}] -- {}\n",
         id_client, id_thread, format_timestamp_now(), message_info
     )
 }
@@ -107,12 +107,12 @@ fn generate_menssage(service: &dyn Loggable, message_info: &str) -> String {
 struct Client(i32, i32);
 
 impl Loggable for Client {
-    fn get_id_client(&self) -> i32 {
-        self.0.clone()
+    fn get_id_client(&self) -> &str {
+        "0"
     }
 
-    fn get_id_thread(&self) -> i32 {
-        self.1.clone()
+    fn get_id_thread(&self) -> u32 {
+        1_u32
     }
 
     fn get_timestamp(&self) -> SystemTime {

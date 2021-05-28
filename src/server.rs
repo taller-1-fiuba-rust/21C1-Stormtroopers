@@ -10,11 +10,11 @@ const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...
 const ERROR_COUNT_ARGS: &str = "Error count args\n";
 
 impl Loggable for Server {
-    fn get_id_client(&self) -> i32 {
-        3
+    fn get_id_client(&self) -> &str {
+        "Server"
     }
-    fn get_id_thread(&self) -> i32 {
-        0
+    fn get_id_thread(&self) -> u32 {
+        0_u32
     }
     fn get_timestamp(&self) -> SystemTime {
         SystemTime::now()
@@ -49,7 +49,7 @@ impl Server {
         let config_server = ConfigServer::new();
         let logger =
             Logger::new(LOG_NAME.to_string(), LOG_PATH.to_string()).expect(ERROR_LOG_CREATE);
-        let command_builder = CommandBuilder::new();
+        let command_builder = CommandBuilder::new(99);
         Self {
             server_args,
             config_server,

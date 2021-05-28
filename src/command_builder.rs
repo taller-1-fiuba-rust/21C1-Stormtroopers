@@ -10,11 +10,11 @@ static ERROR_INVALID_COMMAND: &str = "ERROR INVALID COMMAND\n";
 static REQUEST_INVALID: &str = "";
 
 impl Loggable for Command {
-    fn get_id_client(&self) -> i32 {
-        2
+    fn get_id_client(&self) -> &str {
+        "CommandBuilder"
     }
-    fn get_id_thread(&self) -> i32 {
-        -1
+    fn get_id_thread(&self) -> u32 {
+        self.id_job_exec.clone()
     }
 
     fn get_timestamp(&self) -> SystemTime {
@@ -23,6 +23,7 @@ impl Loggable for Command {
 }
 
 pub struct Command {
+    id_job_exec: u32,
     name: &'static str,
     args: HashMap<&'static str, &'static str>,
     response: &'static str,
@@ -30,10 +31,12 @@ pub struct Command {
 
 impl Clone for Command {
     fn clone(&self) -> Self {
+        let id_job_exec = self.id_job_exec.clone();
         let name = self.name.clone();
         let args = self.args.clone();
         let response = self.response.clone();
         Self {
+            id_job_exec,
             name,
             args,
             response,
@@ -46,11 +49,13 @@ impl Clone for Command {
 **/
 impl Command {
     pub fn new(
+        id_job_exec: u32,
         name: &'static str,
         args: HashMap<&'static str, &'static str>,
         response: &'static str,
     ) -> Command {
         Command {
+            id_job_exec,
             name,
             args,
             response,
@@ -71,27 +76,29 @@ impl Command {
 **/
 pub struct CommandBuilder {
     commands: HashMap<&'static str, Command>,
+    id_job_exec: u32,
 }
 
 impl Clone for CommandBuilder {
     fn clone(&self) -> Self {
         let commands = self.commands.clone();
-        Self { commands }
+        let id = self.id_job_exec;
+        Self { commands, id_job_exec: id }
     }
 }
 
 impl CommandBuilder {
-    pub fn new() -> CommandBuilder {
+    pub fn new(id_job_exec: u32) -> CommandBuilder {
         let mut commands: HashMap<&'static str, Command> = HashMap::new();
         commands.insert(
             REQUEST_COMMAND_PING,
-            Command::new(REQUEST_COMMAND_PING, HashMap::new(), RESPONSE_COMMAND_PING),
+            Command::new(id_job_exec.clone(),REQUEST_COMMAND_PING, HashMap::new(), RESPONSE_COMMAND_PING),
         );
         commands.insert(
             REQUEST_INVALID,
-            Command::new(REQUEST_INVALID, HashMap::new(), ERROR_INVALID_COMMAND),
+            Command::new(id_job_exec.clone(),REQUEST_INVALID, HashMap::new(), ERROR_INVALID_COMMAND),
         );
-        CommandBuilder { commands }
+        CommandBuilder { commands, id_job_exec }
     }
 
     /*

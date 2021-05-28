@@ -9,7 +9,7 @@ pub struct ThreadPool {
     sender: mpsc::Sender<Job>,
 }
 
-type Job = Box<dyn FnOnce() + Send + 'static>;
+type Job = Box<dyn FnOnce(u32) + Send + 'static>;
 
 impl ThreadPool {
     pub fn new(size: usize) -> ThreadPool {
@@ -29,7 +29,7 @@ impl ThreadPool {
 
     pub fn execute<F>(&self, f: F)
     where
-        F: FnOnce() + Send + 'static,
+        F: FnOnce(u32) + Send + 'static,
     {
         let job = Box::new(f);
 
@@ -50,7 +50,9 @@ impl Worker {
 
             println!("Worker {} job; executing...", id);
 
-            job();
+            job(id.clone() as u32);
+
+            println!("Worker {} job; ending ...", id);
         });
 
         Worker { id, thread }
@@ -60,7 +62,8 @@ impl Worker {
 #[test]
 fn test_new_thread_pool() {
     let threadpool = ThreadPool::new(1);
-    threadpool.execute(_test_sum);
+    let _id = 1;
+    threadpool.execute( move |_id| _test_sum());
     assert!(true);
 }
 
