@@ -7,6 +7,8 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::SystemTime;
 
+use crate::utils::format_timestamp_now;
+
 const ERROR_LOG_CREATE_FILE: &str = "Error creating file";
 
 //TODO: ver de cambiar el id_client por un String que indique el nombre del servicio
@@ -66,11 +68,11 @@ impl Logger<String> {
     }
 
     fn load_info(&mut self) -> Result<(), Error> {
-        let msg = self.receiver.lock().unwrap().recv().unwrap();
+        let mut msg = self.receiver.lock().unwrap().recv().unwrap();
+        msg.pop();
         let file_size = self.file.metadata().unwrap().len();
         self.file.seek(SeekFrom::Start(file_size))?;
         self.file.write_all(msg.as_bytes())?;
-
         Ok(())
     }
 
@@ -92,11 +94,11 @@ impl Logger<String> {
 fn generate_menssage(service: &dyn Loggable, message_info: &str) -> String {
     let id_client = service.get_id_client();
     let id_thread = service.get_id_thread();
-    let timestamp = service.get_timestamp();
+    let _timestamp = service.get_timestamp();
 
     format!(
-        "{:?} -- [{:?} -- {:?}] -- {}\n",
-        id_client, id_thread, timestamp, message_info
+        "{:04?} -- [{:04?} -- {:?}] -- {}\n",
+        id_client, id_thread, format_timestamp_now(), message_info
     )
 }
 

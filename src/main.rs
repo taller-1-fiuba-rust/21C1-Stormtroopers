@@ -13,6 +13,7 @@ mod config_server;
 mod logger;
 mod threadpool;
 mod server;
+mod utils;
 
 static THREAD_POOL_COUNT: usize = 4;
 

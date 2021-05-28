@@ -6,6 +6,11 @@ use std::path::Path;
 use crate::logger::{Loggable, Logger};
 use std::time::SystemTime;
 
+const INFO_LOAD_FILE_CONFIG: &str = "Init load file config ...\n";
+const INFO_LOAD_FILE_CONFIG_OK: &str = "Load file config OK\n";
+const ERROR_GETTING_PROP: &str = "Error getting property\n";
+const ERROR_GETTING_PROP_DEFAULT: &str = "Error getting property default\n";
+const PATH_FILE_CONFIG_DEFAULT: &str = "./redis.config";
 /*
  * Min redis.config props
  *  verbose: "false",
@@ -58,7 +63,7 @@ impl ConfigServer {
         path_file: &str,
         logger: Logger<String>,
     ) -> Result<(), std::io::Error> {
-        logger.info(self, "Init load file config ...")?;
+        logger.info(self, INFO_LOAD_FILE_CONFIG)?;
         if let Ok(lines) = read_lines(path_file) {
             for line in lines {
                 if let Ok(prop) = line {
@@ -69,13 +74,13 @@ impl ConfigServer {
                     }
                 }
             }
-            return logger.info(self, "Load file config OK");
+            return logger.info(self, INFO_LOAD_FILE_CONFIG_OK);
         }
         Ok(())
     }
 
     pub fn load_config_server(&mut self, logger: Logger<String>) -> Result<(), std::io::Error> {
-        self.load_config_server_with_path("./redis.config", logger)
+        self.load_config_server_with_path(PATH_FILE_CONFIG_DEFAULT, logger)
     }
 
     pub fn get_server_port(&self, logger: Logger<String>) -> String {
@@ -92,16 +97,16 @@ impl ConfigServer {
     pub fn get_prop(&self, prop_name: &str, logger: Logger<String>) -> String {
         if let Some(prop) = self.props.get(prop_name) {
             logger
-                .info(self, format!("Getting property: {}", prop).as_str())
-                .expect("ERROR GETTING PROPERTY");
+                .info(self, format!("Getting property: {}\n", prop).as_str())
+                .expect(ERROR_GETTING_PROP);
             return String::from(prop.as_str());
         };
         logger
             .info(
                 self,
-                format!("Getting property default: {}", prop_name).as_str(),
+                format!("Getting property default: {}\n", prop_name).as_str(),
             )
-            .expect("ERROR GETTING PROPERTY DEFAULT");
+            .expect(ERROR_GETTING_PROP_DEFAULT);
         String::from(prop_name)
     }
 }
