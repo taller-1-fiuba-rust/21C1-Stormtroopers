@@ -9,11 +9,13 @@ use crate::logger::Logger;
 use crate::server::Server;
 
 mod command_builder;
+mod commands;
 mod config_server;
 mod logger;
 mod threadpool;
 mod server;
 mod utils;
+mod structure_string;
 
 static THREAD_POOL_COUNT: usize = 4;
 
@@ -92,7 +94,11 @@ fn handle_client(stream: &mut TcpStream, server: &Server, id: u32) {
 }
 
 fn process_request(request: String, server: &Server, id_job: u32) -> String {
-    let mut command_builder = CommandBuilder::new(id_job);
-    let comm = command_builder.get_command(&mut String::from(request.trim()));
-    String::from(comm.str_response(server.get_logger()))
+    let mut command_builder = CommandBuilder::new(id_job, server.get_logger());
+    let mut comm = command_builder.get_command(&mut String::from(request.trim()));
+    //String::from(comm.str_response(server.get_logger()))
+    //let command_splited: Vec<&'static str> = vec!("test","hola");
+    let mut command_splited: Vec<& str> = request.split(" ").collect();
+    command_splited.remove(0);
+    comm.run_with_args(&mut command_splited)
 }

@@ -3,7 +3,6 @@ use crate::command_builder::CommandBuilder;
 use crate::{LOG_NAME, LOG_PATH, ERROR_LOG_CREATE};
 
 use crate::logger::{Logger, Loggable};
-use std::time::SystemTime;
 
 const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...\n";
@@ -15,9 +14,6 @@ impl Loggable for Server {
     }
     fn get_id_thread(&self) -> u32 {
         0_u32
-    }
-    fn get_timestamp(&self) -> SystemTime {
-        SystemTime::now()
     }
 }
 
@@ -49,7 +45,7 @@ impl Server {
         let config_server = ConfigServer::new();
         let logger =
             Logger::new(LOG_NAME.to_string(), LOG_PATH.to_string()).expect(ERROR_LOG_CREATE);
-        let command_builder = CommandBuilder::new(99);
+        let command_builder = CommandBuilder::new(99, logger.clone());
         Self {
             server_args,
             config_server,

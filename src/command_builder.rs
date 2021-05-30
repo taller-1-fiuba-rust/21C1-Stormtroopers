@@ -1,125 +1,89 @@
 use std::collections::HashMap;
 
-//use super::{LOG_NAME, LOG_PATH};
-use crate::logger::{Loggable, Logger};
-use std::time::SystemTime;
+use std::fmt::Display;
+
+use crate::commands::{Command, CommandPing, Executable, CommandEmpty, CommandSet, CommandGet};
+use crate::logger::{Logger, Loggable};
+
+use std::sync::Arc;
+use crate::structure_string::StructureString;
+
 
 static RESPONSE_COMMAND_PING: &str = "PONG\n";
 static REQUEST_COMMAND_PING: &str = "PING";
 static ERROR_INVALID_COMMAND: &str = "ERROR INVALID COMMAND\n";
 static REQUEST_INVALID: &str = "";
 
-impl Loggable for Command {
-    fn get_id_client(&self) -> &str {
-        "CommandBuilder"
-    }
-    fn get_id_thread(&self) -> u32 {
-        self.id_job_exec.clone()
-    }
-
-    fn get_timestamp(&self) -> SystemTime {
-        SystemTime::now()
-    }
-}
-
-pub struct Command {
-    id_job_exec: u32,
-    name: &'static str,
-    args: HashMap<&'static str, &'static str>,
-    response: &'static str,
-}
-
-impl Clone for Command {
-    fn clone(&self) -> Self {
-        let id_job_exec = self.id_job_exec.clone();
-        let name = self.name.clone();
-        let args = self.args.clone();
-        let response = self.response.clone();
-        Self {
-            id_job_exec,
-            name,
-            args,
-            response,
-        }
-    }
-}
-
-/**
- ** Representation of Command with name, args and response.
-**/
-impl Command {
-    pub fn new(
-        id_job_exec: u32,
-        name: &'static str,
-        args: HashMap<&'static str, &'static str>,
-        response: &'static str,
-    ) -> Command {
-        Command {
-            id_job_exec,
-            name,
-            args,
-            response,
-        }
-    }
-
-    pub fn str_response(&self, logger: Logger<String>) -> &'static str {
-        let response = self.response.clone();
-        logger
-            .info(self, &format!("Response command: {}", response))
-            .expect("ERROR RESPONSE COMMAND");
-
-        response
-    }
-}
 /**
  ** Builder Command for &str passed for parameter. Return Command.
 **/
 pub struct CommandBuilder {
-    commands: HashMap<&'static str, Command>,
+//    commands: Box<HashMap<String, Executable>>,
+    commands: HashMap<&'static str, Box<dyn Executable> >,
     id_job_exec: u32,
 }
 
 impl Clone for CommandBuilder {
     fn clone(&self) -> Self {
-        let commands = self.commands.clone();
-        let id = self.id_job_exec;
+        let commands = HashMap::new(); //self.commands.clone();
+        let id = self.id_job_exec.clone();
         Self { commands, id_job_exec: id }
     }
 }
 
 impl CommandBuilder {
-    pub fn new(id_job_exec: u32) -> CommandBuilder {
-        let mut commands: HashMap<&'static str, Command> = HashMap::new();
+    pub fn new(id_job_exec: u32, logger: Logger<String>) -> CommandBuilder {
+        let mut commands: HashMap<&'static str, Box<dyn Executable> > = HashMap::new();
+        //let structure = Box::new(HashMap::new());
+        let structure = StructureString::new();
+        /*
         commands.insert(
             REQUEST_COMMAND_PING,
             Command::new(id_job_exec.clone(),REQUEST_COMMAND_PING, HashMap::new(), RESPONSE_COMMAND_PING),
         );
+         */
+        //let comm = Command::new(id_job_exec.clone(),REQUEST_INVALID, HashMap::new(), ERROR_INVALID_COMMAND);
+        let comm = CommandEmpty::new(id_job_exec.clone());
         commands.insert(
             REQUEST_INVALID,
-            Command::new(id_job_exec.clone(),REQUEST_INVALID, HashMap::new(), ERROR_INVALID_COMMAND),
+            Box::new(comm),
         );
+        let comm2 = CommandPing::new(id_job_exec.clone(), logger.clone());
+        commands.insert(
+            REQUEST_COMMAND_PING,
+            Box::new(comm2),
+        );
+        let comm3 = CommandSet::new(id_job_exec.clone(), logger.clone(), structure.clone());
+        commands.insert(
+            "SET",
+            Box::new(comm3)
+        );
+
+        let comm3 = CommandGet::new(id_job_exec.clone(), logger.clone(), structure.clone());
+        commands.insert(
+            "GET",
+            Box::new(comm3)
+        );
+
         CommandBuilder { commands, id_job_exec }
     }
 
-    /*
-       pub fn get_command_response(&mut self, command_name: &mut String) -> &'static str {
-           if self.commands.contains_key(command_name.as_str()){
-               /* This unwrap is safed ! */
-               return (self.commands.get_mut(command_name.as_str()).unwrap()).response.clone();
-           }
-           return (self.commands.get_mut("").unwrap()).response.clone();
-       }
-    */
-
-    pub fn get_command(&mut self, command_name: &mut String) -> &mut Command {
-        if self.commands.contains_key(command_name.as_str()) {
+    pub fn get_command(&mut self, str_command: &mut String) -> Box<Executable> {
+        let command_splited: Vec<&str> = str_command.split(" ").collect();
+        let command_name = command_splited[0];
+        //let arg1 = command_splited[1];
+        //let arg2 = command_splited[2];
+        //println!("command splited: {} {} {}",command_name,arg1,arg2);
+        println!("command splited");
+        if self.commands.contains_key(command_name) {
             /* This unwrap is safed ! */
-            return self
+            let exec = self
                 .commands
-                .get_mut(command_name.as_str())
+                .get_mut(command_name)
                 .expect("ERROR GETTING COMMAND");
+            return exec.copy();
         }
-        return self.commands.get_mut("").expect("ERROR GETTING COMMAND");
+        Box::new(CommandEmpty::new( 0))
     }
 }
 

@@ -4,7 +4,6 @@ use std::io::{self, BufRead};
 use std::path::Path;
 
 use crate::logger::{Loggable, Logger};
-use std::time::SystemTime;
 
 const INFO_LOAD_FILE_CONFIG: &str = "Init load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_OK: &str = "Load file config OK\n";
@@ -34,10 +33,6 @@ impl Loggable for ConfigServer {
     }
     fn get_id_thread(&self) -> u32 {
         14_u32
-    }
-
-    fn get_timestamp(&self) -> SystemTime {
-        SystemTime::now()
     }
 }
 

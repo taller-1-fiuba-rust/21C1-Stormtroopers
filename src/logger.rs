@@ -5,7 +5,6 @@ use std::io::SeekFrom;
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::SystemTime;
 
 use crate::utils::format_timestamp_now;
 
@@ -17,8 +16,6 @@ pub trait Loggable {
     fn get_id_client(&self) -> &str;
 
     fn get_id_thread(&self) -> u32;
-
-    fn get_timestamp(&self) -> SystemTime;
 }
 
 pub struct Logger<String> {
@@ -94,10 +91,9 @@ impl Logger<String> {
 fn generate_menssage(service: &dyn Loggable, message_info: &str) -> String {
     let id_client = service.get_id_client();
     let id_thread = service.get_id_thread();
-    let _timestamp = service.get_timestamp();
 
     format!(
-        "[#{:20?}# -- {:03?} -- {:?}] -- {}\n",
+        "[{:20?} -- {:03?} -- {:?}] -- {}\n",
         id_client, id_thread, format_timestamp_now(), message_info
     )
 }
@@ -113,10 +109,6 @@ impl Loggable for Client {
 
     fn get_id_thread(&self) -> u32 {
         1_u32
-    }
-
-    fn get_timestamp(&self) -> SystemTime {
-        SystemTime::now()
     }
 }
 
