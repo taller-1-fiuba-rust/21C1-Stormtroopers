@@ -1,21 +1,22 @@
 use std::env::args;
 use std::io::{BufRead, BufReader};
+use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 
 use crate::command_builder::CommandBuilder;
-use std::io::prelude::*;
 #[allow(unused_imports)]
 use crate::logger::Logger;
 use crate::server::Server;
 
 mod command_builder;
-mod commands;
+mod command;
 mod config_server;
 mod logger;
 mod threadpool;
 mod server;
 mod utils;
 mod structure_string;
+mod errors;
 
 static THREAD_POOL_COUNT: usize = 4;
 

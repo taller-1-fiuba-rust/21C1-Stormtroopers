@@ -1,11 +1,11 @@
 use crate::errors::parse_error::ParseError;
 
-struct ParsedMessage {
-    command: String,
-    arguments: String,
+pub struct ParsedMessage {
+    pub command: String,
+    pub arguments: String,
 }
 
-fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
+pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
     if msg.is_empty() {
         return Err(ParseError::empty_value(msg));
     }
@@ -15,6 +15,7 @@ fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
     }
 
     let mut split_msg = msg.split_whitespace();
+    
     let command = String::from(split_msg.next().unwrap());
     let arguments = split_msg.fold(String::new(), |acc, x| {
         if acc.is_empty() {
@@ -25,8 +26,8 @@ fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
     });
 
     return Ok(ParsedMessage {
-        command: command,
-        arguments: arguments,
+        command,
+        arguments,
     });
 }
 
@@ -89,5 +90,21 @@ mod tests {
         let result_msg = obtain_str_command(test_msg);
         assert_eq!(result_msg.is_err(), true);
         assert_eq!(result_msg.err(), Some(ParseError::numeric_value(test_msg)));
+    }
+
+    #[test]
+    fn test_parse_command_with_many_spaces() {
+        let test_msg =
+            "   test_command   test_argument_1    test_argument_2     test_argument_3     ";
+
+        let result_msg = obtain_str_command(test_msg);
+        assert_eq!(result_msg.is_ok(), true);
+
+        let parsed_msg = result_msg.unwrap();
+        assert_eq!(parsed_msg.command, "test_command");
+        assert_eq!(
+            parsed_msg.arguments,
+            "test_argument_1 test_argument_2 test_argument_3"
+        );
     }
 }

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use std::fmt::Display;
 
-use crate::commands::{Command, CommandPing, Executable, CommandEmpty, CommandSet, CommandGet};
+use crate::command::commands::{Command, CommandPing, Executable, CommandEmpty, CommandSet, CommandGet};
 use crate::logger::{Logger, Loggable};
 
 use std::sync::Arc;
