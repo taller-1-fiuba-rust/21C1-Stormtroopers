@@ -1,8 +1,9 @@
 use crate::config_server::ConfigServer;
-use crate::command_builder::CommandBuilder;
+use crate::command::command_builder;
 use crate::{LOG_NAME, LOG_PATH, ERROR_LOG_CREATE};
 
 use crate::logger::{Logger, Loggable};
+use crate::command::command_builder::CommandBuilder;
 
 const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...\n";

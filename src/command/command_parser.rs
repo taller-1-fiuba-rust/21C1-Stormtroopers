@@ -6,15 +6,16 @@ pub struct ParsedMessage {
 }
 
 pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
-    if msg.is_empty() {
+    let msg_lower = String::from(msg).to_lowercase();
+    if msg_lower.is_empty() {
         return Err(ParseError::empty_value(msg));
     }
 
-    if msg.trim().parse::<f64>().is_ok() {
-        return Err(ParseError::numeric_value(msg));
+    if msg_lower.trim().parse::<f64>().is_ok() {
+        return Err(ParseError::numeric_value(msg_lower.as_str()));
     }
 
-    let mut split_msg = msg.split_whitespace();
+    let mut split_msg = msg_lower.split_whitespace();
     
     let command = String::from(split_msg.next().unwrap());
     let arguments = split_msg.fold(String::new(), |acc, x| {

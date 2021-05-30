@@ -1,7 +1,7 @@
 use std::fmt;
 
-const NUMERIC_VALUE_MSG: &str = "Numeric values are not allowed.";
-const EMPTY_VALUE_MSG: &str = "Empty values are not allowed.";
+const NUMERIC_VALUE_MSG: &str = "Numeric values are not allowed.\n";
+const EMPTY_VALUE_MSG: &str = "Empty values are not allowed.\n";
 
 pub struct ParseError {
     pub message: String,

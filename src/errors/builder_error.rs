@@ -1,6 +1,6 @@
 use std::fmt;
 
-const COMMAND_NOT_FOUND_MSG: &str = "Unable to find the command entered.";
+const COMMAND_NOT_FOUND_MSG: &str = "Unable to find the command entered.\n";
 
 pub struct BuilderError {
     pub message: String,

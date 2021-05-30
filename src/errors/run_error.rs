@@ -1,6 +1,6 @@
 use std::fmt;
 
-const UNKNOWN_ERROR_MSG: &str = "Unknown error, could not process command.";
+const UNKNOWN_ERROR_MSG: &str = "Unknown error, could not process command.\n";
 
 pub struct RunError {
     pub message: String,

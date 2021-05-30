@@ -7,6 +7,7 @@ use crate::command_builder::CommandBuilder;
 #[allow(unused_imports)]
 use crate::logger::Logger;
 use crate::server::Server;
+use crate::command::commands::Command;
 
 mod command_builder;
 mod command;
@@ -95,11 +96,18 @@ fn handle_client(stream: &mut TcpStream, server: &Server, id: u32) {
 }
 
 fn process_request(request: String, server: &Server, id_job: u32) -> String {
-    let mut command_builder = CommandBuilder::new(id_job, server.get_logger());
+    //TODO: ver de meter el command_builder en el server.
+    //let mut command_builder = CommandBuilder::new(id_job, server.get_logger());
+    let mut command_builder = command::command_builder::CommandBuilder::new(id_job, server.get_logger());
+
     let mut comm = command_builder.get_command(&mut String::from(request.trim()));
     //String::from(comm.str_response(server.get_logger()))
     //let command_splited: Vec<&'static str> = vec!("test","hola");
     let mut command_splited: Vec<& str> = request.split(" ").collect();
     command_splited.remove(0);
-    comm.run_with_args(&mut command_splited)
+    //comm.run_with_args(&mut command_splited)
+    match comm {
+        Ok(comm) => comm.run(command_splited).unwrap(),
+        Err(comm) => comm.to_string(),
+    }
 }

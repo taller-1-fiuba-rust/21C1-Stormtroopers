@@ -7,7 +7,11 @@ use crate::logger::{Logger, Loggable};
 
 use std::sync::Arc;
 use crate::structure_string::StructureString;
+use crate::errors::builder_error::BuilderError;
 
+use crate::command::command_parser;
+
+use crate::command::cmd_trait;
 
 static RESPONSE_COMMAND_PING: &str = "PONG\n";
 static REQUEST_COMMAND_PING: &str = "PING";
@@ -19,10 +23,11 @@ static REQUEST_INVALID: &str = "";
 **/
 pub struct CommandBuilder {
 //    commands: Box<HashMap<String, Executable>>,
-    commands: HashMap<&'static str, Box<dyn Executable> >,
+    commands: HashMap<&'static str, Box<dyn cmd_trait::Command> >,
     id_job_exec: u32,
 }
 
+/*
 impl Clone for CommandBuilder {
     fn clone(&self) -> Self {
         let commands = HashMap::new(); //self.commands.clone();
@@ -30,19 +35,20 @@ impl Clone for CommandBuilder {
         Self { commands, id_job_exec: id }
     }
 }
+ */
 
 impl CommandBuilder {
+    /*
     pub fn new(id_job_exec: u32, logger: Logger<String>) -> CommandBuilder {
         let mut commands: HashMap<&'static str, Box<dyn Executable> > = HashMap::new();
         //let structure = Box::new(HashMap::new());
         let structure = StructureString::new();
-        /*
+
         commands.insert(
             REQUEST_COMMAND_PING,
             Command::new(id_job_exec.clone(),REQUEST_COMMAND_PING, HashMap::new(), RESPONSE_COMMAND_PING),
         );
-         */
-        //let comm = Command::new(id_job_exec.clone(),REQUEST_INVALID, HashMap::new(), ERROR_INVALID_COMMAND);
+
         let comm = CommandEmpty::new(id_job_exec.clone());
         commands.insert(
             REQUEST_INVALID,
@@ -64,8 +70,42 @@ impl CommandBuilder {
             "GET",
             Box::new(comm3)
         );
+                commands.insert(
+            REQUEST_COMMAND_PING,
+            Command::new(id_job_exec.clone(),REQUEST_COMMAND_PING, HashMap::new(), RESPONSE_COMMAND_PING),
+        );
+
 
         CommandBuilder { commands, id_job_exec }
+
+    }
+*/
+    /*
+    pub fn get_command2(&mut self, message: &str) -> Box<Command> {
+            let args = command_parser::obtain_str_command(message);
+            let mut retrieved;
+            match args {
+                Ok(args) => {
+                    retrieved = self.commands.get(args.command.as_str());
+                }
+                /*
+                Err(args) => {
+                    return Err(args);
+                }
+                 */
+            }
+            return match retrieved {
+                Some(retrieved) => {
+                    retrieved.set_args(args.arguments);
+                    retrieved
+                    //Ok(retrieved)
+                }
+
+                None => {
+                    Err(&Box::new(BuilderError::not_found(message)))
+                }
+
+            }
     }
 
     pub fn get_command(&mut self, str_command: &mut String) -> Box<Executable> {
@@ -85,6 +125,8 @@ impl CommandBuilder {
         }
         Box::new(CommandEmpty::new( 0))
     }
+
+     */
 }
 
 #[cfg(test)]
