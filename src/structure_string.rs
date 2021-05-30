@@ -79,12 +79,13 @@ impl StructureString<String> {
         println!("structure_string::end::get_string: {}", res2);
         String::from(res2)
     }
-
+    //TODO: ver esto que onda
     fn load(&self) -> String {
         let mut key_val = self.receiver.lock().unwrap().recv().unwrap();
         println!("structure::load::receiver: {}",key_val);
-        let mut res = (*self.structure.get_mut(&key_val).unwrap().clone());
-        //String::from(res)
-        res.to_string()
+        //let mut res = (*self.structure.get_mut(&key_val).unwrap().clone());
+        //res.to_string()
+        String::from("LOAD")
+
     }
 }
