@@ -61,8 +61,7 @@ fn exec_server<'a>(address: &String, server: &Server) -> Result<(), std::io::Err
     let threadpool = threadpool::ThreadPool::new(THREAD_POOL_COUNT.clone());
 
     let mut stt: & Arc<Mutex<HashMap<String,String>>> = &Arc::new(Mutex::new(HashMap::new()));
-    //let mut structure: &'a StructureSimple = &StructureSimple{ structure: &mut stt };
-    {
+
     let listener = TcpListener::bind(&address)?;
     for stream in listener.incoming() {
         let stream = stream;
@@ -76,7 +75,7 @@ fn exec_server<'a>(address: &String, server: &Server) -> Result<(), std::io::Err
             handle_connection(stream, &server, _id_global, & stt_clone);
         });
     }
-    }
+
     Ok(())
 }
 
@@ -107,10 +106,7 @@ fn handle_client(stream: &mut TcpStream, server: &Server, id: u32, structure: & 
 }
 //TODO: ver porque si vienen mal los args explota
 fn process_request(request: String, server: &Server, id_job: u32, structure: & Arc<Mutex<HashMap<String,String>>>) -> String {
-    //let mut structure = StructureString::new();
-    //let mut structure = Box::new(StructureString::new());
-    //let mut stt = Arc::new(Mutex::new(HashMap::new()));
-    //let mut structure = Box::new(structure_string2::StructureString::new(&mut stt));
+
     //TODO: ver de meter el command_builder en el server.
     let mut command_builder = command::command_builder::CommandBuilder::new(id_job, server.get_logger());
 
