@@ -1,8 +1,15 @@
 use std::collections::HashMap;
 use crate::errors::builder_error::BuilderError;
-use crate::command::cmd_trait::Command;
+use crate::command::cmd_trait::{Command, PING_COMMAND_STR, SET_COMMAND_STR, GET_COMMAND_STR};
 use crate::command::ping_cmd;
 use crate::logger::Logger;
+use crate::structure_string::StructureString;
+use crate::command::cmd_trait;
+use crate::command;
+use crate::command::set_cmd;
+use crate::command::get_cmd;
+use crate::command::get_cmd::GetCommand;
+use crate::command::set_cmd::SetCommand;
 
 pub struct CommandBuilder {
     commands: HashMap<&'static str, Box<Command>>,
@@ -12,9 +19,18 @@ pub struct CommandBuilder {
 impl CommandBuilder {
     pub fn new(id_job: u32, logger: Logger<String>) -> CommandBuilder {
         let mut commands: HashMap<&'static str, Box<Command>> = HashMap::new();
+        let mut structure = StructureString::new();
         commands.insert(
-            ping_cmd::PING_COMMAND_STR,
-            Box::new(ping_cmd::PingCommand::new(id_job,logger)),
+            PING_COMMAND_STR,
+            Box::new(ping_cmd::PingCommand::new(id_job.clone(),logger.clone(),structure.clone())),
+        );
+        commands.insert(
+            SET_COMMAND_STR,
+            Box::new(SetCommand::new(id_job.clone(), logger.clone(), structure.clone()))
+        );
+        commands.insert(
+            GET_COMMAND_STR,
+            Box::new(GetCommand::new(id_job.clone(), logger.clone(), structure.clone()))
         );
         CommandBuilder { commands, id_job_exec: id_job.clone() }
     }

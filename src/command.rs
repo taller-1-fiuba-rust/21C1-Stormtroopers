@@ -5,4 +5,6 @@ pub mod command_builder;
 pub mod command_parser;
 pub mod cmd_trait;
 pub mod ping_cmd;
+pub mod get_cmd;
+pub mod set_cmd;
 pub mod commands;

@@ -1,16 +1,15 @@
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 
-pub static PING_COMMAND_STR: &str = "ping";
-
 pub struct PingCommand {
     logger: Logger<String>,
+    structure: StructureString<String>,
     id_job: u32,
 }
 
 impl PingCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> PingCommand {
-        PingCommand {  id_job,logger }
+    pub fn new(id_job: u32, logger: Logger<String>, structure: StructureString<String>) -> PingCommand {
+        PingCommand {  id_job,logger,structure }
     }
 }
 impl Command for PingCommand {
@@ -33,14 +32,16 @@ impl Loggable for PingCommand {
 #[cfg(test)]
     use super::*;
 use crate::logger::{Logger, Loggable};
+use crate::structure_string::StructureString;
 
 #[test]
-    fn test_ping_command_return() {
+fn test_ping_command_return() {
     let log = Logger::new(
         String::from(""),
         "".to_string(),
-    )
-        .unwrap();
-        let ping = PingCommand::new(0,log);
-        assert_eq!(Command::run(&ping, vec!("")), Ok(String::from("PONG")));
-    }
+    ).unwrap();
+    let structure = StructureString::new();
+
+    let ping = PingCommand::new(0,log, structure);
+    assert_eq!(Command::run(&ping, vec!("")), Ok(String::from("PONG")));
+}
