@@ -10,7 +10,7 @@ use std::sync::{Arc, Mutex};
 use crate::logger::Logger;
 use crate::server::Server;
 use crate::command::commands::Command;
-use crate::structure_string2::StructureString;
+use crate::structure_string::StructureString;
 use crate::structure_simple::StructureSimple;
 
 mod command;
@@ -60,7 +60,8 @@ fn main() -> Result<(), std::io::Error> {
 fn exec_server<'a>(address: &String, server: &Server) -> Result<(), std::io::Error> {
     let threadpool = threadpool::ThreadPool::new(THREAD_POOL_COUNT.clone());
 
-    let mut stt: & Arc<Mutex<HashMap<String,String>>> = &Arc::new(Mutex::new(HashMap::new()));
+    //let mut stt: & Arc<Mutex<HashMap<String,String>>> = &Arc::new(Mutex::new(HashMap::new()));
+    let mut arc_structure = Arc::new(structure_string::StructureString::new());
 
     let listener = TcpListener::bind(&address)?;
     for stream in listener.incoming() {
@@ -69,21 +70,21 @@ fn exec_server<'a>(address: &String, server: &Server) -> Result<(), std::io::Err
         let server = server.clone();
         let stream = stream?;
         let _id_global = -1;
-        let stt_clone = Arc::clone(stt);
+        let arc_st_clone = Arc::clone(&arc_structure);
 
         threadpool.execute(move |  _id_global| {
-            handle_connection(stream, &server, _id_global, & stt_clone);
+            handle_connection(stream, &server, _id_global, arc_st_clone);
         });
     }
 
     Ok(())
 }
 
-fn handle_connection(mut stream: TcpStream, server: &Server, id: u32, structure: & Arc<Mutex<HashMap<String,String>>>) {
+fn handle_connection(mut stream: TcpStream, server: &Server, id: u32, structure: Arc<StructureString<String>>) {
     handle_client(&mut stream, server, id,structure);
 }
 
-fn handle_client(stream: &mut TcpStream, server: &Server, id: u32, structure: & Arc<Mutex<HashMap<String,String>>>) {
+fn handle_client(stream: &mut TcpStream, server: &Server, id: u32, structure: Arc<StructureString<String>>) {
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
 
@@ -99,13 +100,13 @@ fn handle_client(stream: &mut TcpStream, server: &Server, id: u32, structure: & 
 
         println!("Server job {}, receive: {:?}", id, request);
 
-        let response = process_request(request, server, id.clone(),structure);
+        let response = process_request(request, server, id.clone(), structure.clone());
         (*stream).write(response.as_bytes()).unwrap_or(0);
     }
     println!("End handle client, job {}", id);
 }
 //TODO: ver porque si vienen mal los args explota
-fn process_request(request: String, server: &Server, id_job: u32, structure: & Arc<Mutex<HashMap<String,String>>>) -> String {
+fn process_request(request: String, server: &Server, id_job: u32, structure: Arc<StructureString<String>>) -> String {
 
     //TODO: ver de meter el command_builder en el server.
     let mut command_builder = command::command_builder::CommandBuilder::new(id_job, server.get_logger());

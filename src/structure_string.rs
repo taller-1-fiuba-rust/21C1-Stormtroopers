@@ -9,7 +9,7 @@ use std::io::Error;
 
 //#[derive(Clone, Copy)]
 pub struct StructureString<String> {
-    structure: Arc<Mutex<HashMap<String,String>>>,
+    pub structure: Arc<Mutex<HashMap<String,String>>>,
     sender: Arc<SyncSender<String>>,
     receiver: Arc<Mutex<Receiver<String>>>,
 }

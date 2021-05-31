@@ -1,6 +1,6 @@
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::structure_string2;
+use crate::structure_string;
 
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
@@ -17,7 +17,7 @@ impl PingCommand{
     }
 }
 impl Command for PingCommand {
-    fn run(&self, _args: Vec<&str>, structure: & Arc<Mutex<HashMap<String,String>>>) -> Result<String, RunError> {
+    fn run(&self, _args: Vec<&str>, structure: Arc<StructureString<String>>) -> Result<String, RunError> {
         self.logger.info(self, "Run command PING\n");
         return Ok(String::from("PONG\n"));
     }
@@ -37,6 +37,7 @@ impl Loggable for PingCommand {
     use super::*;
 use crate::logger::{Logger, Loggable};
 use crate::structure_simple::StructureSimple;
+use crate::structure_string::StructureString;
 
 /*
 #[test]

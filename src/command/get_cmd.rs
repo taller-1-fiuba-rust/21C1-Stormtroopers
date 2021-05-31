@@ -1,5 +1,5 @@
 use crate::logger::{Logger, Loggable};
-use crate::structure_string2::StructureString;
+use crate::structure_string::StructureString;
 use crate::errors::run_error::RunError;
 use crate::command::cmd_trait::Command;
 use crate::structure_simple::{StructureSimple, get_string};
@@ -35,11 +35,11 @@ impl Loggable for GetCommand {
 }
 
 impl Command for GetCommand {
-    fn run(&self, args: Vec<&str>, structure: & Arc<Mutex<HashMap<String,String>>>) -> Result<String, RunError> {
+    fn run(&self, args: Vec<&str>, structure: Arc<StructureString<String>>) -> Result<String, RunError> {
         self.logger.info(self, INFO_RUN_COMMAND);
 
-        //Ok(structure.get_string(String::from(args[0])))
+        Ok(structure.get_string(String::from(args[0])))
 
-        Ok(get_string(structure, String::from(args[0])))
+        //Ok(get_string(structure, String::from(args[0])))
     }
 }

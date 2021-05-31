@@ -1,5 +1,5 @@
 use crate::errors::run_error::RunError;
-use crate::structure_string2::StructureString;
+use crate::structure_string::StructureString;
 use crate::structure_simple::StructureSimple;
 
 use std::sync::{Arc, Mutex};
@@ -10,5 +10,5 @@ pub static GET_COMMAND_STR: &str = "get";
 pub static SET_COMMAND_STR: &str = "set";
 
 pub trait Command: Send {
-    fn run(&self, args: Vec<&str>, structure: & Arc<Mutex<HashMap<String,String>>>) -> Result<String, RunError>;
+    fn run(&self, args: Vec<&str>, structure: Arc<StructureString<String>>) -> Result<String, RunError>;
 }
