@@ -21,9 +21,9 @@ static REQUEST_INVALID: &str = "";
 /**
  ** Builder Command for &str passed for parameter. Return Command.
 **/
-pub struct CommandBuilder {
+pub struct CommandBuilder<'a> {
 //    commands: Box<HashMap<String, Executable>>,
-    commands: HashMap<&'static str, Box<dyn cmd_trait::Command> >,
+    commands: HashMap<&'a str, Box<dyn cmd_trait::Command> >,
     id_job_exec: u32,
 }
 

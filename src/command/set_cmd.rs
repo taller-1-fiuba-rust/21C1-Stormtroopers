@@ -3,31 +3,38 @@ use crate::structure_string::StructureString;
 use crate::errors::run_error::RunError;
 use crate::command::cmd_trait::Command;
 
+const INFO_RUN_COMMAND: &str = "Run command SET\n";
+const CLIENT_ID: &str = "SetCommand";
+const RESPONSE_COMMAND: &str = "OK\n";
+
 pub struct SetCommand {
     logger: Logger<String>,
-    structure: StructureString<String>,
+    //structure: Box<StructureString<String>>,
     id_job: u32,
 }
 
 impl SetCommand {
-    pub fn new(id_job: u32, logger: Logger<String>, structure: StructureString<String>) -> SetCommand {
-        SetCommand {  id_job,logger,structure }
-    }
-}
-
-impl Command for SetCommand {
-    fn run(&self, _args: Vec<&str>) -> Result<String, RunError> {
-        self.logger.info(self, "Run command SET\n");
-        return Ok(String::from("OK\n"));
+    pub fn new(id_job: u32, logger: Logger<String>) -> SetCommand {
+        SetCommand {  id_job, logger }
     }
 }
 
 impl Loggable for SetCommand {
     fn get_id_client(&self) -> &str {
-        "SetCommand"
+        CLIENT_ID
     }
 
     fn get_id_thread(&self) -> u32 {
         self.id_job.clone()
+    }
+}
+
+impl Command for SetCommand {
+    fn run(&self, args: Vec<&str>, structure: &mut Box<StructureString<String>>) -> Result<String, RunError> {
+        self.logger.info(self, INFO_RUN_COMMAND);
+        println!("setcommand::{},{}",args[0],args[1]);
+        structure.set_string(String::from(args[0]),String::from(args[1]));
+
+        return Ok(String::from(RESPONSE_COMMAND));
     }
 }

@@ -3,17 +3,17 @@ use crate::errors::run_error::RunError;
 
 pub struct PingCommand {
     logger: Logger<String>,
-    structure: StructureString<String>,
     id_job: u32,
+    //structure:Box<StructureString<String>>,
 }
 
-impl PingCommand {
-    pub fn new(id_job: u32, logger: Logger<String>, structure: StructureString<String>) -> PingCommand {
-        PingCommand {  id_job,logger,structure }
+impl PingCommand{
+    pub fn new<'a>(id_job: u32, logger: Logger<String>) -> PingCommand {
+        PingCommand {  id_job, logger }
     }
 }
 impl Command for PingCommand {
-    fn run(&self, _args: Vec<&str>) -> Result<String, RunError> {
+    fn run(&self, _args: Vec<&str>, structure: &mut Box<StructureString<String>>) -> Result<String, RunError> {
         self.logger.info(self, "Run command PING\n");
         return Ok(String::from("PONG\n"));
     }
@@ -40,8 +40,8 @@ fn test_ping_command_return() {
         String::from(""),
         "".to_string(),
     ).unwrap();
-    let structure = StructureString::new();
+    let mut structure = Box::new(StructureString::new());
 
-    let ping = PingCommand::new(0,log, structure);
-    assert_eq!(Command::run(&ping, vec!("")), Ok(String::from("PONG")));
+    let ping = PingCommand::new(0,log);
+    assert_eq!(Command::run(&ping, vec!(""), &mut structure), Ok(String::from("PONG")));
 }
