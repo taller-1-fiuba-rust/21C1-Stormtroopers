@@ -3,11 +3,15 @@ use std::io::{BufRead, BufReader};
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+
 #[allow(unused_imports)]
 use crate::logger::Logger;
 use crate::server::Server;
 use crate::command::commands::Command;
-use crate::structure_string::StructureString;
+use crate::structure_string2::StructureString;
+use crate::structure_simple::StructureSimple;
 
 mod command;
 mod config_server;
@@ -17,6 +21,8 @@ mod server;
 mod utils;
 mod structure_string;
 mod errors;
+mod structure_string2;
+mod structure_simple;
 
 static THREAD_POOL_COUNT: usize = 4;
 
@@ -54,6 +60,9 @@ fn main() -> Result<(), std::io::Error> {
 fn exec_server<'a>(address: &String, server: &Server) -> Result<(), std::io::Error> {
     let threadpool = threadpool::ThreadPool::new(THREAD_POOL_COUNT.clone());
 
+    let mut stt: & Arc<Mutex<HashMap<String,String>>> = &Arc::new(Mutex::new(HashMap::new()));
+    //let mut structure: &'a StructureSimple = &StructureSimple{ structure: &mut stt };
+    {
     let listener = TcpListener::bind(&address)?;
     for stream in listener.incoming() {
         let stream = stream;
@@ -61,20 +70,21 @@ fn exec_server<'a>(address: &String, server: &Server) -> Result<(), std::io::Err
         let server = server.clone();
         let stream = stream?;
         let _id_global = -1;
-        threadpool.execute(move |  _id_global| {
-            //let stream = stream.unwrap();
+        let stt_clone = Arc::clone(stt);
 
-            handle_connection(stream, &server, _id_global);
+        threadpool.execute(move |  _id_global| {
+            handle_connection(stream, &server, _id_global, & stt_clone);
         });
+    }
     }
     Ok(())
 }
 
-fn handle_connection<'a>(mut stream: TcpStream, server: &Server, id: u32) {
-    handle_client(&mut stream, server, id);
+fn handle_connection(mut stream: TcpStream, server: &Server, id: u32, structure: & Arc<Mutex<HashMap<String,String>>>) {
+    handle_client(&mut stream, server, id,structure);
 }
 
-fn handle_client<'a>(stream: &mut TcpStream, server: &Server, id: u32) {
+fn handle_client(stream: &mut TcpStream, server: &Server, id: u32, structure: & Arc<Mutex<HashMap<String,String>>>) {
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
 
@@ -90,15 +100,17 @@ fn handle_client<'a>(stream: &mut TcpStream, server: &Server, id: u32) {
 
         println!("Server job {}, receive: {:?}", id, request);
 
-        let response = process_request(request, server, id.clone());
+        let response = process_request(request, server, id.clone(),structure);
         (*stream).write(response.as_bytes()).unwrap_or(0);
     }
     println!("End handle client, job {}", id);
 }
 //TODO: ver porque si vienen mal los args explota
-fn process_request<'a>(request: String, server: &Server, id_job: u32) -> String {
+fn process_request(request: String, server: &Server, id_job: u32, structure: & Arc<Mutex<HashMap<String,String>>>) -> String {
     //let mut structure = StructureString::new();
-    let mut structure = Box::new(StructureString::new());
+    //let mut structure = Box::new(StructureString::new());
+    //let mut stt = Arc::new(Mutex::new(HashMap::new()));
+    //let mut structure = Box::new(structure_string2::StructureString::new(&mut stt));
     //TODO: ver de meter el command_builder en el server.
     let mut command_builder = command::command_builder::CommandBuilder::new(id_job, server.get_logger());
 
@@ -108,7 +120,7 @@ fn process_request<'a>(request: String, server: &Server, id_job: u32) -> String 
     command_splited.remove(0);
 
     match comm {
-        Ok(comm) => comm.run(command_splited, &mut structure).unwrap(),
+        Ok(comm) => comm.run(command_splited, structure).unwrap(),
         Err(comm) => comm.to_string(),
     }
 }

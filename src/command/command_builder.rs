@@ -3,7 +3,7 @@ use crate::errors::builder_error::BuilderError;
 use crate::command::cmd_trait::{Command, PING_COMMAND_STR, SET_COMMAND_STR, GET_COMMAND_STR};
 use crate::command::ping_cmd;
 use crate::logger::Logger;
-use crate::structure_string::StructureString;
+use crate::structure_string2::StructureString;
 use crate::command::cmd_trait;
 use crate::command;
 use crate::command::set_cmd;
@@ -19,7 +19,7 @@ pub struct CommandBuilder {
 }
 
 impl CommandBuilder {
-    pub fn new<'a>(id_job: u32, logger: Logger<String>) -> CommandBuilder {
+    pub fn new(id_job: u32, logger: Logger<String>) -> CommandBuilder {
         let mut commands: HashMap<String, Box<Command>> = HashMap::new();
         //let mut structure = StructureString::new();
         //let mut structure = Box::new(StructureString::new());
@@ -90,6 +90,9 @@ impl Clone for CommandBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::structure_string2;
+    use std::collections::HashMap;
+    use std::sync::{Arc, Mutex};
 
     #[test]
     fn return_ping_command() {
@@ -97,13 +100,15 @@ mod tests {
             "prueba.txt".to_string(),
             "/home/gonzalosabatino/Escritorio".to_string(), //no sé qué otro path ponerle
         ).unwrap();
-        let mut structure = Box::new(StructureString::new());
+
+        let mut stt = Arc::new(Mutex::new(HashMap::new()));
+        let mut structure = Box::new(structure_string2::StructureString::new(&mut stt));
 
         let command_builder = CommandBuilder::new(0, log);
         let result = command_builder.get_command("ping");
 
         assert_eq!(result.is_ok(), true);
         let command = result.unwrap();
-        assert_eq!(command.run(vec!(""), &mut structure), Ok(String::from("PONG")));
+        assert_eq!(command.run(vec!(""), & stt), Ok(String::from("PONG")));
     }
 }
