@@ -19,8 +19,6 @@ mod server;
 mod utils;
 mod structure_string;
 mod errors;
-mod structure_string2;
-mod structure_simple;
 
 static THREAD_POOL_COUNT: usize = 4;
 
@@ -93,8 +91,6 @@ fn handle_client(stream: &mut TcpStream, server: &Server, id: u32, structure: Ar
         if request == END_FLAG {
             return;
         }
-
-        //println!("Server job {}, receive: {:?}", id, request);
 
         let response = process_request(request, server, id.clone(), structure.clone());
         (*stream).write(response.as_bytes()).unwrap_or(0);
