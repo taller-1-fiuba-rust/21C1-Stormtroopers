@@ -40,11 +40,11 @@ impl Loggable for PingCommand {
 #[test]
 fn test_ping_command_return() {
     let log = Logger::new(
-        String::from(""),
-        "".to_string(),
+        String::from("log"),
+        "./".to_string(),
     ).unwrap();
     let arc_structure = Arc::new(StructureString::new());
 
     let ping = PingCommand::new(0,log);
-    assert_eq!(Command::run(&ping, vec!(""), arc_structure), Ok(String::from("PONG")));
+    assert_eq!(Command::run(&ping, vec!(""), arc_structure), Ok(String::from("PONG\n")));
 }

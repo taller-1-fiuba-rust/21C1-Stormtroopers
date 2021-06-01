@@ -119,8 +119,8 @@ mod tests {
     #[test]
     fn multiple_request() {
         let log = Logger::new(
-            "prueba.txt".to_string(),
-            "/home/gonzalosabatino/Escritorio".to_string(), //no sé qué otro path ponerle
+            "log".to_string(),
+            "/tmp".to_string(), //no sé qué otro path ponerle
         )
         .unwrap();
 

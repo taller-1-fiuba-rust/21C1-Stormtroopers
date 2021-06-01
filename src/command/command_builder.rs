@@ -90,8 +90,8 @@ mod tests {
     #[test]
     fn return_ping_command() {
         let log = Logger::new(
-            "prueba.txt".to_string(),
-            "/home/gonzalosabatino/Escritorio".to_string(), //no sé qué otro path ponerle
+            "log".to_string(),
+            "/tmp".to_string(),
         ).unwrap();
 
         let _arc_structure = Arc::new(StructureString::new());
