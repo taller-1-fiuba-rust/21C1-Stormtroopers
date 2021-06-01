@@ -27,7 +27,6 @@ impl Command for PingCommand {
     ) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_PING_COMMAND);
 
-
         Ok(String::from(RESPONSE_PING_COMMAND))
     }
 }

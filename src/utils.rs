@@ -34,14 +34,10 @@ fn format_timestamp(timestamp: u64) -> (u32, u32, u32, u32, u32, u32) {
     let dwtrunc = time_now as f64 - (years * year_sec);
     let days = (dwtrunc / day_sec).trunc();
 
-    let hwtrunc =
-        time_now as f64 - (years * year_sec) - (days * day_sec);
+    let hwtrunc = time_now as f64 - (years * year_sec) - (days * day_sec);
     let hour = (hwtrunc / hour_sec).trunc();
 
-    let mwtrunc = time_now as f64
-        - (years * year_sec)
-        - (days * day_sec)
-        - (hour * hour_sec);
+    let mwtrunc = time_now as f64 - (years * year_sec) - (days * day_sec) - (hour * hour_sec);
     let min = (mwtrunc / min_sec).trunc();
 
     let swtrunc = time_now as f64
