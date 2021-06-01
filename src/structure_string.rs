@@ -44,7 +44,7 @@ impl StructureString<String> {
 
     pub fn set_string(&self, key: String, value: String) {
         let mut key_val_sender = key;
-        key_val_sender.push_str(":");
+        key_val_sender.push(':');
         key_val_sender.push_str(&value);
         let mut structure = self.clone();
         let mut data = self.structure.clone();
@@ -63,19 +63,17 @@ impl StructureString<String> {
 
         let return_res = thread::spawn(move || {
             structure.sender.send(key).unwrap();
-            let res = structure.load(&mut data);
-
-            return String::from(res);
+            structure.load(&mut data)
         })
         .join()
         .unwrap();
 
-        String::from(return_res)
+        return_res
     }
 
     fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) {
         let key_val_sender = self.receiver.lock().unwrap().recv().unwrap();
-        let key_val_splited: Vec<&str> = key_val_sender.split(":").collect();
+        let key_val_splited: Vec<&str> = key_val_sender.split(':').collect();
 
         let mut structure = data.lock().unwrap();
         structure.insert(
@@ -89,7 +87,7 @@ impl StructureString<String> {
 
         let d = data.lock().unwrap();
         match d.get(&key_val) {
-            Some(value) => String::from(value.clone()),
+            Some(value) => value.clone(),
             None => String::from("EMPTY_STRING"),
         }
     }

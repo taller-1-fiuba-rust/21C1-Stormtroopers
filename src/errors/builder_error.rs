@@ -25,7 +25,7 @@ impl fmt::Debug for BuilderError {
 
 impl PartialEq<BuilderError> for BuilderError {
     fn eq(&self, other: &BuilderError) -> bool {
-        return self.cause == other.cause && self.message == other.message;
+        self.cause == other.cause && self.message == other.message
     }
 }
 

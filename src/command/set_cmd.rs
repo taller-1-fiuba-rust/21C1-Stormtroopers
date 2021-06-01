@@ -26,7 +26,7 @@ impl Loggable for SetCommand {
     }
 
     fn get_id_thread(&self) -> u32 {
-        self.id_job.clone()
+        self.id_job
     }
 }
 
@@ -37,16 +37,13 @@ impl Command for SetCommand {
         structure: Arc<StructureString<String>>,
     ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
-        match log_info_res {
-            Ok(_r) => {}
-            _ => {}
-        }
+        if let Ok(_r) = log_info_res {}
 
         //println!("setcommand::{},{}",args[0],args[1]);
         structure.set_string(String::from(args[0]), String::from(args[1]));
 
         //set_string(structure, String::from(args[0]),String::from(args[1]));
 
-        return Ok(String::from(RESPONSE_COMMAND));
+        Ok(String::from(RESPONSE_COMMAND))
     }
 }

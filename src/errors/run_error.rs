@@ -25,7 +25,7 @@ impl fmt::Debug for RunError {
 
 impl PartialEq<RunError> for RunError {
     fn eq(&self, other: &RunError) -> bool {
-        return self.cause == other.cause && self.message == other.message;
+        self.cause == other.cause && self.message == other.message
     }
 }
 

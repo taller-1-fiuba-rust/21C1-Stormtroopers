@@ -26,7 +26,7 @@ pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
         }
     });
 
-    return Ok(ParsedMessage { command, arguments });
+    Ok(ParsedMessage { command, arguments })
 }
 
 #[cfg(test)]

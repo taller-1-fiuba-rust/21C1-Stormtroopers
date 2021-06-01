@@ -50,7 +50,7 @@ impl Worker {
 
             println!("Worker {} job; executing...", id);
 
-            job(id.clone() as u32);
+            job(id as u32);
 
             println!("Worker {} job; ending ...", id);
         });

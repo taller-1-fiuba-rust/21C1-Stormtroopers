@@ -62,7 +62,7 @@ impl ConfigServer {
         if let Ok(lines) = read_lines(path_file) {
             for line in lines {
                 if let Ok(prop) = line {
-                    let prop_slited: Vec<&str> = prop.split("=").collect();
+                    let prop_slited: Vec<&str> = prop.split('=').collect();
                     if prop_slited.len() == 2 {
                         self.props
                             .insert(String::from(prop_slited[0]), String::from(prop_slited[1]));
@@ -82,9 +82,9 @@ impl ConfigServer {
         let logger2 = logger.clone();
         let port = self.get_prop("port", logger);
 
-        let mut path_server_port = String::from(self.get_prop("server", logger2));
+        let mut path_server_port = self.get_prop("server", logger2);
 
-        path_server_port.push_str(":");
+        path_server_port.push(':');
         path_server_port.push_str(&port);
         path_server_port
     }

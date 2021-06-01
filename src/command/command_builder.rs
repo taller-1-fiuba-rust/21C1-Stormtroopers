@@ -19,47 +19,22 @@ impl CommandBuilder {
         //let mut structure = Box::new(StructureString::new());
         commands.insert(
             String::from(PING_COMMAND_STR),
-            Box::new(ping_cmd::PingCommand::new(id_job.clone(), logger.clone())),
+            Box::new(ping_cmd::PingCommand::new(id_job, logger.clone())),
         );
         commands.insert(
             String::from(SET_COMMAND_STR),
-            Box::new(SetCommand::new(id_job.clone(), logger.clone())),
+            Box::new(SetCommand::new(id_job, logger.clone())),
         );
         commands.insert(
             String::from(GET_COMMAND_STR),
-            Box::new(GetCommand::new(id_job.clone(), logger.clone())),
+            Box::new(GetCommand::new(id_job, logger)),
         );
         CommandBuilder {
             commands,
-            id_job_exec: id_job.clone(),
+            id_job_exec: id_job,
         }
     }
-    /*
-    let args = command_parser::obtain_str_command(message);
-                let mut retrieved;
-                match args {
-                    Ok(args) => {
-                        retrieved = self.commands.get(args.command.as_str());
-                    }
-                    /*
-                    Err(args) => {
-                        return Err(args);
-                    }
-                     */
-                }
-                return match retrieved {
-                    Some(retrieved) => {
-                        retrieved.set_args(args.arguments);
-                        retrieved
-                        //Ok(retrieved)
-                    }
 
-                    None => {
-                        Err(&Box::new(BuilderError::not_found(message)))
-                    }
-
-                }
-     */
     pub fn get_command(&self, message: &str) -> Result<&Box<dyn Command>, BuilderError> {
         let parse_msg = obtain_str_command(message);
         let retrieved; // = Err(BuilderError::not_found(message));
@@ -77,7 +52,7 @@ impl CommandBuilder {
 impl Clone for CommandBuilder {
     fn clone(&self) -> Self {
         let commands = HashMap::new();
-        let id = self.id_job_exec.clone();
+        let id = self.id_job_exec;
         Self {
             commands,
             id_job_exec: id,

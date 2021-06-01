@@ -5,13 +5,17 @@ use crate::structure_string::StructureString;
 
 use std::sync::Arc;
 
+const INFO_PING_COMMAND: &str = "Run command PING\n";
+const RESPONSE_PING_COMMAND: &str = "PONG\n";
+const CLIENT_ID: &str = "PingCommand";
+
 pub struct PingCommand {
     logger: Logger<String>,
     id_job: u32,
 }
 
 impl PingCommand {
-    pub fn new<'a>(id_job: u32, logger: Logger<String>) -> PingCommand {
+    pub fn new(id_job: u32, logger: Logger<String>) -> PingCommand {
         PingCommand { id_job, logger }
     }
 }
@@ -21,23 +25,20 @@ impl Command for PingCommand {
         _args: Vec<&str>,
         _structure: Arc<StructureString<String>>,
     ) -> Result<String, RunError> {
-        let log_info_res = self.logger.info(self, "Run command PING\n");
+        let _log_info_res = self.logger.info(self, INFO_PING_COMMAND);
 
-        match log_info_res {
-            _ => {}
-        }
 
-        return Ok(String::from("PONG\n"));
+        Ok(String::from(RESPONSE_PING_COMMAND))
     }
 }
 
 impl Loggable for PingCommand {
     fn get_id_client(&self) -> &str {
-        "PingCommand"
+        CLIENT_ID
     }
 
     fn get_id_thread(&self) -> u32 {
-        self.id_job.clone()
+        self.id_job
     }
 }
 
@@ -50,6 +51,6 @@ fn test_ping_command_return() {
     let ping = PingCommand::new(0, log);
     assert_eq!(
         Command::run(&ping, vec!(""), arc_structure),
-        Ok(String::from("PONG\n"))
+        Ok(String::from(RESPONSE_PING_COMMAND))
     );
 }

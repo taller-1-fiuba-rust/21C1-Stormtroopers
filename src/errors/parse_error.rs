@@ -26,7 +26,7 @@ impl fmt::Debug for ParseError {
 
 impl PartialEq<ParseError> for ParseError {
     fn eq(&self, other: &ParseError) -> bool {
-        return self.cause == other.cause && self.message == other.message;
+        self.cause == other.cause && self.message == other.message
     }
 }
 

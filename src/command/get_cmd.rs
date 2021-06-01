@@ -26,7 +26,7 @@ impl Loggable for GetCommand {
     }
 
     fn get_id_thread(&self) -> u32 {
-        self.id_job.clone()
+        self.id_job
     }
 }
 
@@ -37,13 +37,10 @@ impl Command for GetCommand {
         structure: Arc<StructureString<String>>,
     ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
-        match log_info_res {
-            Ok(_r) => {}
-            _ => {}
-        }
+        if let Ok(_r) = log_info_res {}
 
         let mut string = structure.get_string(String::from(args[0]));
-        string.push_str("\n");
+        string.push('\n');
 
         Ok(string)
     }

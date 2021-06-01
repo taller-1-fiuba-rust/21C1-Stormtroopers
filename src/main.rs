@@ -51,8 +51,8 @@ fn main() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn exec_server<'a>(address: &String, server: &Server) -> Result<(), std::io::Error> {
-    let threadpool = threadpool::ThreadPool::new(THREAD_POOL_COUNT.clone());
+fn exec_server(address: &str, server: &Server) -> Result<(), std::io::Error> {
+    let threadpool = threadpool::ThreadPool::new(THREAD_POOL_COUNT);
 
     // Create global structure for strings
     let arc_structure = Arc::new(structure_string::StructureString::new());
@@ -92,18 +92,18 @@ fn handle_client(
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
 
-    let mut lines = reader.lines();
+    let lines = reader.lines();
     println!("Reading stream conections, job {} ...", id);
 
-    while let Some(line) = lines.next() {
-        let request = line.unwrap_or(String::from(END_FLAG));
+    for line in lines {
+        let request = line.unwrap_or_else(|_| String::from(END_FLAG));
 
         if request == END_FLAG {
             return;
         }
 
-        let response = process_request(request, server, id.clone(), structure.clone());
-        (*stream).write(response.as_bytes()).unwrap_or(0);
+        let response = process_request(request, server, id, structure.clone());
+        (*stream).write_all(response.as_bytes()).unwrap_or(());
     }
     println!("End handle client, job {}", id);
 }
@@ -118,9 +118,9 @@ fn process_request(
     let command_builder =
         command::command_builder::CommandBuilder::new(id_job, server.get_logger());
 
-    let comm = command_builder.get_command(&mut String::from(request.trim()));
+    let comm = command_builder.get_command(request.trim());
     //TODO: ver porque si vienen mal los args explota
-    let mut command_splited: Vec<&str> = request.split(" ").collect();
+    let mut command_splited: Vec<&str> = request.split(' ').collect();
     command_splited.remove(0);
 
     match comm {

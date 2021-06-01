@@ -31,24 +31,24 @@ fn format_timestamp(timestamp: u64) -> (u32, u32, u32, u32, u32, u32) {
     let years = (ywtrunc).trunc();
     let year = years + base_time;
 
-    let dwtrunc = time_now.clone() as f64 - (years.clone() * year_sec.clone());
+    let dwtrunc = time_now as f64 - (years * year_sec);
     let days = (dwtrunc / day_sec).trunc();
 
     let hwtrunc =
-        time_now.clone() as f64 - (years.clone() * year_sec.clone()) - (days * day_sec.clone());
+        time_now as f64 - (years * year_sec) - (days * day_sec);
     let hour = (hwtrunc / hour_sec).trunc();
 
-    let mwtrunc = time_now.clone() as f64
-        - (years.clone() * year_sec.clone())
-        - (days.clone() * day_sec.clone())
-        - (hour * hour_sec.clone());
+    let mwtrunc = time_now as f64
+        - (years * year_sec)
+        - (days * day_sec)
+        - (hour * hour_sec);
     let min = (mwtrunc / min_sec).trunc();
 
-    let swtrunc = time_now.clone() as f64
-        - (years.clone() * year_sec.clone())
-        - (days.clone() * day_sec.clone())
-        - (hour.clone() * hour_sec.clone())
-        - (min * min_sec.clone());
+    let swtrunc = time_now as f64
+        - (years * year_sec)
+        - (days * day_sec)
+        - (hour * hour_sec)
+        - (min * min_sec);
     let sec = swtrunc;
     //println!("years {}, without trunc {}",years,ywtrunc);
     //println!("days {}, without trunc {}",days,dwtrunc);
@@ -110,12 +110,12 @@ fn count_bisiesto(year: f64) -> u32 {
         return 0;
     }
     loop {
-        if year.clone() as u32 - 4_u32 * i < 1972_u32 {
+        if year as u32 - 4_u32 * i < 1972_u32 {
             break;
         }
         i += 1;
     }
-    i.clone()
+    i
 }
 
 #[cfg(test)]
