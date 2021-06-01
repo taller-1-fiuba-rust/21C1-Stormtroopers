@@ -63,7 +63,7 @@ impl Worker {
 fn test_new_thread_pool() {
     let threadpool = ThreadPool::new(1);
     let _id = 1;
-    threadpool.execute( move |_id| _test_sum());
+    threadpool.execute(move |_id| _test_sum());
     assert!(true);
 }
 

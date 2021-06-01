@@ -1,6 +1,6 @@
 use std::env::args;
-use std::io::{BufRead, BufReader};
 use std::io::prelude::*;
+use std::io::{BufRead, BufReader};
 use std::net::{TcpListener, TcpStream};
 
 use std::sync::Arc;
@@ -13,12 +13,12 @@ use crate::structure_string::StructureString;
 
 mod command;
 mod config_server;
-mod logger;
-mod threadpool;
-mod server;
-mod utils;
-mod structure_string;
 mod errors;
+mod logger;
+mod server;
+mod structure_string;
+mod threadpool;
+mod utils;
 
 static THREAD_POOL_COUNT: usize = 4;
 
@@ -66,7 +66,7 @@ fn exec_server<'a>(address: &String, server: &Server) -> Result<(), std::io::Err
         let _id_global = -1;
         let arc_st_clone = Arc::clone(&arc_structure);
 
-        threadpool.execute(move |  _id_global| {
+        threadpool.execute(move |_id_global| {
             handle_connection(stream, &server, _id_global, arc_st_clone);
         });
     }
@@ -74,11 +74,21 @@ fn exec_server<'a>(address: &String, server: &Server) -> Result<(), std::io::Err
     Ok(())
 }
 
-fn handle_connection(mut stream: TcpStream, server: &Server, id: u32, structure: Arc<StructureString<String>>) {
-    handle_client(&mut stream, server, id,structure);
+fn handle_connection(
+    mut stream: TcpStream,
+    server: &Server,
+    id: u32,
+    structure: Arc<StructureString<String>>,
+) {
+    handle_client(&mut stream, server, id, structure);
 }
 
-fn handle_client(stream: &mut TcpStream, server: &Server, id: u32, structure: Arc<StructureString<String>>) {
+fn handle_client(
+    stream: &mut TcpStream,
+    server: &Server,
+    id: u32,
+    structure: Arc<StructureString<String>>,
+) {
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
 
@@ -98,14 +108,19 @@ fn handle_client(stream: &mut TcpStream, server: &Server, id: u32, structure: Ar
     println!("End handle client, job {}", id);
 }
 //TODO: ver porque si vienen mal los args explota
-fn process_request(request: String, server: &Server, id_job: u32, structure: Arc<StructureString<String>>) -> String {
-
+fn process_request(
+    request: String,
+    server: &Server,
+    id_job: u32,
+    structure: Arc<StructureString<String>>,
+) -> String {
     //TODO: ver de meter el command_builder en el server.
-    let command_builder = command::command_builder::CommandBuilder::new(id_job, server.get_logger());
+    let command_builder =
+        command::command_builder::CommandBuilder::new(id_job, server.get_logger());
 
     let comm = command_builder.get_command(&mut String::from(request.trim()));
     //TODO: ver porque si vienen mal los args explota
-    let mut command_splited: Vec<& str> = request.split(" ").collect();
+    let mut command_splited: Vec<&str> = request.split(" ").collect();
     command_splited.remove(0);
 
     match comm {

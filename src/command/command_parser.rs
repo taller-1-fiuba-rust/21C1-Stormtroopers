@@ -16,7 +16,7 @@ pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
     }
 
     let mut split_msg = msg_lower.split_whitespace();
-    
+
     let command = String::from(split_msg.next().unwrap());
     let arguments = split_msg.fold(String::new(), |acc, x| {
         if acc.is_empty() {
@@ -26,10 +26,7 @@ pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
         }
     });
 
-    return Ok(ParsedMessage {
-        command,
-        arguments,
-    });
+    return Ok(ParsedMessage { command, arguments });
 }
 
 #[cfg(test)]

@@ -8,5 +8,9 @@ pub static GET_COMMAND_STR: &str = "get";
 pub static SET_COMMAND_STR: &str = "set";
 
 pub trait Command: Send {
-    fn run(&self, args: Vec<&str>, structure: Arc<StructureString<String>>) -> Result<String, RunError>;
+    fn run(
+        &self,
+        args: Vec<&str>,
+        structure: Arc<StructureString<String>>,
+    ) -> Result<String, RunError>;
 }

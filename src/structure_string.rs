@@ -1,11 +1,11 @@
-use std::thread;
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
+use std::thread;
 
-use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 pub struct StructureString<String> {
-    pub structure: Arc<Mutex<HashMap<String,String>>>,
+    pub structure: Arc<Mutex<HashMap<String, String>>>,
     sender: Arc<SyncSender<String>>,
     receiver: Arc<Mutex<Receiver<String>>>,
 }
@@ -42,7 +42,7 @@ impl StructureString<String> {
         }
     }
 
-    pub fn set_string(&self,key: String, value: String) {
+    pub fn set_string(&self, key: String, value: String) {
         let mut key_val_sender = key;
         key_val_sender.push_str(":");
         key_val_sender.push_str(&value);
@@ -65,7 +65,7 @@ impl StructureString<String> {
             structure.sender.send(key).unwrap();
             let res = structure.load(&mut data);
 
-            return String::from(res)
+            return String::from(res);
         })
         .join()
         .unwrap();
@@ -78,7 +78,10 @@ impl StructureString<String> {
         let key_val_splited: Vec<&str> = key_val_sender.split(":").collect();
 
         let mut structure = data.lock().unwrap();
-        structure.insert(String::from(key_val_splited[0].trim()),String::from(key_val_splited[1].trim()));
+        structure.insert(
+            String::from(key_val_splited[0].trim()),
+            String::from(key_val_splited[1].trim()),
+        );
     }
 
     fn load(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) -> String {
@@ -87,7 +90,7 @@ impl StructureString<String> {
         let d = data.lock().unwrap();
         match d.get(&key_val) {
             Some(value) => String::from(value.clone()),
-            None        => String::from("EMPTY_STRING"),
+            None => String::from("EMPTY_STRING"),
         }
     }
 }
@@ -97,9 +100,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn structure_string_test(){
+    fn structure_string_test() {
         let structure = StructureString::new();
-        structure.set_string(String::from("test"),String::from("1"));
+        structure.set_string(String::from("test"), String::from("1"));
         let res = structure.get_string(String::from("test"));
 
         assert_eq!(res, String::from("1"));

@@ -94,7 +94,10 @@ fn generate_menssage(service: &dyn Loggable, message_info: &str) -> String {
 
     format!(
         "[{:20?} -- {:03?} -- {:?}] -- {}\n",
-        id_client, id_thread, format_timestamp_now(), message_info
+        id_client,
+        id_thread,
+        format_timestamp_now(),
+        message_info
     )
 }
 
