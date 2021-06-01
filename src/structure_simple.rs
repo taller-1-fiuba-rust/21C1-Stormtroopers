@@ -1,3 +1,4 @@
+/*
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 
@@ -20,3 +21,4 @@ pub struct StructureSimple<'a> {
             None        => String::from(RESPONSE_EMPTY_STRING),
         }
     }
+ */

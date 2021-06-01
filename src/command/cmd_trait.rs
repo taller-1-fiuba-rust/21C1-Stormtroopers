@@ -1,9 +1,7 @@
 use crate::errors::run_error::RunError;
 use crate::structure_string::StructureString;
-use crate::structure_simple::StructureSimple;
 
-use std::sync::{Arc, Mutex};
-use std::collections::HashMap;
+use std::sync::Arc;
 
 pub static PING_COMMAND_STR: &str = "ping";
 pub static GET_COMMAND_STR: &str = "get";

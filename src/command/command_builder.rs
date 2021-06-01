@@ -3,24 +3,18 @@ use crate::errors::builder_error::BuilderError;
 use crate::command::cmd_trait::{Command, PING_COMMAND_STR, SET_COMMAND_STR, GET_COMMAND_STR};
 use crate::command::ping_cmd;
 use crate::logger::Logger;
-use crate::structure_string2::StructureString;
-use crate::command::cmd_trait;
-use crate::command;
-use crate::command::set_cmd;
-use crate::command::get_cmd;
-use crate::command::get_cmd::GetCommand;
 use crate::command::set_cmd::SetCommand;
 use crate::command::command_parser::obtain_str_command;
-use crate::errors::parse_error::ParseError;
+use crate::command::get_cmd::GetCommand;
 
 pub struct CommandBuilder {
-    commands: HashMap<String, Box<Command>>,
+    commands: HashMap<String, Box<dyn Command>>,
     id_job_exec: u32,
 }
 
 impl CommandBuilder {
     pub fn new(id_job: u32, logger: Logger<String>) -> CommandBuilder {
-        let mut commands: HashMap<String, Box<Command>> = HashMap::new();
+        let mut commands: HashMap<String, Box<dyn Command>> = HashMap::new();
         //let mut structure = StructureString::new();
         //let mut structure = Box::new(StructureString::new());
         commands.insert(
@@ -63,9 +57,9 @@ let args = command_parser::obtain_str_command(message);
 
             }
  */
-    pub fn get_command(&self, message: &str) -> Result<&Box<Command>, BuilderError> {
+    pub fn get_command(&self, message: &str) -> Result<&Box<dyn Command>, BuilderError> {
         let parse_msg = obtain_str_command(message);
-        let mut retrieved = Err(BuilderError::not_found(message));
+        let retrieved;// = Err(BuilderError::not_found(message));
         match parse_msg {
             Ok(parse_msg) => {
                 match self.commands.get(parse_msg.command.as_str()) {
@@ -90,9 +84,8 @@ impl Clone for CommandBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::structure_string2;
-    use std::collections::HashMap;
-    use std::sync::{Arc, Mutex};
+    use std::sync::Arc;
+    use crate::structure_string::StructureString;
 
     #[test]
     fn return_ping_command() {
@@ -101,14 +94,13 @@ mod tests {
             "/home/gonzalosabatino/Escritorio".to_string(), //no sé qué otro path ponerle
         ).unwrap();
 
-        let mut stt = Arc::new(Mutex::new(HashMap::new()));
-        let mut structure = Box::new(structure_string2::StructureString::new(&mut stt));
+        let _arc_structure = Arc::new(StructureString::new());
 
         let command_builder = CommandBuilder::new(0, log);
         let result = command_builder.get_command("ping");
 
         assert_eq!(result.is_ok(), true);
-        let command = result.unwrap();
+        let _command = result.unwrap();
         //assert_eq!(command.run(vec!(""), & stt), Ok(String::from("PONG")));
     }
 }

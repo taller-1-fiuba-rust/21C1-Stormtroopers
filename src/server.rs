@@ -1,9 +1,7 @@
 use crate::config_server::ConfigServer;
-use crate::command::command_builder;
 use crate::{LOG_NAME, LOG_PATH, ERROR_LOG_CREATE};
 
 use crate::logger::{Logger, Loggable};
-use crate::command::command_builder::CommandBuilder;
 use crate::structure_string::StructureString;
 
 const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
@@ -33,7 +31,7 @@ impl Clone for Server {
         let logger = self.logger.clone();
         //let command_builder = self.command_builder.clone();
         let server_args = self.server_args.clone();
-        let mut structure = self.structure.clone();
+        let structure = self.structure.clone();
         Self {
             server_args,
             config_server,

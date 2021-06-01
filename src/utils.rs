@@ -23,16 +23,16 @@ fn format_timestamp(timestamp: u64) -> (u32,u32,u32,u32,u32,u32) {
     let years = (ywtrunc).trunc();
     let year = years + base_time;
 
-    let dwtrunc = time_now as f64 - (years.clone() * year_sec.clone());
+    let dwtrunc = time_now.clone() as f64 - (years.clone() * year_sec.clone());
     let days = (dwtrunc/day_sec).trunc();
 
-    let hwtrunc = time_now as f64 - (years.clone() * year_sec.clone()) - (days * day_sec.clone());
+    let hwtrunc = time_now.clone() as f64 - (years.clone() * year_sec.clone()) - (days * day_sec.clone());
     let hour = (hwtrunc/hour_sec).trunc();
 
-    let mwtrunc = time_now as f64 - (years.clone()  * year_sec.clone()) - (days.clone() * day_sec.clone()) - (hour * hour_sec.clone()) ;
+    let mwtrunc = time_now.clone() as f64 - (years.clone()  * year_sec.clone()) - (days.clone() * day_sec.clone()) - (hour * hour_sec.clone()) ;
     let min = ( mwtrunc/min_sec).trunc();
 
-    let swtrunc = time_now as f64 - (years.clone()  * year_sec.clone()) - (days.clone() * day_sec.clone()) - (hour.clone() * hour_sec.clone()) - (min * min_sec.clone());
+    let swtrunc = time_now.clone() as f64 - (years.clone()  * year_sec.clone()) - (days.clone() * day_sec.clone()) - (hour.clone() * hour_sec.clone()) - (min * min_sec.clone());
     let sec = swtrunc;
     //println!("years {}, without trunc {}",years,ywtrunc);
     //println!("days {}, without trunc {}",days,dwtrunc);
@@ -77,8 +77,8 @@ fn format_timestamp(timestamp: u64) -> (u32,u32,u32,u32,u32,u32) {
         _ => {(0,0)}
     };
 
-    let dateformat = format!("{}/{}/{} {}:{}:{}",year,month_days.0,month_days.1,hour,min,sec);
-    println!("{}",dateformat);
+    //let dateformat = format!("{}/{}/{} {}:{}:{}",year,month_days.0,month_days.1,hour,min,sec);
+    //println!("{}",dateformat);
     (year as u32,month_days.0,month_days.1 as u32,hour as u32,min as u32,sec as u32)
 }
 

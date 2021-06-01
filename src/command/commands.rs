@@ -1,3 +1,4 @@
+/*
 use std::collections::HashMap;
 
 use crate::logger::{Logger, Loggable};
@@ -242,3 +243,4 @@ impl Executable for CommandGet {
         Box::new(self.clone())
     }
 }
+ */

@@ -1,6 +1,6 @@
 use std::fmt;
 
-const UNKNOWN_ERROR_MSG: &str = "Unknown error, could not process command.\n";
+//const UNKNOWN_ERROR_MSG: &str = "Unknown error, could not process command.\n";
 
 pub struct RunError {
     pub message: String,
@@ -31,6 +31,7 @@ impl PartialEq<RunError> for RunError {
 
 impl Eq for RunError {}
 
+/*
 impl RunError {
     pub fn unknown_error(msg: &str) -> Self {
         RunError {
@@ -39,3 +40,4 @@ impl RunError {
         }
     }
 }
+ */

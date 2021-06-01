@@ -1,3 +1,4 @@
+/*
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 
@@ -47,3 +48,4 @@ fn do_it(map: &mut HashMap<String, String>) {
     }
     //map.clear();
 }
+ */

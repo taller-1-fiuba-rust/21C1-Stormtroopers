@@ -1,14 +1,13 @@
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::structure_string;
+use crate::logger::{Logger, Loggable};
+use crate::structure_string::StructureString;
 
-use std::sync::{Arc, Mutex};
-use std::collections::HashMap;
+use std::sync::Arc;
 
 pub struct PingCommand {
     logger: Logger<String>,
     id_job: u32,
-    //structure:Box<StructureString<String>>,
 }
 
 impl PingCommand{
@@ -17,8 +16,11 @@ impl PingCommand{
     }
 }
 impl Command for PingCommand {
-    fn run(&self, _args: Vec<&str>, structure: Arc<StructureString<String>>) -> Result<String, RunError> {
-        self.logger.info(self, "Run command PING\n");
+    fn run(&self, _args: Vec<&str>, _structure: Arc<StructureString<String>>) -> Result<String, RunError> {
+        let log_info_res = self.logger.info(self, "Run command PING\n");
+
+        match log_info_res {  _ => {}}
+
         return Ok(String::from("PONG\n"));
     }
 }
@@ -34,21 +36,15 @@ impl Loggable for PingCommand {
 }
 
 #[cfg(test)]
-    use super::*;
-use crate::logger::{Logger, Loggable};
-use crate::structure_simple::StructureSimple;
-use crate::structure_string::StructureString;
 
-/*
 #[test]
 fn test_ping_command_return() {
     let log = Logger::new(
         String::from(""),
         "".to_string(),
     ).unwrap();
-    let mut structure = Box::new(structure_string2::StructureString::new());
+    let arc_structure = Arc::new(StructureString::new());
 
     let ping = PingCommand::new(0,log);
-    assert_eq!(Command::run(&ping, vec!(""), &mut structure), Ok(String::from("PONG")));
+    assert_eq!(Command::run(&ping, vec!(""), arc_structure), Ok(String::from("PONG")));
 }
- */
