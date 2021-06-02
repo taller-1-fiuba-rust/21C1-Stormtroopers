@@ -86,7 +86,7 @@ impl Pubsub {
     fn suscribe_channel(&mut self, channel: String, client: i32) {
         let mut channels_lock = self.channels.lock().unwrap();
 
-        let subbed_clients = channels_lock.entry(channel).or_insert(BTreeSet::new());
+        let subbed_clients = channels_lock.entry(channel).or_insert_with(BTreeSet::new);
         subbed_clients.insert(client);
     }
 
