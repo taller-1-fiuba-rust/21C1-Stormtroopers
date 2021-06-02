@@ -1,9 +1,10 @@
+use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use crate::structure_string::StructureString;
+//use crate::structure_string::StructureString;
 
-use std::sync::Arc;
+//use std::sync::Arc;
 
 const INFO_PING_COMMAND: &str = "Run command PING\n";
 const RESPONSE_PING_COMMAND: &str = "PONG\n";
@@ -20,11 +21,7 @@ impl PingCommand {
     }
 }
 impl Command for PingCommand {
-    fn run(
-        &self,
-        _args: Vec<&str>,
-        _structure: Arc<StructureString<String>>,
-    ) -> Result<String, RunError> {
+    fn run(&self, _args: Vec<&str>, _app_info: &AppInfo) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_PING_COMMAND);
 
         Ok(String::from(RESPONSE_PING_COMMAND))
@@ -41,7 +38,7 @@ impl Loggable for PingCommand {
     }
 }
 
-#[cfg(test)]
+/*#[cfg(test)]
 #[test]
 fn test_ping_command_return() {
     let log = Logger::new(String::from("log"), "./".to_string()).unwrap();
@@ -52,4 +49,4 @@ fn test_ping_command_return() {
         Command::run(&ping, vec!(""), arc_structure),
         Ok(String::from(RESPONSE_PING_COMMAND))
     );
-}
+}*/
