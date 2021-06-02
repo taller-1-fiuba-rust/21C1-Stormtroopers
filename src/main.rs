@@ -148,7 +148,7 @@ fn process_request(request: String, app_info: &AppInfo, id_job: u32) -> String {
     match comm {
         Ok(comm) => match comm.run(command_splited, app_info) {
             Ok(res) => res,
-            Err(res) => res.to_string()
+            Err(res) => res.to_string(),
         },
         Err(comm) => comm.to_string(),
     }
