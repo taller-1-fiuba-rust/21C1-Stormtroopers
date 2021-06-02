@@ -7,8 +7,8 @@ use crate::LINE_BREAK;
 const INFO_RUN_COMMAND: &str = "Run command PUBSUB\n";
 
 pub struct PubsubCommand {
-    logger: Logger<String>,
     id_job: u32,
+    logger: Logger<String>,
 }
 
 impl PubsubCommand {

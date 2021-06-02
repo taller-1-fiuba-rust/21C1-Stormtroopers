@@ -11,8 +11,8 @@ const RESPONSE_PING_COMMAND: &str = "PONG\n";
 const CLIENT_ID: &str = "PingCommand";
 
 pub struct PingCommand {
-    logger: Logger<String>,
     id_job: u32,
+    logger: Logger<String>,
 }
 
 impl PingCommand {

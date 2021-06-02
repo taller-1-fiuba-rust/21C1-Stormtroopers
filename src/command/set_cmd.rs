@@ -8,9 +8,8 @@ const CLIENT_ID: &str = "SetCommand";
 const RESPONSE_COMMAND: &str = "OK\n";
 
 pub struct SetCommand {
-    logger: Logger<String>,
-    //structure: Box<StructureString<String>>,
     id_job: u32,
+    logger: Logger<String>,
 }
 
 impl SetCommand {
