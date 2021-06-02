@@ -20,6 +20,16 @@ impl PingCommand {
         PingCommand { id_job, logger }
     }
 }
+
+impl Clone for PingCommand {
+    fn clone(&self) -> PingCommand {
+        PingCommand {
+            id_job: self.id_job,
+            logger: self.logger.clone()
+        }
+    }
+}
+
 impl Command for PingCommand {
     fn run(&self, _args: Vec<&str>, _app_info: &AppInfo) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_PING_COMMAND);

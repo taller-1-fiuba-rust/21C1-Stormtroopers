@@ -4,7 +4,7 @@
 pub mod cmd_trait;
 pub mod command_builder;
 pub mod command_parser;
-pub mod command_pubsub;
+pub mod pubsub_cmd;
 pub mod dbsize_cmd;
 pub mod flushdb_cmd;
 pub mod get_cmd;

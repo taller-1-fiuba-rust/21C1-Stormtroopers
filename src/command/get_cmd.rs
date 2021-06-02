@@ -27,6 +27,16 @@ impl Loggable for GetCommand {
     }
 }
 
+
+impl Clone for GetCommand {
+    fn clone(&self) -> GetCommand {
+        GetCommand {
+            id_job: self.id_job,
+            logger: self.logger.clone()
+        }
+    }
+}
+
 impl Command for GetCommand {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_RUN_COMMAND);

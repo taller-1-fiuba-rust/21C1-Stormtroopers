@@ -27,6 +27,15 @@ impl Loggable for PubsubCommand {
     }
 }
 
+impl Clone for PubsubCommand {
+    fn clone(&self) -> PubsubCommand {
+        PubsubCommand {
+            id_job: self.id_job,
+            logger: self.logger.clone()
+        }
+    }
+}
+
 impl Command for PubsubCommand {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_RUN_COMMAND);

@@ -28,6 +28,16 @@ impl Loggable for FlushdbCommand {
     }
 }
 
+
+impl Clone for FlushdbCommand {
+    fn clone(&self) -> FlushdbCommand {
+        FlushdbCommand {
+            id_job: self.id_job,
+            logger: self.logger.clone()
+        }
+    }
+}
+
 impl Command for FlushdbCommand {
     fn run(&self, _args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_FLUSHDB_COMMAND);

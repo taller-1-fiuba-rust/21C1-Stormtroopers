@@ -3,7 +3,7 @@ use crate::command::cmd_trait::{
     PUBSUB_COMMAND_STR, SET_COMMAND_STR,
 };
 use crate::command::command_parser::obtain_str_command;
-use crate::command::command_pubsub::PubsubCommand;
+use crate::command::pubsub_cmd::PubsubCommand;
 use crate::command::get_cmd::GetCommand;
 use crate::command::ping_cmd;
 use crate::command::set_cmd::SetCommand;
@@ -53,12 +53,12 @@ impl CommandBuilder {
         }
     }
 
-    pub fn get_command(&self, message: &str) -> Result<&Box<dyn Command>, BuilderError> {
+    pub fn get_command(&self, message: &str) -> Result<Box<dyn Command>, BuilderError> {
         let parse_msg = obtain_str_command(message);
         let retrieved; // = Err(BuilderError::not_found(message));
         match parse_msg {
             Ok(parse_msg) => match self.commands.get(parse_msg.command.as_str()) {
-                Some(comm) => retrieved = Ok(comm),
+                Some(comm) => retrieved = Ok(comm.clone()),
                 None => retrieved = Err(BuilderError::not_found(message)),
             },
             _ => retrieved = Err(BuilderError::not_found(message)),

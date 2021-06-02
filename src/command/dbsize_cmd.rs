@@ -28,6 +28,15 @@ impl Loggable for DbsizeCommand {
     }
 }
 
+impl Clone for DbsizeCommand {
+    fn clone(&self) -> DbsizeCommand {
+        DbsizeCommand {
+            id_job: self.id_job,
+            logger: self.logger.clone()
+        }
+    }
+}
+
 impl Command for DbsizeCommand {
     fn run(&self, _args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_DBSIZE_COMMAND);
