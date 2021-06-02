@@ -10,6 +10,12 @@ pub struct StructureString<String> {
     receiver: Arc<Mutex<Receiver<String>>>,
 }
 
+impl Default for StructureString<String> {
+    fn default() -> Self {
+        StructureString::new()
+    }
+}
+
 impl Clone for StructureString<String> {
     fn clone(&self) -> Self {
         let sender = self.sender.clone();

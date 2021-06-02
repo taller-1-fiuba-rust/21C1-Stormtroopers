@@ -8,6 +8,12 @@ pub struct Client {
     receiver: Arc<Mutex<Receiver<String>>>,
 }
 
+impl Default for Pubsub {
+    fn default() -> Self {
+        Pubsub::new()
+    }
+}
+
 impl Client {
     #[allow(dead_code)]
     pub fn new() -> Self {

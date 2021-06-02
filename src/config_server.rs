@@ -40,6 +40,12 @@ pub struct ConfigServer {
     pub props: HashMap<String, String>,
 }
 
+impl Default for ConfigServer {
+    fn default() -> Self {
+        ConfigServer::new()
+    }
+}
+
 impl Clone for ConfigServer {
     fn clone(&self) -> Self {
         let props = self.props.clone();
