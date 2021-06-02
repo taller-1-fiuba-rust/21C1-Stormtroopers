@@ -82,6 +82,12 @@ impl StructureString<String> {
         .unwrap();
         self.structure.lock().unwrap().is_empty()
     }
+    #[allow(dead_code)]
+    //TODO: ver esta impl
+    pub fn dbsize(&self) -> u32 {
+        self.structure.lock().unwrap().len() as u32
+
+    }
 
     fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) {
         let key_val_sender = self.receiver.lock().unwrap().recv().unwrap();
@@ -138,4 +144,14 @@ mod tests {
         assert!(structure_string.structure.lock().unwrap().is_empty());
         }
     }
+
+    #[test]
+    fn dbsize_test(){
+        let structure_string = StructureString::new();
+        structure_string.set_string(String::from("test"), String::from("1"));
+        {
+            assert!(structure_string.dbsize() == 1);
+        }
+    }
+
 }
