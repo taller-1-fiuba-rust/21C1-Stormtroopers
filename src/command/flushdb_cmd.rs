@@ -28,12 +28,11 @@ impl Loggable for FlushdbCommand {
     }
 }
 
-
 impl Clone for FlushdbCommand {
     fn clone(&self) -> FlushdbCommand {
         FlushdbCommand {
             id_job: self.id_job,
-            logger: self.logger.clone()
+            logger: self.logger.clone(),
         }
     }
 }

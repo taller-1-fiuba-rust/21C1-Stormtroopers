@@ -31,7 +31,7 @@ impl Clone for PubsubCommand {
     fn clone(&self) -> PubsubCommand {
         PubsubCommand {
             id_job: self.id_job,
-            logger: self.logger.clone()
+            logger: self.logger.clone(),
         }
     }
 }

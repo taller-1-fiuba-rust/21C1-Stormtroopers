@@ -3,9 +3,9 @@ use crate::command::cmd_trait::{
     PUBSUB_COMMAND_STR, SET_COMMAND_STR,
 };
 use crate::command::command_parser::obtain_str_command;
-use crate::command::pubsub_cmd::PubsubCommand;
 use crate::command::get_cmd::GetCommand;
 use crate::command::ping_cmd;
+use crate::command::pubsub_cmd::PubsubCommand;
 use crate::command::set_cmd::SetCommand;
 
 use crate::command::dbsize_cmd::DbsizeCommand;

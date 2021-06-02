@@ -16,7 +16,10 @@ pub trait CommandClone {
     fn clone_box(&self) -> Box<dyn Command>;
 }
 
-impl<T> CommandClone for T where T: 'static + Command + Clone, {
+impl<T> CommandClone for T
+where
+    T: 'static + Command + Clone,
+{
     fn clone_box(&self) -> Box<dyn Command> {
         Box::new(self.clone())
     }

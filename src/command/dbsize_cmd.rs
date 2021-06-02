@@ -32,7 +32,7 @@ impl Clone for DbsizeCommand {
     fn clone(&self) -> DbsizeCommand {
         DbsizeCommand {
             id_job: self.id_job,
-            logger: self.logger.clone()
+            logger: self.logger.clone(),
         }
     }
 }

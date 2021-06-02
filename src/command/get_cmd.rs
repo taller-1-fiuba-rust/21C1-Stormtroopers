@@ -27,12 +27,11 @@ impl Loggable for GetCommand {
     }
 }
 
-
 impl Clone for GetCommand {
     fn clone(&self) -> GetCommand {
         GetCommand {
             id_job: self.id_job,
-            logger: self.logger.clone()
+            logger: self.logger.clone(),
         }
     }
 }

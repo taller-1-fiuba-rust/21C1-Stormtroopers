@@ -25,7 +25,7 @@ impl Clone for PingCommand {
     fn clone(&self) -> PingCommand {
         PingCommand {
             id_job: self.id_job,
-            logger: self.logger.clone()
+            logger: self.logger.clone(),
         }
     }
 }
