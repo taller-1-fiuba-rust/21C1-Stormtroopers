@@ -3,10 +3,13 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-//use super::{LOG_NAME, LOG_PATH};
 use crate::logger::{Loggable, Logger};
-use std::time::SystemTime;
 
+const INFO_LOAD_FILE_CONFIG: &str = "Init load file config ...\n";
+const INFO_LOAD_FILE_CONFIG_OK: &str = "Load file config OK\n";
+const ERROR_GETTING_PROP: &str = "Error getting property\n";
+const ERROR_GETTING_PROP_DEFAULT: &str = "Error getting property default\n";
+const PATH_FILE_CONFIG_DEFAULT: &str = "./redis.config";
 /*
  * Min redis.config props
  *  verbose: "false",
@@ -25,15 +28,11 @@ where
 }
 
 impl Loggable for ConfigServer {
-    fn get_id_client(&self) -> i32 {
-        1414
+    fn get_id_client(&self) -> &str {
+        "ConfigServer"
     }
-    fn get_id_thread(&self) -> i32 {
-        14
-    }
-
-    fn get_timestamp(&self) -> SystemTime {
-        SystemTime::now()
+    fn get_id_thread(&self) -> u32 {
+        14_u32
     }
 }
 
@@ -59,41 +58,50 @@ impl ConfigServer {
         path_file: &str,
         logger: Logger<String>,
     ) -> Result<(), std::io::Error> {
-        //println!("Init load file config ...");
-        logger.info(self, "Init load file config ...")?;
+        logger.info(self, INFO_LOAD_FILE_CONFIG)?;
         if let Ok(lines) = read_lines(path_file) {
             for line in lines {
                 if let Ok(prop) = line {
-                    let prop3: Vec<&str> = prop.split("=").collect();
-                    if prop3.len() == 2 {
+                    let prop_slited: Vec<&str> = prop.split('=').collect();
+                    if prop_slited.len() == 2 {
                         self.props
-                            .insert(String::from(prop3[0]), String::from(prop3[1]));
+                            .insert(String::from(prop_slited[0]), String::from(prop_slited[1]));
                     }
                 }
             }
-            //println!("Load file config OK");
-            return logger.info(self, "Load file config OK");
+            return logger.info(self, INFO_LOAD_FILE_CONFIG_OK);
         }
         Ok(())
     }
 
     pub fn load_config_server(&mut self, logger: Logger<String>) -> Result<(), std::io::Error> {
-        self.load_config_server_with_path("./redis.config", logger)
+        self.load_config_server_with_path(PATH_FILE_CONFIG_DEFAULT, logger)
+    }
+
+    pub fn get_server_port(&self, logger: Logger<String>) -> String {
+        let logger2 = logger.clone();
+        let port = self.get_prop("port", logger);
+
+        let mut path_server_port = self.get_prop("server", logger2);
+
+        path_server_port.push(':');
+        path_server_port.push_str(&port);
+        path_server_port
     }
 
     pub fn get_prop(&self, prop_name: &str, logger: Logger<String>) -> String {
         if let Some(prop) = self.props.get(prop_name) {
             logger
-                .info(self, format!("Getting property: {}", prop).as_str())
-                .expect("ERROR GETTING PROPERTY");
+                .info(self, format!("Getting property: {}\n", prop).as_str())
+                .expect(ERROR_GETTING_PROP);
             return String::from(prop.as_str());
         };
         logger
             .info(
                 self,
-                format!("Getting property default: {}", prop_name).as_str(),
+                format!("Getting property default: {}\n", prop_name).as_str(),
             )
-            .expect("ERROR GETTING PROPERTY DEFAULT");
+            .expect(ERROR_GETTING_PROP_DEFAULT);
         String::from(prop_name)
     }
 }

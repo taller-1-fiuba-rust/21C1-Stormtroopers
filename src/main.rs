@@ -1,154 +1,130 @@
 use std::env::args;
+use std::io::prelude::*;
 use std::io::{BufRead, BufReader};
 use std::net::{TcpListener, TcpStream};
 
-use crate::command_builder::CommandBuilder;
-use crate::config_server::ConfigServer;
+use std::sync::Arc;
+
 #[allow(unused_imports)]
 use crate::logger::Logger;
-//use crate::threadpool::ThreadPool;
-use std::io::prelude::*;
+use crate::server::Server;
 
-mod command_builder;
+use crate::structure_string::StructureString;
+
+mod command;
 mod config_server;
+mod errors;
 mod logger;
+mod server;
+mod structure_string;
 mod threadpool;
+mod utils;
 
 static THREAD_POOL_COUNT: usize = 4;
 
 static END_FLAG: &str = "EOF";
 
-//pub static INFO_LOAD_CONFIG_FILE: &str = "Load file config ...";
-
 const LOG_NAME: &str = "log";
 const LOG_PATH: &str = "./";
-
-//use std::cell::RefCell;
-//use std::thread;
-
-struct Server {
-    config_server: ConfigServer,
-    logger: Logger<String>,
-    command_builder: CommandBuilder,
-}
-
-impl Clone for Server {
-    fn clone(&self) -> Server {
-        let config_server = self.config_server.clone();
-        let logger = self.logger.clone();
-        let command_builder = self.command_builder.clone();
-
-        Self {
-            config_server,
-            logger,
-            command_builder,
-        }
-    }
-}
-
-impl Server {
-    pub fn new() -> Self {
-        let config_server = ConfigServer::new();
-        let logger =
-            Logger::new(LOG_NAME.to_string(), LOG_PATH.to_string()).expect("ERROR CREATING LOGGER");
-        let command_builder = CommandBuilder::new();
-        Self {
-            config_server,
-            logger,
-            command_builder,
-        }
-    }
-
-    pub fn get_logger(&self) -> Logger<String> {
-        self.logger.clone()
-    }
-}
+const ERROR_LOG_CREATE: &str = "Error creating Logger";
 
 fn main() -> Result<(), std::io::Error> {
     let argv = args().collect::<Vec<String>>();
-    let mut server = Server::new();
-    match argv.len() {
-        2 => {
-            println!("Load file config ...");
-            server
-                .config_server
-                .load_config_server_with_path(argv[1].as_str(), server.get_logger())?;
-        }
-        1 => {
-            println!("Load file config server default ...");
-            server
-                .config_server
-                .load_config_server(server.get_logger())?;
-        }
-        _ => {
-            println!("Error count args");
-        }
-    }
+    let mut server = Server::new(argv.clone());
 
-    let app_name = &argv[0];
-    println!("Serger args: {:?}", &argv);
-    println!("Server {} is up!", app_name);
+    server.load_config(argv)?;
 
-    let port = server.config_server.get_prop("port", server.get_logger());
+    println!("Server {} is up!", server.server_name());
 
-    let mut path = String::from(server.config_server.get_prop("server", server.get_logger()));
-    path.push_str(":");
-    path.push_str(&port);
+    let config_server = server.get_config_server();
+
+    let server_port = config_server.get_server_port(server.get_logger());
 
     println!();
-    println!("Server address: {}", &path);
+    println!("Server address: {}", server_port);
     println!();
 
     println!("Execute listener ...");
 
-    let _listener = exec_server(&path, &server);
+    let _listener = exec_server(&server_port, &server);
 
     Ok(())
 }
 
-fn exec_server(address: &String, server: &Server) -> Result<(), std::io::Error> {
-    let threadpool = threadpool::ThreadPool::new(THREAD_POOL_COUNT.clone());
+fn exec_server(address: &str, server: &Server) -> Result<(), std::io::Error> {
+    let threadpool = threadpool::ThreadPool::new(THREAD_POOL_COUNT);
+
+    // Create global structure for strings
+    let arc_structure = Arc::new(structure_string::StructureString::new());
+
     let listener = TcpListener::bind(&address)?;
     for stream in listener.incoming() {
         let stream = stream;
         println!("Handler stream request ...");
         let server = server.clone();
         let stream = stream?;
-        threadpool.execute(move || {
-            //let stream = stream.unwrap();
-            handle_connection(stream, &server);
+        let _id_global = -1;
+        let arc_st_clone = Arc::clone(&arc_structure);
+
+        threadpool.execute(move |_id_global| {
+            handle_connection(stream, &server, _id_global, arc_st_clone);
         });
     }
+
     Ok(())
 }
 
-fn handle_connection(mut stream: TcpStream, server: &Server) {
-    handle_client(&mut stream, server);
+fn handle_connection(
+    mut stream: TcpStream,
+    server: &Server,
+    id: u32,
+    structure: Arc<StructureString<String>>,
+) {
+    handle_client(&mut stream, server, id, structure);
 }
 
-fn handle_client(stream: &mut TcpStream, server: &Server) {
+fn handle_client(
+    stream: &mut TcpStream,
+    server: &Server,
+    id: u32,
+    structure: Arc<StructureString<String>>,
+) {
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
 
-    let mut lines = reader.lines();
-    println!("Reading stream conections ...");
+    let lines = reader.lines();
+    println!("Reading stream conections, job {} ...", id);
 
-    while let Some(line) = lines.next() {
-        let request = line.unwrap_or(String::from(END_FLAG));
+    for line in lines {
+        let request = line.unwrap_or_else(|_| String::from(END_FLAG));
 
         if request == END_FLAG {
             return;
         }
-        println!("Server receive: {:?}", request);
 
-        let response = process_request(request, server);
-        (*stream).write(response.as_bytes()).unwrap_or(0);
+        let response = process_request(request, server, id, structure.clone());
+        (*stream).write_all(response.as_bytes()).unwrap_or(());
     }
-    println!("End handle client");
+    println!("End handle client, job {}", id);
 }
+//TODO: ver porque si vienen mal los args explota
+fn process_request(
+    request: String,
+    server: &Server,
+    id_job: u32,
+    structure: Arc<StructureString<String>>,
+) -> String {
+    //TODO: ver de meter el command_builder en el server.
+    let command_builder =
+        command::command_builder::CommandBuilder::new(id_job, server.get_logger());
 
-fn process_request(request: String, server: &Server) -> String {
-    let mut command_builder = CommandBuilder::new();
-    let comm = command_builder.get_command(&mut String::from(request.trim()));
-    String::from(comm.str_response(server.get_logger()))
+    let comm = command_builder.get_command(request.trim());
+    //TODO: ver porque si vienen mal los args explota
+    let mut command_splited: Vec<&str> = request.split(' ').collect();
+    command_splited.remove(0);
+
+    match comm {
+        Ok(comm) => comm.run(command_splited, structure).unwrap(),
+        Err(comm) => comm.to_string(),
+    }
 }

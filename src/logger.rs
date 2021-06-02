@@ -5,14 +5,17 @@ use std::io::SeekFrom;
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::SystemTime;
 
+use crate::utils::format_timestamp_now;
+
+const ERROR_LOG_CREATE_FILE: &str = "Error creating file";
+
+//TODO: ver de cambiar el id_client por un String que indique el nombre del servicio
+//TODO: por ahi el timestamp puede ser calculado por el Logger directamente
 pub trait Loggable {
-    fn get_id_client(&self) -> i32;
+    fn get_id_client(&self) -> &str;
 
-    fn get_id_thread(&self) -> i32;
-
-    fn get_timestamp(&self) -> SystemTime;
+    fn get_id_thread(&self) -> u32;
 }
 
 pub struct Logger<String> {
@@ -25,7 +28,7 @@ impl Clone for Logger<String> {
     fn clone(&self) -> Self {
         let sender = self.sender.clone();
         let receiver = self.receiver.clone();
-        let file = self.file.try_clone().expect("ERROR CREATING FILE");
+        let file = self.file.try_clone().expect(ERROR_LOG_CREATE_FILE);
         Self {
             file,
             sender,
@@ -61,16 +64,12 @@ impl Logger<String> {
         })
     }
 
-    /*pub fn set_new_file_name(&mut self, name_file: String) {
-        self.file = File::create(name_file).unwrap();
-    }*/
-
     fn load_info(&mut self) -> Result<(), Error> {
-        let msg = self.receiver.lock().unwrap().recv().unwrap();
+        let mut msg = self.receiver.lock().unwrap().recv().unwrap();
+        msg.pop();
         let file_size = self.file.metadata().unwrap().len();
         self.file.seek(SeekFrom::Start(file_size))?;
         self.file.write_all(msg.as_bytes())?;
-
         Ok(())
     }
 
@@ -92,11 +91,13 @@ impl Logger<String> {
 fn generate_menssage(service: &dyn Loggable, message_info: &str) -> String {
     let id_client = service.get_id_client();
     let id_thread = service.get_id_thread();
-    let timestamp = service.get_timestamp();
 
     format!(
-        "{:?} -- [{:?} -- {:?}] -- {}\n",
-        id_client, id_thread, timestamp, message_info
+        "[{:20?} -- {:03?} -- {:?}] -- {}\n",
+        id_client,
+        id_thread,
+        format_timestamp_now(),
+        message_info
     )
 }
 
@@ -105,16 +106,12 @@ fn generate_menssage(service: &dyn Loggable, message_info: &str) -> String {
 struct Client(i32, i32);
 
 impl Loggable for Client {
-    fn get_id_client(&self) -> i32 {
-        self.0.clone()
+    fn get_id_client(&self) -> &str {
+        "0"
     }
 
-    fn get_id_thread(&self) -> i32 {
-        self.1.clone()
-    }
-
-    fn get_timestamp(&self) -> SystemTime {
-        SystemTime::now()
+    fn get_id_thread(&self) -> u32 {
+        1_u32
     }
 }
 
@@ -125,8 +122,8 @@ mod tests {
     #[test]
     fn multiple_request() {
         let log = Logger::new(
-            "prueba.txt".to_string(),
-            "/home/gonzalosabatino/Escritorio".to_string(), //no sé qué otro path ponerle
+            "log".to_string(),
+            "/tmp".to_string(), //no sé qué otro path ponerle
         )
         .unwrap();
 
