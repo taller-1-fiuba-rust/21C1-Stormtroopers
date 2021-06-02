@@ -1,14 +1,14 @@
-use crate::command::cmd_trait::{
-    Command, GET_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR, SET_COMMAND_STR,
-};
+use crate::command::cmd_trait::{Command, GET_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR, SET_COMMAND_STR, FLUSHDB_COMMAND_STR};
 use crate::command::command_parser::obtain_str_command;
 use crate::command::command_pubsub::PubsubCommand;
 use crate::command::get_cmd::GetCommand;
 use crate::command::ping_cmd;
 use crate::command::set_cmd::SetCommand;
+
 use crate::errors::builder_error::BuilderError;
 use crate::logger::Logger;
 use std::collections::HashMap;
+use crate::command::flushdb_cmd::FlushdbCommand;
 
 pub struct CommandBuilder {
     commands: HashMap<String, Box<dyn Command>>,
@@ -18,8 +18,7 @@ pub struct CommandBuilder {
 impl CommandBuilder {
     pub fn new(id_job: u32, logger: Logger<String>) -> CommandBuilder {
         let mut commands: HashMap<String, Box<dyn Command>> = HashMap::new();
-        //let mut structure = StructureString::new();
-        //let mut structure = Box::new(StructureString::new());
+
         commands.insert(
             String::from(PING_COMMAND_STR),
             Box::new(ping_cmd::PingCommand::new(id_job, logger.clone())),
@@ -34,7 +33,11 @@ impl CommandBuilder {
         );
         commands.insert(
             String::from(PUBSUB_COMMAND_STR),
-            Box::new(PubsubCommand::new(id_job, logger)),
+            Box::new(PubsubCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(FLUSHDB_COMMAND_STR),
+            Box::new(FlushdbCommand::new(id_job, logger)),
         );
         CommandBuilder {
             commands,
