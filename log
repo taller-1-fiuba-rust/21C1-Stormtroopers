@@ -1,8 +1,7 @@
-1414 -- [14 -- SystemTime { tv_sec: 1621886434, tv_nsec: 112267948 }] -- Init load file config ...
-1414 -- [14 -- SystemTime { tv_sec: 1621886434, tv_nsec: 112569418 }] -- Load file config OK
-1414 -- [14 -- SystemTime { tv_sec: 1621886434, tv_nsec: 112721261 }] -- Getting property: 8081
-1414 -- [14 -- SystemTime { tv_sec: 1621886434, tv_nsec: 112887301 }] -- Getting property: localhost
-2 -- [-1 -- SystemTime { tv_sec: 1621886439, tv_nsec: 971918987 }] -- Response command: PONG
-
-2 -- [-1 -- SystemTime { tv_sec: 1621886445, tv_nsec: 261124245 }] -- Response command: PONG
-
+["AppInfo" -- 000 -- "2021/06/02 -2:52:38"] -- Load file config server default ...
+["ConfigServer" -- 014 -- "2021/06/02 -2:52:38"] -- Init load file config ...
+["ConfigServer" -- 014 -- "2021/06/02 -2:52:38"] -- Load file config OK
+["ConfigServer" -- 014 -- "2021/06/02 -2:52:38"] -- Getting property: 8081
+["ConfigServer" -- 014 -- "2021/06/02 -2:52:38"] -- Getting property: localhost
+["Pubsub" -- 000 -- "2021/06/02 -2:52:50"] -- Run command PUBSUB
+["Pubsub" -- 000 -- "2021/06/02 -2:52:59"] -- Run command PUBSUB
