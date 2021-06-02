@@ -10,6 +10,12 @@ pub struct StructureString<String> {
     receiver: Arc<Mutex<Receiver<String>>>,
 }
 
+impl Default for StructureString<String> {
+    fn default() -> Self {
+        StructureString::new()
+    }
+}
+
 impl Clone for StructureString<String> {
     fn clone(&self) -> Self {
         let sender = self.sender.clone();
@@ -70,6 +76,23 @@ impl StructureString<String> {
 
         return_res
     }
+    #[allow(dead_code)]
+    pub fn clean_all_data(&self) -> bool {
+        let mut structure_string = self.clone();
+        let mut data = self.structure.clone();
+        thread::spawn(move || {
+            structure_string.sender.send(String::from("")).unwrap();
+            structure_string.clean(&mut data);
+        })
+        .join()
+        .unwrap();
+        self.structure.lock().unwrap().is_empty()
+    }
+    #[allow(dead_code)]
+    //TODO: ver esta impl
+    pub fn dbsize(&self) -> u32 {
+        self.structure.lock().unwrap().len() as u32
+    }
 
     fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) {
         let key_val_sender = self.receiver.lock().unwrap().recv().unwrap();
@@ -91,6 +114,13 @@ impl StructureString<String> {
             None => String::from("EMPTY_STRING"),
         }
     }
+    #[allow(dead_code)]
+    fn clean(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) -> bool {
+        self.receiver.lock().unwrap().recv().unwrap();
+        let mut structure = data.lock().unwrap();
+        structure.clear();
+        structure.is_empty()
+    }
 }
 
 #[cfg(test)]
@@ -104,5 +134,28 @@ mod tests {
         let res = structure.get_string(String::from("test"));
 
         assert_eq!(res, String::from("1"));
+    }
+
+    #[test]
+    fn clean_all_test() {
+        let structure_string = StructureString::new();
+        structure_string.set_string(String::from("test"), String::from("1"));
+        {
+            assert!(!structure_string.structure.lock().unwrap().is_empty());
+        }
+
+        structure_string.clean_all_data();
+        {
+            assert!(structure_string.structure.lock().unwrap().is_empty());
+        }
+    }
+
+    #[test]
+    fn dbsize_test() {
+        let structure_string = StructureString::new();
+        structure_string.set_string(String::from("test"), String::from("1"));
+        {
+            assert!(structure_string.dbsize() == 1);
+        }
     }
 }

@@ -40,6 +40,12 @@ pub struct ConfigServer {
     pub props: HashMap<String, String>,
 }
 
+impl Default for ConfigServer {
+    fn default() -> Self {
+        ConfigServer::new()
+    }
+}
+
 impl Clone for ConfigServer {
     fn clone(&self) -> Self {
         let props = self.props.clone();
@@ -60,13 +66,11 @@ impl ConfigServer {
     ) -> Result<(), std::io::Error> {
         logger.info(self, INFO_LOAD_FILE_CONFIG)?;
         if let Ok(lines) = read_lines(path_file) {
-            for line in lines {
-                if let Ok(prop) = line {
-                    let prop_slited: Vec<&str> = prop.split('=').collect();
-                    if prop_slited.len() == 2 {
-                        self.props
-                            .insert(String::from(prop_slited[0]), String::from(prop_slited[1]));
-                    }
+            for line in lines.into_iter().flatten() {
+                let prop_slited: Vec<&str> = line.split('=').collect();
+                if prop_slited.len() == 2 {
+                    self.props
+                        .insert(String::from(prop_slited[0]), String::from(prop_slited[1]));
                 }
             }
             return logger.info(self, INFO_LOAD_FILE_CONFIG_OK);

@@ -11,8 +11,8 @@ const RESPONSE_PING_COMMAND: &str = "PONG\n";
 const CLIENT_ID: &str = "PingCommand";
 
 pub struct PingCommand {
-    logger: Logger<String>,
     id_job: u32,
+    logger: Logger<String>,
 }
 
 impl PingCommand {
@@ -20,6 +20,16 @@ impl PingCommand {
         PingCommand { id_job, logger }
     }
 }
+
+impl Clone for PingCommand {
+    fn clone(&self) -> PingCommand {
+        PingCommand {
+            id_job: self.id_job,
+            logger: self.logger.clone(),
+        }
+    }
+}
+
 impl Command for PingCommand {
     fn run(&self, _args: Vec<&str>, _app_info: &AppInfo) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_PING_COMMAND);

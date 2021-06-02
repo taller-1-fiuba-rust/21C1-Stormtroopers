@@ -18,11 +18,10 @@ mod threadpool;
 mod utils;
 
 static THREAD_POOL_COUNT: usize = 8;
-
 static END_FLAG: &str = "EOF";
-
 static LINE_BREAK: char = '\n';
-
+#[allow(dead_code)]
+static RESP_SIMPLE_STRING: &str = "OK\r\n";
 #[allow(dead_code)]
 const LOG_NAME: &str = "log";
 #[allow(dead_code)]
@@ -147,7 +146,10 @@ fn process_request(request: String, app_info: &AppInfo, id_job: u32) -> String {
     command_splited.remove(0);
 
     match comm {
-        Ok(comm) => comm.run(command_splited, app_info).unwrap(),
+        Ok(comm) => match comm.run(command_splited, app_info) {
+            Ok(res) => res,
+            Err(res) => res.to_string(),
+        },
         Err(comm) => comm.to_string(),
     }
 }

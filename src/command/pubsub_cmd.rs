@@ -7,8 +7,8 @@ use crate::LINE_BREAK;
 const INFO_RUN_COMMAND: &str = "Run command PUBSUB\n";
 
 pub struct PubsubCommand {
-    logger: Logger<String>,
     id_job: u32,
+    logger: Logger<String>,
 }
 
 impl PubsubCommand {
@@ -24,6 +24,15 @@ impl Loggable for PubsubCommand {
 
     fn get_id_thread(&self) -> u32 {
         self.id_job
+    }
+}
+
+impl Clone for PubsubCommand {
+    fn clone(&self) -> PubsubCommand {
+        PubsubCommand {
+            id_job: self.id_job,
+            logger: self.logger.clone(),
+        }
     }
 }
 

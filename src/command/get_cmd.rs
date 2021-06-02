@@ -7,8 +7,8 @@ const INFO_RUN_COMMAND: &str = "Run command GET\n";
 const CLIENT_ID: &str = "SetCommand";
 
 pub struct GetCommand {
-    logger: Logger<String>,
     id_job: u32,
+    logger: Logger<String>,
 }
 
 impl GetCommand {
@@ -24,6 +24,15 @@ impl Loggable for GetCommand {
 
     fn get_id_thread(&self) -> u32 {
         self.id_job
+    }
+}
+
+impl Clone for GetCommand {
+    fn clone(&self) -> GetCommand {
+        GetCommand {
+            id_job: self.id_job,
+            logger: self.logger.clone(),
+        }
     }
 }
 

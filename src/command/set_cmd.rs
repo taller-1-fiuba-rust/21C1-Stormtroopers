@@ -8,9 +8,8 @@ const CLIENT_ID: &str = "SetCommand";
 const RESPONSE_COMMAND: &str = "OK\n";
 
 pub struct SetCommand {
-    logger: Logger<String>,
-    //structure: Box<StructureString<String>>,
     id_job: u32,
+    logger: Logger<String>,
 }
 
 impl SetCommand {
@@ -26,6 +25,15 @@ impl Loggable for SetCommand {
 
     fn get_id_thread(&self) -> u32 {
         self.id_job
+    }
+}
+
+impl Clone for SetCommand {
+    fn clone(&self) -> SetCommand {
+        SetCommand {
+            id_job: self.id_job,
+            logger: self.logger.clone(),
+        }
     }
 }
 
