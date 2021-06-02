@@ -1,15 +1,18 @@
-use crate::command::cmd_trait::{Command, GET_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR, SET_COMMAND_STR, FLUSHDB_COMMAND_STR, DBSIZE_COMMAND_STR};
+use crate::command::cmd_trait::{
+    Command, DBSIZE_COMMAND_STR, FLUSHDB_COMMAND_STR, GET_COMMAND_STR, PING_COMMAND_STR,
+    PUBSUB_COMMAND_STR, SET_COMMAND_STR,
+};
 use crate::command::command_parser::obtain_str_command;
 use crate::command::command_pubsub::PubsubCommand;
 use crate::command::get_cmd::GetCommand;
 use crate::command::ping_cmd;
 use crate::command::set_cmd::SetCommand;
 
+use crate::command::dbsize_cmd::DbsizeCommand;
+use crate::command::flushdb_cmd::FlushdbCommand;
 use crate::errors::builder_error::BuilderError;
 use crate::logger::Logger;
 use std::collections::HashMap;
-use crate::command::flushdb_cmd::FlushdbCommand;
-use crate::command::dbsize_cmd::DbsizeCommand;
 
 pub struct CommandBuilder {
     commands: HashMap<String, Box<dyn Command>>,

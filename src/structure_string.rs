@@ -86,7 +86,6 @@ impl StructureString<String> {
     //TODO: ver esta impl
     pub fn dbsize(&self) -> u32 {
         self.structure.lock().unwrap().len() as u32
-
     }
 
     fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) {
@@ -136,22 +135,21 @@ mod tests {
         let structure_string = StructureString::new();
         structure_string.set_string(String::from("test"), String::from("1"));
         {
-        assert!(!structure_string.structure.lock().unwrap().is_empty());
+            assert!(!structure_string.structure.lock().unwrap().is_empty());
         }
 
         structure_string.clean_all_data();
         {
-        assert!(structure_string.structure.lock().unwrap().is_empty());
+            assert!(structure_string.structure.lock().unwrap().is_empty());
         }
     }
 
     #[test]
-    fn dbsize_test(){
+    fn dbsize_test() {
         let structure_string = StructureString::new();
         structure_string.set_string(String::from("test"), String::from("1"));
         {
             assert!(structure_string.dbsize() == 1);
         }
     }
-
 }
