@@ -88,6 +88,36 @@ impl StructureString<String> {
         self.structure.lock().unwrap().len() as u32
     }
 
+    #[allow(dead_code)]
+    pub fn copy(&self, src: String, target: String) -> u32 {
+        let mut structure_string = self.clone();
+        let mut data = self.structure.clone();
+        let mut _res = 0_u32;
+        thread::spawn(move || {
+            let mut values = src;
+            values.push(':');
+            values.push_str(&target);
+            structure_string.sender.send(values).unwrap();
+            _res = structure_string.copy_key(&mut data);
+        })
+        .join()
+        .unwrap();
+        _res
+    }
+    #[allow(dead_code)]
+    fn copy_key(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) -> u32 {
+        let keys = self.receiver.lock().unwrap().recv().unwrap();
+        let keys_splited: Vec<&str> = keys.split(':').collect();
+
+        let mut _structure = data.lock().unwrap();
+        let mut _src_val = _structure.get_mut(&*keys_splited[0]).unwrap().to_string();
+        _structure.insert(
+            String::from(keys_splited[1]),
+            _src_val
+        );
+        1_u32
+    }
+
     fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) {
         let key_val_sender = self.receiver.lock().unwrap().recv().unwrap();
         let key_val_splited: Vec<&str> = key_val_sender.split(':').collect();

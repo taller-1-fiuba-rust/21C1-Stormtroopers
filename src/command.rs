@@ -10,3 +10,4 @@ pub mod flushdb_cmd;
 pub mod get_cmd;
 pub mod ping_cmd;
 pub mod set_cmd;
+pub mod del_cmd;
