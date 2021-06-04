@@ -1,6 +1,7 @@
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::thread;
 
+use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -165,6 +166,20 @@ impl StructureString<String> {
             self.set_string(key, value.clone());
         }
         value.chars().count() as u32
+    }
+
+    pub fn rename(&mut self, key: String, new_key: String) -> Result<(), RunError> {
+        let value = self.get_string(key.clone());
+        if value == *"EMPTY_STRING" {
+            Err(RunError {
+                message: "Error Command rename".to_string(),
+                cause: "Key does not exist\n".to_string(),
+            })
+        } else {
+            self.delete(vec![key.as_str()]);
+            self.set_string(new_key, value);
+            Ok(())
+        }
     }
 }
 

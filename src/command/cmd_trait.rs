@@ -11,6 +11,7 @@ pub static DEL_COMMAND_STR: &str = "del";
 pub static COPY_COMMAND_STR: &str = "copy";
 pub static EXISTS_COMMAND_STR: &str = "exists";
 pub static APPEND_COMMAND_STR: &str = "append";
+pub static RENAME_COMMAND_STR: &str = "rename";
 
 pub trait Command: Send + CommandClone {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError>;
