@@ -153,6 +153,20 @@ impl StructureString<String> {
         structure.clear();
         structure.is_empty()
     }
+
+    #[allow(dead_code)]
+    pub fn append(&self, key: String, value_append: String) -> u32 {
+        let mut value = self.get_string(key.clone());
+        if value == *"EMPTY_STRING" {
+            value = value_append;
+            self.set_string(key, value.clone());
+        } else {
+            value.push_str(&value_append);
+            self.set_string(key, value.clone());
+        }
+        value.chars().count() as u32
+
+    }
 }
 
 #[cfg(test)]
@@ -224,4 +238,38 @@ mod tests {
 
         assert!(res == 2);
     }
+
+    #[test]
+    fn del_test(){
+        let mut structure_string = StructureString::new();
+
+        let mut count;
+        count = structure_string.delete(vec!["key0"]);
+        assert!(count == 0);
+
+        structure_string.set_string(String::from("key0"), String::from("val0"));
+        count = structure_string.delete(vec!["key0"]);
+
+        assert!(count == 1);
+
+        structure_string.set_string(String::from("key0"), String::from("val0"));
+        structure_string.set_string(String::from("key1"), String::from("val1"));
+        count = structure_string.delete(vec!["key0","key1","key2"]);
+
+        assert!(count == 2);
+    }
+
+    #[test]
+    fn append_test() {
+        let structure_string = StructureString::new();
+        let mut len_val;
+        len_val = structure_string.append(String::from("k0"),String::from("v0"));
+
+        assert!(len_val == 2);
+
+        len_val = structure_string.append(String::from("k0"),String::from("v1"));
+
+        assert!(len_val == 4);
+    }
+
 }

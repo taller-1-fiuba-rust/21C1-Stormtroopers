@@ -42,19 +42,10 @@ impl Command for AppendCommmand {
         if let Ok(_r) = log_info_res {}
 
         let structure = app_info.get_structure();
-        let key = String::from(args[0]);
-        let mut value = structure.get_string(key.clone());
-        let val_append = String::from(args[1]);
-        let mut len_value_str;
-        if value == *"EMPTY_STRING" {
-            value = val_append.clone();
-            structure.set_string(key, val_append);
-        } else {
-            value.push_str(args[1]);
-            structure.set_string(key, value.clone());
-        }
-        len_value_str = value.chars().count().to_string();
-        len_value_str.push('\n');
-        Ok(len_value_str)
+
+        let mut len_val_str = structure.append(String::from(args[0]), String::from(args[1])).to_string();
+        len_val_str.push('\n');
+
+        Ok(len_val_str)
     }
 }
