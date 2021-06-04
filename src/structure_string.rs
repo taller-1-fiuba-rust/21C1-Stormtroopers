@@ -115,6 +115,15 @@ impl StructureString<String> {
         1
     }
 
+    pub fn exists(&self, keys: Vec<&str>) -> u32 {
+        let mut count = 0_u32;
+        let structure = self.structure.lock().unwrap();
+        for key in keys.iter() {
+            if structure.contains_key(*key) { count += 1 }
+        }
+        count
+    }
+
     fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) {
         let key_val_sender = self.receiver.lock().unwrap().recv().unwrap();
         let key_val_splited: Vec<&str> = key_val_sender.split(':').collect();
@@ -179,4 +188,40 @@ mod tests {
             assert!(structure_string.dbsize() == 1);
         }
     }
+
+    #[test]
+    fn copy_test() {
+        let mut structure_string = StructureString::new();
+        let value0 = String::from("value0");
+        structure_string.set_string(String::from("key0"), value0.clone());
+        let res = structure_string.copy(String::from("key0"), String::from("key0.bis"));
+
+        assert!(res == 1);
+        let value0bis = structure_string.get_string(String::from("key0.bis"));
+        assert_eq!(value0, value0bis.clone());
+    }
+
+    #[test]
+    fn exists_test() {
+        let structure_string = StructureString::new();
+
+        let res = structure_string.exists(vec!("key"));
+
+        assert!(res == 0);
+
+        let structure_string2 = StructureString::new();
+        structure_string2.set_string(String::from("one_key"),String::from("1"));
+        let res = structure_string2.exists(vec!("one_key"));
+
+        assert!(res == 1);
+
+        let structure_string2 = StructureString::new();
+        structure_string2.set_string(String::from("one_key"),String::from("1"));
+        structure_string2.set_string(String::from("two_key"),String::from("2"));
+        let res = structure_string2.exists(vec!("one_key","two_key","other_key"));
+
+        assert!(res == 2);
+
+    }
+
 }

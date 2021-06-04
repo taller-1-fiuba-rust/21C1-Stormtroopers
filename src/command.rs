@@ -12,3 +12,4 @@ pub mod pubsub_cmd;
 pub mod set_cmd;
 pub mod del_cmd;
 pub mod copy_cmd;
+pub mod exists_cmd;

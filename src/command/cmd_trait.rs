@@ -9,6 +9,7 @@ pub static FLUSHDB_COMMAND_STR: &str = "flushdb";
 pub static DBSIZE_COMMAND_STR: &str = "dbsize";
 pub static DEL_COMMAND_STR: &str = "del";
 pub static COPY_COMMAND_STR: &str = "copy";
+pub static EXISTS_COMMAND_STR: &str = "exists";
 
 
 pub trait Command: Send + CommandClone {
