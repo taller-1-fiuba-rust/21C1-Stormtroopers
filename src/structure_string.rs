@@ -165,7 +165,6 @@ impl StructureString<String> {
             self.set_string(key, value.clone());
         }
         value.chars().count() as u32
-
     }
 }
 
@@ -240,7 +239,7 @@ mod tests {
     }
 
     #[test]
-    fn del_test(){
+    fn del_test() {
         let mut structure_string = StructureString::new();
 
         let mut count;
@@ -254,7 +253,7 @@ mod tests {
 
         structure_string.set_string(String::from("key0"), String::from("val0"));
         structure_string.set_string(String::from("key1"), String::from("val1"));
-        count = structure_string.delete(vec!["key0","key1","key2"]);
+        count = structure_string.delete(vec!["key0", "key1", "key2"]);
 
         assert!(count == 2);
     }
@@ -263,13 +262,12 @@ mod tests {
     fn append_test() {
         let structure_string = StructureString::new();
         let mut len_val;
-        len_val = structure_string.append(String::from("k0"),String::from("v0"));
+        len_val = structure_string.append(String::from("k0"), String::from("v0"));
 
         assert!(len_val == 2);
 
-        len_val = structure_string.append(String::from("k0"),String::from("v1"));
+        len_val = structure_string.append(String::from("k0"), String::from("v1"));
 
         assert!(len_val == 4);
     }
-
 }

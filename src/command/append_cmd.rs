@@ -43,7 +43,9 @@ impl Command for AppendCommmand {
 
         let structure = app_info.get_structure();
 
-        let mut len_val_str = structure.append(String::from(args[0]), String::from(args[1])).to_string();
+        let mut len_val_str = structure
+            .append(String::from(args[0]), String::from(args[1]))
+            .to_string();
         len_val_str.push('\n');
 
         Ok(len_val_str)
