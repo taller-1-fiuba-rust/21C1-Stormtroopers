@@ -12,7 +12,6 @@ pub static COPY_COMMAND_STR: &str = "copy";
 pub static EXISTS_COMMAND_STR: &str = "exists";
 pub static APPEND_COMMAND_STR: &str = "append";
 
-
 pub trait Command: Send + CommandClone {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError>;
 }

@@ -89,29 +89,29 @@ impl StructureString<String> {
         self.structure.lock().unwrap().is_empty()
     }
 
-
     #[allow(dead_code)]
     //TODO: ver esta impl
     pub fn dbsize(&self) -> u32 {
         self.structure.lock().unwrap().len() as u32
     }
 
-    pub fn delete(&mut self, args: Vec<&str>) -> u32{
+    pub fn delete(&mut self, args: Vec<&str>) -> u32 {
         let mut count = 0_u32;
         let mut structure = self.structure.lock().unwrap();
         for key in args.iter() {
-            if let Some(_v) = structure.remove(*key) { count += 1 }
+            if let Some(_v) = structure.remove(*key) {
+                count += 1
+            }
         }
         count
     }
 
     pub fn copy(&mut self, src_key: String, target: String) -> u32 {
-
         let src_val = self.get_string(src_key);
         if src_val == *"EMPTY_STRING" {
-            return 0
+            return 0;
         }
-        self.set_string(target,src_val);
+        self.set_string(target, src_val);
         1
     }
 
@@ -119,7 +119,9 @@ impl StructureString<String> {
         let mut count = 0_u32;
         let structure = self.structure.lock().unwrap();
         for key in keys.iter() {
-            if structure.contains_key(*key) { count += 1 }
+            if structure.contains_key(*key) {
+                count += 1
+            }
         }
         count
     }
@@ -205,23 +207,21 @@ mod tests {
     fn exists_test() {
         let structure_string = StructureString::new();
 
-        let res = structure_string.exists(vec!("key"));
+        let res = structure_string.exists(vec!["key"]);
 
         assert!(res == 0);
 
         let structure_string2 = StructureString::new();
-        structure_string2.set_string(String::from("one_key"),String::from("1"));
-        let res = structure_string2.exists(vec!("one_key"));
+        structure_string2.set_string(String::from("one_key"), String::from("1"));
+        let res = structure_string2.exists(vec!["one_key"]);
 
         assert!(res == 1);
 
         let structure_string2 = StructureString::new();
-        structure_string2.set_string(String::from("one_key"),String::from("1"));
-        structure_string2.set_string(String::from("two_key"),String::from("2"));
-        let res = structure_string2.exists(vec!("one_key","two_key","other_key"));
+        structure_string2.set_string(String::from("one_key"), String::from("1"));
+        structure_string2.set_string(String::from("two_key"), String::from("2"));
+        let res = structure_string2.exists(vec!["one_key", "two_key", "other_key"]);
 
         assert!(res == 2);
-
     }
-
 }
