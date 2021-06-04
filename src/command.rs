@@ -10,3 +10,5 @@ pub mod get_cmd;
 pub mod ping_cmd;
 pub mod pubsub_cmd;
 pub mod set_cmd;
+pub mod del_cmd;
+pub mod copy_cmd;

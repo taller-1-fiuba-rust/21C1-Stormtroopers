@@ -1,7 +1,4 @@
-use crate::command::cmd_trait::{
-    Command, DBSIZE_COMMAND_STR, FLUSHDB_COMMAND_STR, GET_COMMAND_STR, PING_COMMAND_STR,
-    PUBSUB_COMMAND_STR, SET_COMMAND_STR,
-};
+use crate::command::cmd_trait::{Command, DBSIZE_COMMAND_STR, FLUSHDB_COMMAND_STR, GET_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR, SET_COMMAND_STR, DEL_COMMAND_STR, COPY_COMMAND_STR};
 use crate::command::command_parser::obtain_str_command;
 use crate::command::get_cmd::GetCommand;
 use crate::command::ping_cmd;
@@ -13,6 +10,8 @@ use crate::command::flushdb_cmd::FlushdbCommand;
 use crate::errors::builder_error::BuilderError;
 use crate::logger::Logger;
 use std::collections::HashMap;
+use crate::command::copy_cmd::CopyCommand;
+use crate::command::del_cmd::DelCommand;
 
 pub struct CommandBuilder {
     commands: HashMap<String, Box<dyn Command>>,
@@ -45,7 +44,15 @@ impl CommandBuilder {
         );
         commands.insert(
             String::from(DBSIZE_COMMAND_STR),
-            Box::new(DbsizeCommand::new(id_job, logger)),
+            Box::new(DbsizeCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(DEL_COMMAND_STR),
+            Box::new(DelCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(COPY_COMMAND_STR),
+            Box::new(CopyCommand::new(id_job, logger)),
         );
         CommandBuilder {
             commands,

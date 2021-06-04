@@ -7,6 +7,9 @@ pub static SET_COMMAND_STR: &str = "set";
 pub static PUBSUB_COMMAND_STR: &str = "pubsub";
 pub static FLUSHDB_COMMAND_STR: &str = "flushdb";
 pub static DBSIZE_COMMAND_STR: &str = "dbsize";
+pub static DEL_COMMAND_STR: &str = "del";
+pub static COPY_COMMAND_STR: &str = "copy";
+
 
 pub trait Command: Send + CommandClone {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError>;
