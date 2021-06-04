@@ -285,4 +285,26 @@ mod tests {
 
         assert!(len_val == 4);
     }
+
+    #[test]
+    fn rename_test() {
+        let mut structure_string = StructureString::new();
+        let mut res;
+        let error = Err(RunError {
+            message: "Error Command rename".to_string(),
+            cause: "Key does not exist\n".to_string(),
+        });
+
+        structure_string.set_string(String::from("key0"), String::from("val0"));
+
+        res = structure_string.rename(String::from("key0"), String::from("key1"));
+
+        assert!(res == Ok(()));
+        let res1 = structure_string.get_string(String::from("key1"));
+        assert_eq!(res1, String::from("val0"));
+
+        res = structure_string.rename(String::from("keyX"), String::from("keyXX"));
+
+        assert!(res == error)
+    }
 }
