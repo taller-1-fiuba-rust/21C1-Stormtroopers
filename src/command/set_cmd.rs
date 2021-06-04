@@ -42,11 +42,8 @@ impl Command for SetCommand {
         let log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        //println!("setcommand::{},{}",args[0],args[1]);
         let structure = app_info.get_structure();
         structure.set_string(String::from(args[0]), String::from(args[1]));
-
-        //set_string(structure, String::from(args[0]),String::from(args[1]));
 
         Ok(String::from(RESPONSE_COMMAND))
     }
