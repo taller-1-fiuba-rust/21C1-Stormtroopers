@@ -5,6 +5,8 @@ use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
+const RESPONSE_NIL: &str = "(nil)";
+
 pub struct StructureString<String> {
     pub structure: Arc<Mutex<HashMap<String, String>>>,
     sender: Arc<SyncSender<String>>,
@@ -70,7 +72,7 @@ impl StructureString<String> {
 
         let return_res = thread::spawn(move || {
             structure.sender.send(key).unwrap();
-            structure.load(&mut data)
+            structure.get(&mut data)
         })
         .join()
         .unwrap();
@@ -109,7 +111,7 @@ impl StructureString<String> {
 
     pub fn copy(&mut self, src_key: String, target: String) -> u32 {
         let src_val = self.get_string(src_key);
-        if src_val == *"EMPTY_STRING" {
+        if src_val == *RESPONSE_NIL {
             return 0;
         }
         self.set_string(target, src_val);
@@ -138,13 +140,13 @@ impl StructureString<String> {
         );
     }
 
-    fn load(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) -> String {
+    fn get(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) -> String {
         let key_val = self.receiver.lock().unwrap().recv().unwrap();
 
         let d = data.lock().unwrap();
         match d.get(&key_val) {
             Some(value) => value.clone(),
-            None => String::from("EMPTY_STRING"),
+            None => String::from(RESPONSE_NIL),
         }
     }
     #[allow(dead_code)]
@@ -158,7 +160,7 @@ impl StructureString<String> {
     #[allow(dead_code)]
     pub fn append(&self, key: String, value_append: String) -> u32 {
         let mut value = self.get_string(key.clone());
-        if value == *"EMPTY_STRING" {
+        if value == *RESPONSE_NIL {
             value = value_append;
             self.set_string(key, value.clone());
         } else {
@@ -170,7 +172,7 @@ impl StructureString<String> {
 
     pub fn rename(&mut self, key: String, new_key: String) -> Result<(), RunError> {
         let value = self.get_string(key.clone());
-        if value == *"EMPTY_STRING" {
+        if value == *RESPONSE_NIL {
             Err(RunError {
                 message: "Error Command rename".to_string(),
                 cause: "Key does not exist\n".to_string(),
@@ -180,6 +182,14 @@ impl StructureString<String> {
             self.set_string(new_key, value);
             Ok(())
         }
+    }
+
+    pub fn strlen(&self, key: String) -> u32 {
+        let value = self.get_string(key);
+        if value == *RESPONSE_NIL {
+            return 0;
+        }
+        value.chars().count() as u32
     }
 }
 
@@ -194,6 +204,17 @@ mod tests {
         let res = structure.get_string(String::from("test"));
 
         assert_eq!(res, String::from("1"));
+    }
+
+    #[test]
+    fn get_test() {
+        let structure = StructureString::new();
+        let resp = structure.get_string(String::from("key0"));
+        assert_eq!(resp, String::from(RESPONSE_NIL));
+
+        structure.set_string(String::from("key0"), String::from("val0"));
+        let resp2 = structure.get_string(String::from("key0"));
+        assert_eq!(resp2, String::from("val0"));
     }
 
     #[test]
@@ -254,7 +275,7 @@ mod tests {
     }
 
     #[test]
-    fn del_test() {
+    fn delete_test() {
         let mut structure_string = StructureString::new();
 
         let mut count;
@@ -306,5 +327,24 @@ mod tests {
         res = structure_string.rename(String::from("keyX"), String::from("keyXX"));
 
         assert!(res == error)
+    }
+
+    #[test]
+    fn strlen_test() {
+        let structure_string = StructureString::new();
+        let len = structure_string.strlen(String::from("key0"));
+        assert_eq!(len, 0);
+
+        structure_string.set_string(String::from("key0"), String::from("val0"));
+        let len = structure_string.strlen(String::from("key0"));
+        assert_eq!(len, 4);
+
+        structure_string.set_string(String::from("key1"), String::from("val0 val1"));
+        let len = structure_string.strlen(String::from("key1"));
+        assert_eq!(len, 9);
+
+        structure_string.set_string(String::from("key2"), String::from(""));
+        let len = structure_string.strlen(String::from("key2"));
+        assert_eq!(len, 0);
     }
 }
