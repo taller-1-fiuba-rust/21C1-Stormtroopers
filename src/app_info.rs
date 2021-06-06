@@ -1,9 +1,11 @@
 use crate::config_server::ConfigServer;
 use crate::logger::{Loggable, Logger};
 use crate::pubsub::Pubsub;
+use crate::structure_general::Structure;
+use crate::structure_general::StructureGeneral;
+use crate::structure_list::StructureList;
+use crate::structure_set::StructureSet;
 use crate::structure_string::StructureString;
-use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::{Arc, Mutex};
 
 const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...\n";
@@ -25,9 +27,8 @@ pub struct AppInfo {
     args: Vec<String>,
     config_server: ConfigServer,
     logger: Logger<String>,
-    structure: StructureString<String>,
+    structure: StructureGeneral,
     pubsub: Pubsub,
-    ids_clients: i32,
 }
 
 impl Clone for AppInfo {
@@ -44,9 +45,32 @@ impl Clone for AppInfo {
             logger,
             structure,
             pubsub,
-            ids_clients: 0,
         }
     }
+}
+
+fn add_string(structure_general: &StructureGeneral) {
+    let structure_string = Structure::StructureString(StructureString::new());
+    structure_general.add_structure("String".to_string(), structure_string);
+}
+
+fn add_list(structure_general: &StructureGeneral) {
+    let structure_list = Structure::StructureList(StructureList::new());
+    structure_general.add_structure("List".to_string(), structure_list);
+}
+
+fn add_set(structure_general: &StructureGeneral) {
+    let structure_set = Structure::StructureSet(StructureSet::new());
+    structure_general.add_structure("Set".to_string(), structure_set);
+}
+
+fn create_structure() -> StructureGeneral {
+    let structure_general = StructureGeneral::new();
+    add_string(&structure_general);
+    add_list(&structure_general);
+    add_set(&structure_general);
+
+    structure_general
 }
 
 impl AppInfo {
@@ -54,7 +78,8 @@ impl AppInfo {
         let config_server = ConfigServer::new();
         let logger =
             Logger::new(LOG_NAME.to_string(), LOG_PATH.to_string()).expect(ERROR_LOG_CREATE);
-        let structure = StructureString::new();
+        let structure = create_structure();
+
         let pubsub = Pubsub::new();
 
         Self {
@@ -63,7 +88,6 @@ impl AppInfo {
             logger,
             structure,
             pubsub,
-            ids_clients: 0,
         }
     }
 
@@ -75,20 +99,12 @@ impl AppInfo {
         self.config_server.clone()
     }
 
-    pub fn get_structure(&self) -> StructureString<String> {
+    pub fn get_structure(&self) -> StructureGeneral {
         self.structure.clone()
     }
 
     pub fn get_pubsub(&self) -> Pubsub {
         self.pubsub.clone()
-    }
-
-    pub fn get_id_client(&self) -> i32 {
-        self.ids_clients
-    }
-
-    pub fn inc_ids(&mut self) {
-        self.ids_clients += 1;
     }
 
     pub fn load_config(&mut self, argv: Vec<String>) -> Result<(), std::io::Error> {
@@ -110,43 +126,5 @@ impl AppInfo {
 
     pub fn server_name(&self) -> String {
         self.args[0].to_owned()
-    }
-}
-
-//IMPORTANTE -> Después divido esto en file Connection
-//asigno, por cada conexión nueva, un Connection nuevo
-pub struct Connection<String> {
-    sender: Arc<Mutex<Sender<String>>>,
-    receiver: Arc<Mutex<Receiver<String>>>,
-}
-
-impl<String> Connection<String> {
-    pub fn new() -> Self {
-        let (tx, rx) = channel();
-        Self {
-            sender: Arc::new(Mutex::new(tx)),
-            receiver: Arc::new(Mutex::new(rx)),
-        }
-    }
-
-    pub fn send(&self, response: String) {
-        let sender = self.sender.lock().unwrap();
-        sender.send(response).unwrap();
-    }
-
-    pub fn get_sender(&self) -> Arc<Mutex<Sender<String>>> {
-        self.sender.clone()
-    }
-
-    pub fn get_receiver(&self) -> Arc<Mutex<Receiver<String>>> {
-        self.receiver.clone()
-    }
-}
-
-impl<String> Clone for Connection<String> {
-    fn clone(&self) -> Self {
-        let sender = self.sender.clone();
-        let receiver = self.receiver.clone();
-        Self { sender, receiver }
     }
 }
