@@ -38,7 +38,12 @@ impl Clone for FlushdbCommand {
 }
 
 impl Command for FlushdbCommand {
-    fn run(&self, _args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(
+        &self,
+        _args: Vec<&str>,
+        app_info: &AppInfo,
+        _id_client: usize,
+    ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_FLUSHDB_COMMAND);
         if let Ok(_r) = log_info_res {}
 

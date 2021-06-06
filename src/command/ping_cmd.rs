@@ -31,7 +31,12 @@ impl Clone for PingCommand {
 }
 
 impl Command for PingCommand {
-    fn run(&self, _args: Vec<&str>, _app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(
+        &self,
+        _args: Vec<&str>,
+        _app_info: &AppInfo,
+        _id_client: usize,
+    ) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_PING_COMMAND);
 
         Ok(String::from(RESPONSE_PING_COMMAND))

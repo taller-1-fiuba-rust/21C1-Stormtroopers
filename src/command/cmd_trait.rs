@@ -9,7 +9,12 @@ pub static FLUSHDB_COMMAND_STR: &str = "flushdb";
 pub static DBSIZE_COMMAND_STR: &str = "dbsize";
 
 pub trait Command: Send + CommandClone {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError>;
+    fn run(
+        &self,
+        args: Vec<&str>,
+        app_info: &AppInfo,
+        id_client: usize,
+    ) -> Result<String, RunError>;
 }
 
 pub trait CommandClone {
