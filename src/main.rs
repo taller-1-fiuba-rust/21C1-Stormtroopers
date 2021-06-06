@@ -16,6 +16,7 @@ mod pubsub;
 mod structure_string;
 mod threadpool;
 mod utils;
+mod ttl_scheduler;
 
 static THREAD_POOL_COUNT: usize = 8;
 static END_FLAG: &str = "EOF";

@@ -2,6 +2,7 @@ use crate::config_server::ConfigServer;
 use crate::logger::{Loggable, Logger};
 use crate::pubsub::Pubsub;
 use crate::structure_string::StructureString;
+use crate::ttl_scheduler::TTLScheduler;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 
@@ -27,6 +28,7 @@ pub struct AppInfo {
     logger: Logger<String>,
     structure: StructureString<String>,
     pubsub: Pubsub,
+    ttl_scheduler: TTLScheduler,
     ids_clients: i32,
 }
 
@@ -37,6 +39,7 @@ impl Clone for AppInfo {
         let args = self.args.clone();
         let structure = self.structure.clone();
         let pubsub = self.pubsub.clone();
+        let ttl_scheduler = self.ttl_scheduler.clone();
 
         Self {
             args,
@@ -44,6 +47,7 @@ impl Clone for AppInfo {
             logger,
             structure,
             pubsub,
+            ttl_scheduler,
             ids_clients: 0,
         }
     }
@@ -56,6 +60,7 @@ impl AppInfo {
             Logger::new(LOG_NAME.to_string(), LOG_PATH.to_string()).expect(ERROR_LOG_CREATE);
         let structure = StructureString::new();
         let pubsub = Pubsub::new();
+        let ttl_scheduler = TTLScheduler::new();
 
         Self {
             args,
@@ -63,6 +68,7 @@ impl AppInfo {
             logger,
             structure,
             pubsub,
+            ttl_scheduler,
             ids_clients: 0,
         }
     }
