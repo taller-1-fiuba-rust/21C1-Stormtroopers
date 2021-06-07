@@ -3,8 +3,10 @@ use std::collections::HashMap;
 use std::time::{Duration, SystemTime};
 use std::thread;
 
+// The key is the timestamp from EPOCH to expiration time. //751840123850917
+// <ttl, [[data_tipe1, clave1],[data_tipe2, clave2],...]>
 pub struct TTLScheduler {
-    ttl_map: HashMap<u64, String>,
+    ttl_map: HashMap<u64, Vec<(String, String)>>,
 }
 
 impl Loggable for TTLScheduler {
@@ -35,5 +37,7 @@ impl TTLScheduler {
             // check elapsed time and if 0 send message to structure to delete key value.
         }
     }
-    pub fn add_ttl(ttl: u64, key: &str) {}
+    pub fn add_ttl(&mut self, ttl: u64, key: &str) {
+        self.ttl_map.insert(ttl, vec!((String::from("String"), String::from(key))));
+    }
 }
