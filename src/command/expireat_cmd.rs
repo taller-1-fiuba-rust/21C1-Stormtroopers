@@ -2,6 +2,7 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
+use std::time::{Duration, SystemTime};
 
 const INFO_EXPIREAT_COMMAND: &str = "Run command EXPIRE_AT\n";
 const CLIENT_ID: &str = "ExpireAtCommmand";
@@ -40,7 +41,19 @@ impl Command for ExpireAtCommand {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_EXPIREAT_COMMAND);
 
-        
+        if args.len() < 2 {
+            return Err(RunError{message: String::from(args[0]), cause: String::from("Couldn't parse timestamp from string.")});
+        }
+
+        let timestamp = args[0].parse::<u64>(); // timestamp en u64
+        match timestamp {
+            Ok(t) => {
+                //let ttl_seconds = SystemTime::now().  Duration::new(t, 0);
+                //app_info.get_ttl_scheduler().add_ttl(ttl_seconds, args[1]);
+                Ok(String::from("OK"))
+            },
+            Err(_) => Err(RunError{message: String::from(args[0]), cause: String::from("Couldn't parse timestamp from string.")})
+        }
         
     }
 }

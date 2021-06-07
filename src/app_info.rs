@@ -94,7 +94,7 @@ impl AppInfo {
     }
 
     pub fn get_ttl_scheduler(&self) -> TTLScheduler {
-        self.ttl_scheduler
+        self.ttl_scheduler.clone()
     }
 
     pub fn inc_ids(&mut self) {

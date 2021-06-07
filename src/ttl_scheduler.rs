@@ -31,10 +31,9 @@ impl TTLScheduler {
         }
     }
     pub fn run(&self) {
-        for (key, value) in self.ttl_map {
-            
+        for (key, value) in self.ttl_map.clone() {
+            // check elapsed time and if 0 send message to structure to delete key value.
         }
     }
-    pub fn add_ttl_seconds() {}
-    pub fn add_ttl_unixtime() {}
+    pub fn add_ttl(ttl: u64, key: &str) {}
 }
