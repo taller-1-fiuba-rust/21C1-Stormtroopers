@@ -2,7 +2,7 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use crate::structure_general::Structure;
+use crate::structure_general::*;
 
 const INFO_RUN_COMMAND: &str = "Run command GET\n";
 const CLIENT_ID: &str = "SetCommand";
@@ -49,24 +49,10 @@ impl Command for GetCommand {
 
         let structure_general = app_info.get_structure();
         let structure = structure_general.get("String".to_string());
-        #[allow(unused_assignments)]
-        let mut string = "".to_string();
 
-        match structure {
-            Structure::StructureString(a) => {
-                string = a.get_string(String::from(args[0]));
-                string.push('\n');
-            }
-            #[allow(unreachable_patterns)]
-            _ => {
-                return Err(RunError {
-                    message: "Error Set Command".to_string(),
-                    cause: " ".to_string(),
-                })
-            }
-        }
-        //let mut string = structureString.get_string(String::from(args[0]));
-        //string.push('\n');
+        let structure = get_string(structure)?;
+        let mut string = structure.get_string(String::from(args[0]));
+        string.push('\n');
 
         Ok(string)
     }
