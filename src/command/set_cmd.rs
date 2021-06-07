@@ -2,7 +2,7 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use crate::structure_general::Structure;
+use crate::structure_general::*;
 
 const INFO_RUN_COMMAND: &str = "Run command SET\n";
 const CLIENT_ID: &str = "SetCommand";
@@ -48,24 +48,11 @@ impl Command for SetCommand {
         let log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        //println!("setcommand::{},{}",args[0],args[1]);
         let structure_general = app_info.get_structure();
         let structure = structure_general.get("String".to_string());
-        match structure {
-            Structure::StructureString(a) => {
-                a.set_string(String::from(args[0]), String::from(args[1]))
-            }
-            #[allow(unreachable_patterns)]
-            _ => {
-                return Err(RunError {
-                    message: "Error Set Command".to_string(),
-                    cause: " ".to_string(),
-                })
-            }
-        }
 
-        //a.set_string(String::from(args[0]), String::from(args[1]));
-        //set_string(structure, String::from(args[0]),String::from(args[1]));
+        let structure = get_string(structure)?;
+        structure.set_string(String::from(args[0]), String::from(args[1]));
 
         Ok(String::from(RESPONSE_COMMAND))
     }

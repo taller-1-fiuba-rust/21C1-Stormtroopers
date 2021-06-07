@@ -1,3 +1,4 @@
+use crate::errors::run_error::RunError;
 use crate::structure_list::StructureList;
 use crate::structure_set::StructureSet;
 use crate::structure_string::StructureString;
@@ -11,7 +12,6 @@ pub enum Structure {
     StructureSet(StructureSet<String>),
 }
 
-#[allow(dead_code)]
 pub struct StructureGeneral {
     structure: Arc<Mutex<HashMap<String, Structure>>>,
 }
@@ -30,20 +30,52 @@ impl Clone for StructureGeneral {
     }
 }
 
+pub fn get_string(structure: Structure) -> Result<StructureString<String>, RunError> {
+    match structure {
+        Structure::StructureString(a) => Ok(a),
+        //#[allow(unreachable_patterns)]
+        _ => Err(RunError {
+            message: "Error: Not StructureString".to_string(),
+            cause: " ".to_string(),
+        }),
+    }
+}
+
+#[allow(dead_code)]
+pub fn get_list(structure: Structure) -> Result<StructureList<String>, RunError> {
+    match structure {
+        Structure::StructureList(a) => Ok(a),
+        //#[allow(unreachable_patterns)]
+        _ => Err(RunError {
+            message: "Error: Not StructureString".to_string(),
+            cause: " ".to_string(),
+        }),
+    }
+}
+
+#[allow(dead_code)]
+pub fn get_set(structure: Structure) -> Result<StructureSet<String>, RunError> {
+    match structure {
+        Structure::StructureSet(a) => Ok(a),
+        //#[allow(unreachable_patterns)]
+        _ => Err(RunError {
+            message: "Error: Not StructureString".to_string(),
+            cause: " ".to_string(),
+        }),
+    }
+}
+
 impl StructureGeneral {
-    #[allow(dead_code)]
     pub fn new() -> Self {
         let structure = Arc::new(Mutex::new(HashMap::new()));
         Self { structure }
     }
 
-    #[allow(dead_code)]
     pub fn get(&self, name_type: String) -> Structure {
         let structure = self.structure.lock().unwrap();
         structure.get(&name_type).unwrap().clone()
     }
 
-    #[allow(dead_code)]
     pub fn add_structure(&self, key: String, value: Structure) {
         let mut structure_general = self.structure.lock().unwrap();
 
@@ -51,7 +83,6 @@ impl StructureGeneral {
                                               //la primera vez que se inserta algo en una key, entonces pincha todo
     }
 
-    #[allow(dead_code)]
     pub fn dbsize(&self) -> usize {
         let mut cont = 0;
         let structure = self.structure.lock().unwrap();
@@ -70,7 +101,6 @@ impl StructureGeneral {
         cont
     }
 
-    #[allow(dead_code)]
     pub fn clean_all_data(&self) -> bool {
         let mut response = true;
         let structure = self.structure.lock().unwrap();
