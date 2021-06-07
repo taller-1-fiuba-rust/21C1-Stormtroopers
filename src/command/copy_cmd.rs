@@ -2,6 +2,7 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
+use crate::structure_general::get_string;
 
 const INFO_COMMAND: &str = "Run command COPY\n";
 const CLIENT_ID: &str = "CopyCommmand";
@@ -37,11 +38,20 @@ impl Clone for CopyCommand {
 }
 
 impl Command for CopyCommand {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(
+        &self,
+        args: Vec<&str>,
+        app_info: &AppInfo,
+        _id_client: usize,
+    ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let mut structure = app_info.get_structure();
+        let structure_general = app_info.get_structure();
+        let structure = structure_general.get("String".to_string());
+
+        let mut structure = get_string(structure)?;
+
         let resp = structure.copy(String::from(args[0]), String::from(args[1]));
         let mut resp_str = resp.to_string();
         resp_str.push('\n');
