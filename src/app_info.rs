@@ -93,6 +93,10 @@ impl AppInfo {
         self.ids_clients
     }
 
+    pub fn get_ttl_scheduler(&self) -> TTLScheduler {
+        self.ttl_scheduler
+    }
+
     pub fn inc_ids(&mut self) {
         self.ids_clients += 1;
     }

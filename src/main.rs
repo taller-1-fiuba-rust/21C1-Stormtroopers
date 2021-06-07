@@ -15,8 +15,8 @@ mod logger;
 mod pubsub;
 mod structure_string;
 mod threadpool;
-mod utils;
 mod ttl_scheduler;
+mod utils;
 
 static THREAD_POOL_COUNT: usize = 8;
 static END_FLAG: &str = "EOF";
@@ -53,6 +53,8 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
     let threadpool = ThreadPool::new(THREAD_POOL_COUNT);
 
     let mut pubsub = app_info.get_pubsub();
+
+    app_info.get_ttl_scheduler().run();
 
     let listener = TcpListener::bind(&address)?;
     for stream in listener.incoming() {

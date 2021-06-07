@@ -3,12 +3,12 @@ use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
 
-const INFO_COMMAND: &str = "Run command EXPIRE_AT\n";
+const INFO_EXPIREAT_COMMAND: &str = "Run command EXPIRE_AT\n";
 const CLIENT_ID: &str = "ExpireAtCommmand";
 
 pub struct ExpireAtCommand {
     id_job: u32,
-    logger: Logger<String>
+    logger: Logger<String>,
 }
 
 impl ExpireAtCommand {
@@ -38,6 +38,9 @@ impl Clone for ExpireAtCommand {
 
 impl Command for ExpireAtCommand {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
-        Ok(String::from("EXPIRE_AT command ok"))
-    } 
+        let _log_info_res = self.logger.info(self, INFO_EXPIREAT_COMMAND);
+
+        
+        
+    }
 }
