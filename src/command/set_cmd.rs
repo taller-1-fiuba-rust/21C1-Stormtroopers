@@ -53,7 +53,7 @@ impl Command for SetCommand {
 
         let structure = get_string(structure)?;
         structure.set_string(String::from(args[0]), String::from(args[1]));
-
+      
         Ok(String::from(RESPONSE_COMMAND))
     }
 }
