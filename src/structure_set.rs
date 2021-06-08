@@ -1,5 +1,8 @@
+use crate::structure_general::Storeable;
 use std::collections::{BTreeSet, HashMap};
 use std::sync::{Arc, Mutex};
+
+use std::any::Any;
 
 pub struct StructureSet<String> {
     structure: Arc<Mutex<HashMap<String, BTreeSet<String>>>>, //se puede cambiar por un HashSet,
@@ -51,5 +54,11 @@ impl StructureSet<String> {
     pub fn dbsize(&self) -> usize {
         let structure = self.structure.lock().unwrap();
         structure.len()
+    }
+}
+
+impl Storeable for StructureSet<String> {
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }

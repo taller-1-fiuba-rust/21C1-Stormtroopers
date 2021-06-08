@@ -1,5 +1,8 @@
+use crate::structure_general::Storeable;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+
+use std::any::Any;
 
 pub struct StructureList<String> {
     structure: Arc<Mutex<HashMap<String, Vec<String>>>>,
@@ -49,5 +52,11 @@ impl StructureList<String> {
     pub fn dbsize(&self) -> usize {
         let structure = self.structure.lock().unwrap();
         structure.len()
+    }
+}
+
+impl Storeable for StructureList<String> {
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }

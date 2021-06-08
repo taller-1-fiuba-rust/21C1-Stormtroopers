@@ -5,6 +5,8 @@ use crate::structure_string::StructureString;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
+use std::any::Any;
+
 #[derive(Clone)] //ver si con esto es suficiente
 pub enum Structure {
     StructureString(StructureString<String>),
@@ -117,4 +119,37 @@ impl StructureGeneral {
         }
         response
     }
+
+    pub fn get_db(&self, name_type: String) -> Result<Box<dyn Storeable>, RunError> {
+        let db_gral = self
+            .structure
+            .lock()
+            .unwrap()
+            .get(&name_type)
+            .unwrap()
+            .clone();
+        match db_gral {
+            Structure::StructureString(s) => Ok(Box::new(s)),
+            Structure::StructureList(s) => Ok(Box::new(s)),
+            Structure::StructureSet(s) => Ok(Box::new(s)),
+        }
+    }
+
+    pub fn get_string_db(&self) -> StructureString<String> {
+        let db_gral = self
+            .structure
+            .lock()
+            .unwrap()
+            .get("String")
+            .unwrap()
+            .clone();
+        match db_gral {
+            Structure::StructureString(s) => s,
+            _ => panic!("Esto no deberia pasar!"),
+        }
+    }
+}
+
+pub trait Storeable {
+    fn as_any(&self) -> &dyn Any;
 }

@@ -2,8 +2,11 @@ use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::thread;
 
 use crate::errors::run_error::RunError;
+use crate::structure_general::Storeable;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+
+use std::any::Any;
 
 const RESPONSE_NIL: &str = "(nil)";
 
@@ -80,6 +83,37 @@ impl StructureString<String> {
         return_res
     }
 
+    pub fn mset(&self, keys: Vec<&str>) {
+        let mut structure = self.clone();
+        let keys_sender = StructureString::vec_to_str(keys);
+
+        thread::spawn(move || {
+            structure.sender.send(keys_sender).unwrap();
+            structure.mset_string();
+        })
+        .join()
+        .unwrap();
+    }
+
+    pub fn mget(&self, keys: Vec<&str>) -> Vec<String> {
+        let mut structure = self.clone();
+        let mut keys_sender = String::from("");
+        for key in keys.iter() {
+            keys_sender.push_str(key);
+            keys_sender.push(':');
+        }
+        keys_sender.pop();
+        let to_return = thread::spawn(move || {
+            structure.sender.send(keys_sender).unwrap();
+            structure.mget_string()
+        })
+        .join()
+        .unwrap();
+
+        to_return
+    }
+
+    #[allow(dead_code)]
     pub fn clean_all_data(&self) -> bool {
         let mut structure_string = self.clone();
         let mut data = self.structure.clone();
@@ -129,6 +163,7 @@ impl StructureString<String> {
         count
     }
 
+    /*
     fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) {
         let key_val_sender = self.receiver.lock().unwrap().recv().unwrap();
         let key_val_splited: Vec<&str> = key_val_sender.split(':').collect();
@@ -156,6 +191,7 @@ impl StructureString<String> {
         structure.clear();
         structure.is_empty()
     }
+     */
 
     #[allow(dead_code)]
     pub fn append(&self, key: String, value_append: String) -> u32 {
@@ -190,6 +226,81 @@ impl StructureString<String> {
             return 0;
         }
         value.chars().count() as u32
+    }
+
+    fn mget_string(&mut self) -> Vec<String> {
+        let keys_sender = self.receiver.lock().unwrap().recv().unwrap();
+        let keys_splited: Vec<&str> = keys_sender.split(':').collect();
+
+        let structure = self.structure.lock().unwrap();
+        let mut to_ret = Vec::new();
+        let mut resp_get;
+        for key in keys_splited.iter() {
+            resp_get = match structure.get(*key) {
+                Some(value) => value.clone(),
+                None => String::from(RESPONSE_NIL),
+            };
+            to_ret.push(resp_get);
+        }
+        to_ret
+    }
+
+    fn mset_string(&mut self) {
+        let keys_sender = self.receiver.lock().unwrap().recv().unwrap();
+        let keys_splited: Vec<&str> = keys_sender.split(':').collect();
+        let mut structure = self.structure.lock().unwrap();
+        for idx in 0..keys_splited.len() / 2 {
+            println!("{} {}", keys_splited[idx], keys_splited[(idx * 2) + 1]);
+            structure.insert(
+                keys_splited[idx * 2].trim().to_string(),
+                keys_splited[(idx * 2) + 1].trim().to_string(),
+            );
+        }
+    }
+
+    fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) {
+        let key_val_sender = self.receiver.lock().unwrap().recv().unwrap();
+        let key_val_splited: Vec<&str> = key_val_sender.split(':').collect();
+
+        let mut structure = data.lock().unwrap();
+        structure.insert(
+            String::from(key_val_splited[0].trim()),
+            String::from(key_val_splited[1].trim()),
+        );
+    }
+
+    fn get(&mut self, structure: &mut Arc<Mutex<HashMap<String, String>>>) -> String {
+        let key_val = self.receiver.lock().unwrap().recv().unwrap();
+
+        let data = structure.lock().unwrap();
+        match data.get(&key_val) {
+            Some(value) => value.clone(),
+            None => String::from(RESPONSE_NIL),
+        }
+    }
+
+    #[allow(dead_code)]
+    fn clean(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) -> bool {
+        self.receiver.lock().unwrap().recv().unwrap();
+        let mut structure = data.lock().unwrap();
+        structure.clear();
+        structure.is_empty()
+    }
+
+    fn vec_to_str(vec: Vec<&str>) -> String {
+        let mut str = String::from("");
+        for item in vec.iter() {
+            str.push_str(item);
+            str.push(':');
+        }
+        str.pop();
+        str
+    }
+}
+
+impl Storeable for StructureString<String> {
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -346,5 +457,41 @@ mod tests {
         structure_string.set_string(String::from("key2"), String::from(""));
         let len = structure_string.strlen(String::from("key2"));
         assert_eq!(len, 0);
+    }
+
+    #[test]
+    fn mget_test() {
+        let structure_string = StructureString::new();
+        let res = structure_string.mget(vec!["key0"]);
+        assert!(res.len() == 1);
+        assert_eq!(res[0], String::from("(nil)"));
+
+        let res2 = structure_string.mget(vec!["key0", "key1"]);
+        assert!(res2.len() == 2);
+        assert_eq!(res2[0], String::from("(nil)"));
+        assert_eq!(res2[1], String::from("(nil)"));
+
+        structure_string.set_string(String::from("key0"), String::from("val0"));
+        structure_string.set_string(String::from("key1"), String::from("val1"));
+
+        let res3 = structure_string.mget(vec!["key0", "key1", "key2"]);
+        assert!(res3.len() == 3);
+        assert_eq!(res3[0], String::from("val0"));
+        assert_eq!(res3[1], String::from("val1"));
+        assert_eq!(res3[2], String::from("(nil)"));
+    }
+
+    #[test]
+    fn mset_test() {
+        let structure_string = StructureString::new();
+        structure_string.mset(vec!["key0", "val0"]);
+        let res = structure_string.get_string("key0".to_string());
+        assert_eq!(res, String::from("val0"));
+
+        structure_string.mset(vec!["key1", "val1", "key2", "val2"]);
+        let res1 = structure_string.get_string("key1".to_string());
+        let res2 = structure_string.get_string("key2".to_string());
+        assert_eq!(res1, String::from("val1"));
+        assert_eq!(res2, String::from("val2"));
     }
 }

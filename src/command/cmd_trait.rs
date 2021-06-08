@@ -13,6 +13,8 @@ pub static EXISTS_COMMAND_STR: &str = "exists";
 pub static APPEND_COMMAND_STR: &str = "append";
 pub static RENAME_COMMAND_STR: &str = "rename";
 pub static STRLEN_COMMAND_STR: &str = "strlen";
+pub static MGET_COMMAND_STR: &str = "mget";
+pub static MSET_COMMAND_STR: &str = "mset";
 
 pub trait Command: Send + CommandClone {
     fn run(
