@@ -49,7 +49,7 @@ impl Command for SetCommand {
 
         let db_resolver = app_info.get_db_resolver();
 
-        db_resolver.clear_key(String::from(args[0].clone()));
+        db_resolver.clear_key(String::from(args[0]));
 
         db_resolver
             .get_string_db()
