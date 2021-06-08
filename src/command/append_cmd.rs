@@ -2,7 +2,6 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use crate::structure_general::get_string;
 
 const INFO_COMMAND: &str = "Run command APPEND\n";
 const CLIENT_ID: &str = "AppendCommmand";
@@ -47,13 +46,9 @@ impl Command for AppendCommmand {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        //let structure = app_info.get_structure();
-        let structure_general = app_info.get_structure();
-        let structure = structure_general.get("String".to_string());
+        let db = app_info.get_string_db();
 
-        let structure = get_string(structure)?;
-
-        let mut len_val_str = structure
+        let mut len_val_str = db
             .append(String::from(args[0]), String::from(args[1]))
             .to_string();
         len_val_str.push('\n');

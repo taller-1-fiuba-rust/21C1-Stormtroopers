@@ -2,7 +2,6 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use crate::structure_general::get_string;
 
 const INFO_COMMAND: &str = "Run command EXISTS\n";
 const CLIENT_ID: &str = "ExistsCommmand";
@@ -47,11 +46,9 @@ impl Command for ExistsCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let structure_general = app_info.get_structure();
-        let structure = structure_general.get("String".to_string());
+        let db = app_info.get_string_db();
 
-        let structure = get_string(structure)?;
-        let mut result_del = structure.exists(args).to_string();
+        let mut result_del = db.exists(args).to_string();
         result_del.push('\n');
 
         Ok(result_del)

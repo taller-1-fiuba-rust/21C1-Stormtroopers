@@ -1,28 +1,24 @@
-use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
-use std::thread;
-
 use crate::errors::run_error::RunError;
-use crate::structure_general::Storeable;
 use std::collections::HashMap;
+use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::sync::{Arc, Mutex};
-
-use std::any::Any;
+use std::thread;
 
 const RESPONSE_NIL: &str = "(nil)";
 
-pub struct StructureString<String> {
+pub struct DataBaseString<String> {
     structure: Arc<Mutex<HashMap<String, String>>>,
     sender: Arc<SyncSender<String>>,
     receiver: Arc<Mutex<Receiver<String>>>,
 }
 
-impl Default for StructureString<String> {
+impl Default for DataBaseString<String> {
     fn default() -> Self {
-        StructureString::new()
+        DataBaseString::new()
     }
 }
 
-impl Clone for StructureString<String> {
+impl Clone for DataBaseString<String> {
     fn clone(&self) -> Self {
         let sender = self.sender.clone();
         let receiver = self.receiver.clone();
@@ -35,13 +31,13 @@ impl Clone for StructureString<String> {
     }
 }
 
-impl<String> Drop for StructureString<String> {
+impl<String> Drop for DataBaseString<String> {
     fn drop(&mut self) {
         drop(self.sender.clone());
     }
 }
 
-impl StructureString<String> {
+impl DataBaseString<String> {
     pub fn new() -> Self {
         let structure = Arc::new(Mutex::new(HashMap::new()));
         let (sender, receiver) = sync_channel(10000);
@@ -83,9 +79,16 @@ impl StructureString<String> {
         return_res
     }
 
+    pub fn clear_key(&self, key: String) {
+        let mut db = self.structure.lock().unwrap().clone();
+        if db.contains_key(&key) {
+            db.remove(&key);
+        }
+    }
+
     pub fn mset(&self, keys: Vec<&str>) {
         let mut structure = self.clone();
-        let keys_sender = StructureString::vec_to_str(keys);
+        let keys_sender = DataBaseString::vec_to_str(keys);
 
         thread::spawn(move || {
             structure.sender.send(keys_sender).unwrap();
@@ -167,24 +170,20 @@ impl StructureString<String> {
     fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) {
         let key_val_sender = self.receiver.lock().unwrap().recv().unwrap();
         let key_val_splited: Vec<&str> = key_val_sender.split(':').collect();
-
         let mut structure = data.lock().unwrap();
         structure.insert(
             String::from(key_val_splited[0].trim()),
             String::from(key_val_splited[1].trim()),
         );
     }
-
     fn get(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) -> String {
         let key_val = self.receiver.lock().unwrap().recv().unwrap();
-
         let d = data.lock().unwrap();
         match d.get(&key_val) {
             Some(value) => value.clone(),
             None => String::from(RESPONSE_NIL),
         }
     }
-
     fn clean(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) -> bool {
         self.receiver.lock().unwrap().recv().unwrap();
         let mut structure = data.lock().unwrap();
@@ -298,19 +297,13 @@ impl StructureString<String> {
     }
 }
 
-impl Storeable for StructureString<String> {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn structure_string_test() {
-        let structure = StructureString::new();
+        let structure = DataBaseString::new();
         structure.set_string(String::from("test"), String::from("1"));
         let res = structure.get_string(String::from("test"));
 
@@ -319,7 +312,7 @@ mod tests {
 
     #[test]
     fn get_test() {
-        let structure = StructureString::new();
+        let structure = DataBaseString::new();
         let resp = structure.get_string(String::from("key0"));
         assert_eq!(resp, String::from(RESPONSE_NIL));
 
@@ -330,7 +323,7 @@ mod tests {
 
     #[test]
     fn clean_all_test() {
-        let structure_string = StructureString::new();
+        let structure_string = DataBaseString::new();
         structure_string.set_string(String::from("test"), String::from("1"));
         {
             assert!(!structure_string.structure.lock().unwrap().is_empty());
@@ -344,7 +337,7 @@ mod tests {
 
     #[test]
     fn dbsize_test() {
-        let structure_string = StructureString::new();
+        let structure_string = DataBaseString::new();
         structure_string.set_string(String::from("test"), String::from("1"));
         {
             assert!(structure_string.dbsize() == 1);
@@ -353,7 +346,7 @@ mod tests {
 
     #[test]
     fn copy_test() {
-        let mut structure_string = StructureString::new();
+        let mut structure_string = DataBaseString::new();
         let value0 = String::from("value0");
         structure_string.set_string(String::from("key0"), value0.clone());
         let res = structure_string.copy(String::from("key0"), String::from("key0.bis"));
@@ -365,19 +358,19 @@ mod tests {
 
     #[test]
     fn exists_test() {
-        let structure_string = StructureString::new();
+        let structure_string = DataBaseString::new();
 
         let res = structure_string.exists(vec!["key"]);
 
         assert!(res == 0);
 
-        let structure_string2 = StructureString::new();
+        let structure_string2 = DataBaseString::new();
         structure_string2.set_string(String::from("one_key"), String::from("1"));
         let res = structure_string2.exists(vec!["one_key"]);
 
         assert!(res == 1);
 
-        let structure_string2 = StructureString::new();
+        let structure_string2 = DataBaseString::new();
         structure_string2.set_string(String::from("one_key"), String::from("1"));
         structure_string2.set_string(String::from("two_key"), String::from("2"));
         let res = structure_string2.exists(vec!["one_key", "two_key", "other_key"]);
@@ -387,7 +380,7 @@ mod tests {
 
     #[test]
     fn delete_test() {
-        let mut structure_string = StructureString::new();
+        let mut structure_string = DataBaseString::new();
 
         let mut count;
         count = structure_string.delete(vec!["key0"]);
@@ -407,7 +400,7 @@ mod tests {
 
     #[test]
     fn append_test() {
-        let structure_string = StructureString::new();
+        let structure_string = DataBaseString::new();
         let mut len_val;
         len_val = structure_string.append(String::from("k0"), String::from("v0"));
 
@@ -420,7 +413,7 @@ mod tests {
 
     #[test]
     fn rename_test() {
-        let mut structure_string = StructureString::new();
+        let mut structure_string = DataBaseString::new();
         let mut res;
         let error = Err(RunError {
             message: "Error Command rename".to_string(),
@@ -442,7 +435,7 @@ mod tests {
 
     #[test]
     fn strlen_test() {
-        let structure_string = StructureString::new();
+        let structure_string = DataBaseString::new();
         let len = structure_string.strlen(String::from("key0"));
         assert_eq!(len, 0);
 
@@ -461,7 +454,7 @@ mod tests {
 
     #[test]
     fn mget_test() {
-        let structure_string = StructureString::new();
+        let structure_string = DataBaseString::new();
         let res = structure_string.mget(vec!["key0"]);
         assert!(res.len() == 1);
         assert_eq!(res[0], String::from("(nil)"));
@@ -483,7 +476,7 @@ mod tests {
 
     #[test]
     fn mset_test() {
-        let structure_string = StructureString::new();
+        let structure_string = DataBaseString::new();
         structure_string.mset(vec!["key0", "val0"]);
         let res = structure_string.get_string("key0".to_string());
         assert_eq!(res, String::from("val0"));

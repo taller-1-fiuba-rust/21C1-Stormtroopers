@@ -1,8 +1,8 @@
 use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
+//use crate::db_resolver::get_string;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use crate::structure_general::*;
 
 const INFO_RUN_COMMAND: &str = "Run command GET\n";
 const CLIENT_ID: &str = "SetCommand";
@@ -47,11 +47,8 @@ impl Command for GetCommand {
         let log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let structure_general = app_info.get_structure();
-        let structure = structure_general.get("String".to_string());
-
-        let structure = get_string(structure)?;
-        let mut string = structure.get_string(String::from(args[0]));
+        let db = app_info.get_string_db();
+        let mut string = db.get_string(String::from(args[0]));
         string.push('\n');
 
         Ok(string)

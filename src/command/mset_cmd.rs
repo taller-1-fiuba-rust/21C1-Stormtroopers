@@ -47,9 +47,8 @@ impl Command for MsetCommmand {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let gral_db = app_info.get_structure();
-        let db_string = gral_db.get_string_db();
-        db_string.mset(args);
+        let db = app_info.get_string_db();
+        db.mset(args);
 
         Ok(String::from(RESPONSE_COMMAND))
     }

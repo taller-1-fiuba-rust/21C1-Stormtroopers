@@ -2,7 +2,6 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use crate::structure_general::get_string;
 
 const INFO_COMMAND: &str = "Run command STRLEN\n";
 const CLIENT_ID: &str = "StrlenCommmand";
@@ -47,11 +46,8 @@ impl Command for StrlenCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let structure_general = app_info.get_structure();
-        let structure = structure_general.get("String".to_string());
-
-        let structure = get_string(structure)?;
-        let mut len = structure.strlen(String::from(args[0])).to_string();
+        let db = app_info.get_string_db();
+        let mut len = db.strlen(String::from(args[0])).to_string();
         len.push('\n');
 
         Ok(len)

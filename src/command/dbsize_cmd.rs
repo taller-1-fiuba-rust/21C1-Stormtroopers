@@ -47,8 +47,8 @@ impl Command for DbsizeCommand {
         let log_info_res = self.logger.info(self, INFO_DBSIZE_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let structure = app_info.get_structure();
-        let size = structure.dbsize();
+        let db = app_info.get_db_resolver();
+        let size = db.dbsize();
         let mut res_str = size.to_string();
         res_str.push(LINE_BREAK);
         Ok(res_str)
