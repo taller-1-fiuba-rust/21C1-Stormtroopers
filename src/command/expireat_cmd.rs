@@ -2,8 +2,6 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use std::time::{Duration, SystemTime};
-use crate::ttl_scheduler::TTLScheduler;
 
 const INFO_EXPIREAT_COMMAND: &str = "Run command EXPIRE_AT\n";
 const CLIENT_ID: &str = "ExpireAtCommmand";

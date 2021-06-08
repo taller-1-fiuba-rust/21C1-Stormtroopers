@@ -2,7 +2,7 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use std::time::{SystemTime, Duration, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 const INFO_EXPIRE_COMMAND: &str = "Run command EXPIRE\n";
 const CLIENT_ID: &str = "ExpireCommmand";
