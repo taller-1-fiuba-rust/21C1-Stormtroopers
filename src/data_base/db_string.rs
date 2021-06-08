@@ -183,8 +183,7 @@ impl DataBaseString<String> {
     }
 
     fn key_incr(&self, key: String, incr: i32) -> Result<i32, RunError> {
-        if self.contains(key.clone()) == false {
-            //buscar negación
+        if !self.contains(key.clone()) {
             self.set_string(key.clone(), "0".to_string());
         }
 
