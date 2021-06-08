@@ -1,18 +1,22 @@
 use crate::app_info::AppInfo;
-use crate::app_info::Connection;
 use crate::command::command_builder::CommandBuilder;
+use crate::connection::Connection;
 use crate::threadpool::ThreadPool;
+use std::env::args;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
 use std::net::{TcpListener, TcpStream};
 
-use std::env::args;
 mod app_info;
 mod command;
 mod config_server;
+mod connection;
 mod errors;
 mod logger;
 mod pubsub;
+mod structure_general;
+mod structure_list;
+mod structure_set;
 mod structure_string;
 mod threadpool;
 mod utils;
@@ -51,13 +55,17 @@ fn main() -> Result<(), std::io::Error> {
 fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Error> {
     let threadpool = ThreadPool::new(THREAD_POOL_COUNT);
 
-    let mut pubsub = app_info.get_pubsub();
+    let pubsub = app_info.get_pubsub();
 
     let listener = TcpListener::bind(&address)?;
-    for stream in listener.incoming() {
+    //let mut ids_clients = 0;
+
+    for (ids_clients, stream) in listener.incoming().enumerate() {
+        let id_client = ids_clients;
+        //ids_clients += 1;
+
+        let mut pubsub = pubsub.clone();
         let connection_client = Connection::<String>::new();
-        let id_client = app_info.get_id_client();
-        app_info.inc_ids();
 
         let (tx_client, rx_client) = (
             connection_client.get_sender(),
@@ -80,11 +88,12 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
                 stream.try_clone().unwrap(),
                 &app_info,
                 _id_global,
+                id_client,
             );
         });
 
         let rx = receiver.clone();
-        let _connection = connection_client.clone();
+        //let _connection = connection_client.clone();
         threadpool.execute(move |_| {
             let r = rx.lock().unwrap();
             for msg in r.iter() {
@@ -105,8 +114,9 @@ fn handle_connection(
     mut stream: TcpStream,
     app_info: &AppInfo,
     id: u32,
+    id_client: usize,
 ) {
-    handle_client(connection_client, &mut stream, app_info, id);
+    handle_client(connection_client, &mut stream, app_info, id, id_client);
 }
 
 fn handle_client(
@@ -114,6 +124,7 @@ fn handle_client(
     stream: &mut TcpStream,
     app_info: &AppInfo,
     id: u32,
+    id_client: usize,
 ) {
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
@@ -131,14 +142,14 @@ fn handle_client(
 
         println!("Server job {}, receive: {:?}", id, request);
 
-        let response = process_request(request, &app_info, id);
+        let response = process_request(request, &app_info, id, id_client);
         connection_client.send(response);
     }
     println!("End handle client, job {}", id);
 }
 
 //TODO: ver porque si vienen mal los args explota
-fn process_request(request: String, app_info: &AppInfo, id_job: u32) -> String {
+fn process_request(request: String, app_info: &AppInfo, id_job: u32, id_client: usize) -> String {
     let command_builder = CommandBuilder::new(id_job, app_info.get_logger());
 
     let comm = command_builder.get_command(&String::from(request.trim()));
@@ -146,7 +157,7 @@ fn process_request(request: String, app_info: &AppInfo, id_job: u32) -> String {
     command_splited.remove(0);
 
     match comm {
-        Ok(comm) => match comm.run(command_splited, app_info) {
+        Ok(comm) => match comm.run(command_splited, app_info, id_client) {
             Ok(res) => res,
             Err(res) => res.to_string(),
         },

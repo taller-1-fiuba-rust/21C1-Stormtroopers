@@ -54,7 +54,7 @@ impl Logger<String> {
         let path = generate_path_file(name_file, path_file);
 
         let file = File::create(path)?;
-        let (sender, receiver) = sync_channel(1);
+        let (sender, receiver) = sync_channel(100000);
         let sender = Arc::new(sender);
         let receiver = Arc::new(Mutex::new(receiver));
         Ok(Self {

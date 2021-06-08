@@ -15,7 +15,12 @@ pub static RENAME_COMMAND_STR: &str = "rename";
 pub static STRLEN_COMMAND_STR: &str = "strlen";
 
 pub trait Command: Send + CommandClone {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError>;
+    fn run(
+        &self,
+        args: Vec<&str>,
+        app_info: &AppInfo,
+        id_client: usize,
+    ) -> Result<String, RunError>;
 }
 
 pub trait CommandClone {

@@ -8,7 +8,7 @@ use std::sync::{Arc, Mutex};
 const RESPONSE_NIL: &str = "(nil)";
 
 pub struct StructureString<String> {
-    pub structure: Arc<Mutex<HashMap<String, String>>>,
+    structure: Arc<Mutex<HashMap<String, String>>>,
     sender: Arc<SyncSender<String>>,
     receiver: Arc<Mutex<Receiver<String>>>,
 }
@@ -39,9 +39,9 @@ impl<String> Drop for StructureString<String> {
 }
 
 impl StructureString<String> {
-    pub fn new() -> StructureString<String> {
+    pub fn new() -> Self {
         let structure = Arc::new(Mutex::new(HashMap::new()));
-        let (sender, receiver) = sync_channel(1);
+        let (sender, receiver) = sync_channel(10000);
         let sender = Arc::new(sender);
         let receiver = Arc::new(Mutex::new(receiver));
         Self {
@@ -79,7 +79,7 @@ impl StructureString<String> {
 
         return_res
     }
-    #[allow(dead_code)]
+
     pub fn clean_all_data(&self) -> bool {
         let mut structure_string = self.clone();
         let mut data = self.structure.clone();
@@ -94,8 +94,8 @@ impl StructureString<String> {
 
     #[allow(dead_code)]
     //TODO: ver esta impl
-    pub fn dbsize(&self) -> u32 {
-        self.structure.lock().unwrap().len() as u32
+    pub fn dbsize(&self) -> usize {
+        self.structure.lock().unwrap().len()
     }
 
     pub fn delete(&mut self, args: Vec<&str>) -> u32 {
@@ -149,7 +149,7 @@ impl StructureString<String> {
             None => String::from(RESPONSE_NIL),
         }
     }
-    #[allow(dead_code)]
+
     fn clean(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) -> bool {
         self.receiver.lock().unwrap().recv().unwrap();
         let mut structure = data.lock().unwrap();
