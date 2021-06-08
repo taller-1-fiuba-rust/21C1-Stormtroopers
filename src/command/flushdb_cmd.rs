@@ -47,8 +47,8 @@ impl Command for FlushdbCommand {
         let log_info_res = self.logger.info(self, INFO_FLUSHDB_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let structure = app_info.get_structure();
-        let res = match structure.clean_all_data() {
+        let db = app_info.get_db_resolver();
+        let res = match db.clean_all_data() {
             true => String::from(RESP_SIMPLE_STRING),
             false => panic!("Esto no deberia pasar!"),
         };

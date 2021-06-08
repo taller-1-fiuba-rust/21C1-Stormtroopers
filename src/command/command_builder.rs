@@ -123,14 +123,14 @@ impl Clone for CommandBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::structure_string::StructureString;
+    use crate::db_string::DataBaseString;
     use std::sync::Arc;
 
     #[test]
     fn return_ping_command() {
         let log = Logger::new("log".to_string(), "/tmp".to_string()).unwrap();
 
-        let _arc_structure = Arc::new(StructureString::new());
+        let _arc_structure = Arc::new(DataBaseString::new());
 
         let command_builder = CommandBuilder::new(0, log);
         let result = command_builder.get_command("ping");

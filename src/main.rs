@@ -11,13 +11,13 @@ mod app_info;
 mod command;
 mod config_server;
 mod connection;
+mod db_list;
+mod db_resolver;
+mod db_set;
+mod db_string;
 mod errors;
 mod logger;
 mod pubsub;
-mod structure_general;
-mod structure_list;
-mod structure_set;
-mod structure_string;
 mod threadpool;
 mod utils;
 

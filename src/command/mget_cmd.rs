@@ -2,7 +2,6 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use crate::structure_string::StructureString;
 
 const INFO_COMMAND: &str = "Run command MGET\n";
 const CLIENT_ID: &str = "MgetCommmand";
@@ -47,19 +46,9 @@ impl Command for MgetCommmand {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let db_general = app_info.get_structure();
-        let db_string = db_general.get_db(String::from("String"))?;
+        let db_string = app_info.get_string_db();
 
-        //TODO: cambiar esto!
-        let s = match (*db_string)
-            .as_any()
-            .downcast_ref::<StructureString<String>>()
-        {
-            Some(s) => s,
-            None => panic!("Error retrieve DB String!!!"),
-        };
-
-        let res = s.mget(args);
+        let res = db_string.mget(args);
         let mut to_return = String::from("");
         let mut i = 1;
         for res in res.iter() {
