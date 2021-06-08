@@ -1,23 +1,23 @@
-use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
+use crate::server::app_info::AppInfo;
+use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command DEL\n";
 const CLIENT_ID: &str = "DelCommmand";
 
-pub struct DelCommand {
+pub struct GetDelCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl DelCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> DelCommand {
-        DelCommand { id_job, logger }
+impl GetDelCommand {
+    pub fn new(id_job: u32, logger: Logger<String>) -> GetDelCommand {
+        GetDelCommand { id_job, logger }
     }
 }
 
-impl Loggable for DelCommand {
+impl Loggable for GetDelCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -27,16 +27,16 @@ impl Loggable for DelCommand {
     }
 }
 
-impl Clone for DelCommand {
-    fn clone(&self) -> DelCommand {
-        DelCommand {
+impl Clone for GetDelCommand {
+    fn clone(&self) -> GetDelCommand {
+        GetDelCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for DelCommand {
+impl Command for GetDelCommand {
     fn run(
         &self,
         args: Vec<&str>,
@@ -48,9 +48,9 @@ impl Command for DelCommand {
 
         let mut db = app_info.get_string_db();
 
-        let mut result_del = db.delete(args).to_string();
-        result_del.push('\n');
+        let mut result = db.get_del(args[0].to_string())?;
+        result.push('\n');
 
-        Ok(result_del)
+        Ok(result)
     }
 }

@@ -1,7 +1,7 @@
-use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
+use crate::server::app_info::AppInfo;
+use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command COPY\n";
 const CLIENT_ID: &str = "CopyCommmand";

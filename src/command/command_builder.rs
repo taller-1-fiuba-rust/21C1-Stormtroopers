@@ -1,26 +1,29 @@
-use crate::command::cmd_trait::{
-    Command, APPEND_COMMAND_STR, COPY_COMMAND_STR, DBSIZE_COMMAND_STR, DEL_COMMAND_STR,
-    EXISTS_COMMAND_STR, FLUSHDB_COMMAND_STR, GET_COMMAND_STR, MGET_COMMAND_STR, MSET_COMMAND_STR,
-    PING_COMMAND_STR, PUBSUB_COMMAND_STR, RENAME_COMMAND_STR, SET_COMMAND_STR, STRLEN_COMMAND_STR,
-};
-use crate::command::command_parser::obtain_str_command;
-use crate::command::get_cmd::GetCommand;
-use crate::command::ping_cmd;
-use crate::command::pubsub_cmd::PubsubCommand;
-use crate::command::set_cmd::SetCommand;
-
 use crate::command::append_cmd::AppendCommmand;
+use crate::command::cmd_trait::Command;
+use crate::command::command_parser::obtain_str_command;
+use crate::command::constants::{
+    APPEND_COMMAND_STR, COPY_COMMAND_STR, DBSIZE_COMMAND_STR, DECRBY_COMMAND_STR,
+    EXISTS_COMMAND_STR, FLUSHDB_COMMAND_STR, GETDEL_COMMAND_STR, GET_COMMAND_STR,
+    INCRBY_COMMAND_STR, MGET_COMMAND_STR, MSET_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR,
+    RENAME_COMMAND_STR, SET_COMMAND_STR, STRLEN_COMMAND_STR,
+};
 use crate::command::copy_cmd::CopyCommand;
 use crate::command::dbsize_cmd::DbsizeCommand;
-use crate::command::del_cmd::DelCommand;
+use crate::command::decrby_cmd::DecrbyCommand;
+use crate::command::del_cmd::GetDelCommand;
 use crate::command::exists_cmd::ExistsCommand;
 use crate::command::flushdb_cmd::FlushdbCommand;
+use crate::command::get_cmd::GetCommand;
+use crate::command::incrby_cmd::IncrbyCommand;
 use crate::command::mget_cmd::MgetCommmand;
 use crate::command::mset_cmd::MsetCommmand;
+use crate::command::ping_cmd;
+use crate::command::pubsub_cmd::PubsubCommand;
 use crate::command::rename_cmd::RenameCommmand;
+use crate::command::set_cmd::SetCommand;
 use crate::command::strlen_cmd::StrlenCommand;
 use crate::errors::builder_error::BuilderError;
-use crate::logger::Logger;
+use crate::server::logger::Logger;
 use std::collections::HashMap;
 
 pub struct CommandBuilder {
@@ -57,8 +60,8 @@ impl CommandBuilder {
             Box::new(DbsizeCommand::new(id_job, logger.clone())),
         );
         commands.insert(
-            String::from(DEL_COMMAND_STR),
-            Box::new(DelCommand::new(id_job, logger.clone())),
+            String::from(GETDEL_COMMAND_STR),
+            Box::new(GetDelCommand::new(id_job, logger.clone())),
         );
         commands.insert(
             String::from(COPY_COMMAND_STR),
@@ -82,11 +85,19 @@ impl CommandBuilder {
         );
         commands.insert(
             String::from(MGET_COMMAND_STR),
-            Box::new(MgetCommmand::new(id_job, logger.clone())),
+            Box::new(MgetCommmand::new(id_job, logger.clone())), //OJO, tienen 3 m, después modificar
         );
         commands.insert(
             String::from(MSET_COMMAND_STR),
-            Box::new(MsetCommmand::new(id_job, logger)),
+            Box::new(MsetCommmand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(INCRBY_COMMAND_STR),
+            Box::new(IncrbyCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(DECRBY_COMMAND_STR),
+            Box::new(DecrbyCommand::new(id_job, logger)),
         );
 
         CommandBuilder {
@@ -123,7 +134,7 @@ impl Clone for CommandBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::db_string::DataBaseString;
+    use crate::data_base::db_string::DataBaseString;
     use std::sync::Arc;
 
     #[test]

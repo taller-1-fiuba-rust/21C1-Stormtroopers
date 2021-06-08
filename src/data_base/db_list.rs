@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 pub struct DataBaseList<String> {
-    structure: Arc<Mutex<HashMap<String, Vec<String>>>>,
+    db_list: Arc<Mutex<HashMap<String, Vec<String>>>>,
 }
 
 impl Default for DataBaseList<String> {
@@ -13,27 +13,27 @@ impl Default for DataBaseList<String> {
 
 impl Clone for DataBaseList<String> {
     fn clone(&self) -> Self {
-        let structure = self.structure.clone();
-        Self { structure }
+        let db_list = self.db_list.clone();
+        Self { db_list }
     }
 }
 
 impl DataBaseList<String> {
     pub fn new() -> Self {
-        let structure = Arc::new(Mutex::new(HashMap::new()));
-        Self { structure }
+        let db_list = Arc::new(Mutex::new(HashMap::new()));
+        Self { db_list }
     }
 
     #[allow(dead_code)]
     pub fn lpush(&self, key: String, value: String) {
-        let mut structure = self.structure.lock().unwrap();
+        let mut db_list = self.db_list.lock().unwrap();
 
-        let vec_values = structure.entry(key).or_insert_with(Vec::<String>::new);
+        let vec_values = db_list.entry(key).or_insert_with(Vec::<String>::new);
         vec_values.push(value);
     }
 
     pub fn clear_key(&self, key: String) {
-        let mut db = self.structure.lock().unwrap().clone();
+        let mut db = self.db_list.lock().unwrap().clone();
         if db.contains_key(&key) {
             db.remove(&key);
         }
@@ -41,20 +41,20 @@ impl DataBaseList<String> {
 
     #[allow(dead_code)]
     pub fn get_list(&self, key: String) -> Vec<String> {
-        let structure = self.structure.lock().unwrap();
-        structure.get(&key).unwrap().clone()
+        let db_list = self.db_list.lock().unwrap();
+        db_list.get(&key).unwrap().clone()
     }
 
     #[allow(dead_code)]
     pub fn clean_all_data(&self) -> bool {
-        let mut structure = self.structure.lock().unwrap();
-        structure.clear();
-        structure.is_empty()
+        let mut db_list = self.db_list.lock().unwrap();
+        db_list.clear();
+        db_list.is_empty()
     }
 
     #[allow(dead_code)]
     pub fn dbsize(&self) -> usize {
-        let structure = self.structure.lock().unwrap();
-        structure.len()
+        let db_list = self.db_list.lock().unwrap();
+        db_list.len()
     }
 }
