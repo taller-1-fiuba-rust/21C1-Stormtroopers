@@ -11,6 +11,8 @@ pub mod del_cmd;
 pub mod exists_cmd;
 pub mod flushdb_cmd;
 pub mod get_cmd;
+pub mod mget_cmd;
+pub mod mset_cmd;
 pub mod ping_cmd;
 pub mod pubsub_cmd;
 pub mod rename_cmd;
