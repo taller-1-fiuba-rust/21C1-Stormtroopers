@@ -157,6 +157,20 @@ impl DataBaseString<String> {
         })
     }
 
+    pub fn get_set(&mut self, key: String, new_value: String) -> Result<String, RunError> {
+        if self.contains(key.clone()) {
+            let mut db = self.db.lock().unwrap();
+            let value = db.remove(&key).unwrap(); //ya sabemos que está, ese unwrap está bien
+            db.insert(key, new_value);
+
+            return Ok(value);
+        }
+        Err(RunError {
+            message: "Error getting the key".to_string(),
+            cause: "Key doesn't exist".to_string(),
+        })
+    }
+
     pub fn copy(&mut self, src_key: String, target: String) -> u32 {
         let src_val = self.get_string(src_key);
         if src_val == *RESPONSE_NIL {

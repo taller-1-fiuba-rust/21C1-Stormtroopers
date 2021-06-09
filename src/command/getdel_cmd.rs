@@ -3,8 +3,8 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
-const INFO_COMMAND: &str = "Run command DEL\n";
-const CLIENT_ID: &str = "DelCommmand";
+const INFO_COMMAND: &str = "Run command GETDEL\n";
+const CLIENT_ID: &str = "GetdelCommmand";
 
 pub struct GetDelCommand {
     id_job: u32,
