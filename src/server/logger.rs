@@ -6,7 +6,7 @@ use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-use crate::utils::format_timestamp_now;
+use crate::server::utils::format_timestamp_now;
 
 const ERROR_LOG_CREATE_FILE: &str = "Error creating file";
 

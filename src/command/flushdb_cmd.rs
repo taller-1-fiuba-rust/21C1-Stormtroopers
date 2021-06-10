@@ -1,7 +1,7 @@
-use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
+use crate::server::app_info::AppInfo;
+use crate::server::logger::{Loggable, Logger};
 use crate::RESP_SIMPLE_STRING;
 
 const INFO_FLUSHDB_COMMAND: &str = "Run command FLUSHDB\n";

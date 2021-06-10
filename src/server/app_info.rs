@@ -1,10 +1,10 @@
-use crate::config_server::ConfigServer;
-use crate::db_list::DataBaseList;
-use crate::db_resolver::*;
-use crate::db_set::DataBaseSet;
-use crate::db_string::DataBaseString;
-use crate::logger::{Loggable, Logger};
-use crate::pubsub::Pubsub;
+use crate::data_base::db_list::DataBaseList;
+use crate::data_base::db_resolver::*;
+use crate::data_base::db_set::DataBaseSet;
+use crate::data_base::db_string::DataBaseString;
+use crate::server::config_server::ConfigServer;
+use crate::server::logger::{Loggable, Logger};
+use crate::server::pubsub::Pubsub;
 
 const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...\n";
@@ -50,17 +50,17 @@ impl Clone for AppInfo {
 
 fn add_string(db_resolver: &DataBaseResolver) {
     let db_string = DataBase::DataBaseString(DataBaseString::new());
-    db_resolver.add_structure("String".to_string(), db_string);
+    db_resolver.add_data_base("String".to_string(), db_string);
 }
 
 fn add_list(db_resolver: &DataBaseResolver) {
     let db_list = DataBase::DataBaseList(DataBaseList::new());
-    db_resolver.add_structure("List".to_string(), db_list);
+    db_resolver.add_data_base("List".to_string(), db_list);
 }
 
 fn add_set(db_resolver: &DataBaseResolver) {
     let db_set = DataBase::DataBaseSet(DataBaseSet::new());
-    db_resolver.add_structure("Set".to_string(), db_set);
+    db_resolver.add_data_base("Set".to_string(), db_set);
 }
 
 fn create_structure() -> DataBaseResolver {

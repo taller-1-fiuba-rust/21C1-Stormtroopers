@@ -1,25 +1,16 @@
-use crate::app_info::AppInfo;
 use crate::command::command_builder::CommandBuilder;
-use crate::connection::Connection;
-use crate::threadpool::ThreadPool;
+use crate::server::app_info::AppInfo;
+use crate::server::connection::Connection;
+use crate::server::threadpool::ThreadPool;
 use std::env::args;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
 use std::net::{TcpListener, TcpStream};
 
-mod app_info;
 mod command;
-mod config_server;
-mod connection;
-mod db_list;
-mod db_resolver;
-mod db_set;
-mod db_string;
+mod data_base;
 mod errors;
-mod logger;
-mod pubsub;
-mod threadpool;
-mod utils;
+mod server;
 
 static THREAD_POOL_COUNT: usize = 8;
 static END_FLAG: &str = "EOF";
@@ -58,11 +49,9 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
     let pubsub = app_info.get_pubsub();
 
     let listener = TcpListener::bind(&address)?;
-    //let mut ids_clients = 0;
 
     for (ids_clients, stream) in listener.incoming().enumerate() {
         let id_client = ids_clients;
-        //ids_clients += 1;
 
         let mut pubsub = pubsub.clone();
         let connection_client = Connection::<String>::new();
@@ -93,7 +82,6 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
         });
 
         let rx = receiver.clone();
-        //let _connection = connection_client.clone();
         threadpool.execute(move |_| {
             let r = rx.lock().unwrap();
             for msg in r.iter() {
