@@ -6,7 +6,8 @@ use crate::command::constants::{
     EXISTS_COMMAND_STR, FLUSHDB_COMMAND_STR, GETDEL_COMMAND_STR, GETSET_COMMAND_STR,
     GET_COMMAND_STR, INCRBY_COMMAND_STR, LINDEX_COMMAND_STR, LLEN_COMMAND_STR, LSET_COMMAND_STR,
     MGET_COMMAND_STR, MSET_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR, RENAME_COMMAND_STR,
-    RPUSH_COMMAND_STR, SET_COMMAND_STR, STRLEN_COMMAND_STR,
+    RPUSH_COMMAND_STR, SADD_COMMAND_STR, SCARD_COMMAND_STR, SET_COMMAND_STR, SISMEMBER_COMMAND_STR,
+    SMEMBERS_COMMAND_STR, SREM_COMMAND_STR, STRLEN_COMMAND_STR,
 };
 use crate::command::copy_cmd::CopyCommand;
 use crate::command::dbsize_cmd::DbsizeCommand;
@@ -26,7 +27,12 @@ use crate::command::ping_cmd;
 use crate::command::pubsub_cmd::PubsubCommand;
 use crate::command::rename_cmd::RenameCommmand;
 use crate::command::rpush_cmd::RPushCommand;
+use crate::command::sadd_cmd::SAddCommand;
+use crate::command::scard_cmd::ScardCommmand;
 use crate::command::set_cmd::SetCommand;
+use crate::command::sismember_cmd::SismemberCommmand;
+use crate::command::smembers_cmd::SmembersCommand;
+use crate::command::srem_cmd::SremCommmand;
 use crate::command::strlen_cmd::StrlenCommand;
 use crate::errors::builder_error::BuilderError;
 use crate::server::logger::Logger;
@@ -123,7 +129,27 @@ impl CommandBuilder {
         );
         commands.insert(
             String::from(LLEN_COMMAND_STR),
-            Box::new(LLenCommand::new(id_job, logger)),
+            Box::new(LLenCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(SADD_COMMAND_STR),
+            Box::new(SAddCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(SMEMBERS_COMMAND_STR),
+            Box::new(SmembersCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(SCARD_COMMAND_STR),
+            Box::new(ScardCommmand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(SISMEMBER_COMMAND_STR),
+            Box::new(SismemberCommmand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(SREM_COMMAND_STR),
+            Box::new(SremCommmand::new(id_job, logger)),
         );
 
         CommandBuilder {

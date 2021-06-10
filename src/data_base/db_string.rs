@@ -303,7 +303,7 @@ impl DataBaseString<String> {
         let keys_splited: Vec<&str> = keys_sender.split(':').collect();
         let mut db = self.db.lock().unwrap();
         for idx in 0..keys_splited.len() / 2 {
-            println!("{} {}", keys_splited[idx], keys_splited[(idx * 2) + 1]);
+            //println!("{} {}", keys_splited[idx], keys_splited[(idx * 2) + 1]);
             db.insert(
                 keys_splited[idx * 2].trim().to_string(),
                 keys_splited[(idx * 2) + 1].trim().to_string(),
