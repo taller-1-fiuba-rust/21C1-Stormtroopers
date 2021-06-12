@@ -15,7 +15,7 @@ pub static RENAME_COMMAND_STR: &str = "rename";
 pub static STRLEN_COMMAND_STR: &str = "strlen";
 pub static EXPIREAT_COMMAND_STR: &str = "expire_at";
 pub static EXPIRE_COMMAND_STR: &str = "expire";
-
+pub static TTL_COMMAND_STR: &str = "ttl";
 
 pub trait Command: Send + CommandClone {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError>;

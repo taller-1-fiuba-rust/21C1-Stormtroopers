@@ -1,5 +1,12 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+pub fn timestamp_now() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+}
+
 pub fn format_timestamp_now() -> String {
     let time_now = SystemTime::now()
         .duration_since(UNIX_EPOCH)

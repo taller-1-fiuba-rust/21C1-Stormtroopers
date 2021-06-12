@@ -67,7 +67,6 @@ impl StructureString<String> {
 
     pub fn get_string(&self, key: String) -> String {
         let mut structure = self.clone();
-
         let mut data = self.structure.clone();
 
         let return_res = thread::spawn(move || {

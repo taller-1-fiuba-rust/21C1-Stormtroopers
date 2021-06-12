@@ -2,10 +2,15 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use std::time::{SystemTime, UNIX_EPOCH};
+use crate::utils::timestamp_now;
 
 const INFO_EXPIRE_COMMAND: &str = "Run command EXPIRE\n";
 const CLIENT_ID: &str = "ExpireCommmand";
+const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.";
+const WRONG_TTL_TYPE: &str = "Can't parse to expire time.";
+const NIL: &str = "(nil)";
+const NOT_FOUND: &str = "Key not found.";
+const WHITESPACE: &str = " ";
 
 pub struct ExpireCommand {
     id_job: u32,
@@ -40,23 +45,29 @@ impl Clone for ExpireCommand {
 impl Command for ExpireCommand {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_EXPIRE_COMMAND);
-
-        if args.len() < 2 {
-            return Err(RunError{message: String::from(args[0]), cause: String::from("Couldn't parse timestamp from string.")});
+        // First, check number of args.
+        // Second, check if the key is present. If true, set the ttl, if not, do nothing.
+        if args.len() != 2 {
+            return Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_NUMBER_ARGUMENTS)});
         }
-
-        let timestamp = args[0].parse::<u64>(); // timestamp en u64 120
-        let time_now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
-
-        match timestamp {
-            Ok(t) => {
-                app_info.get_ttl_scheduler().add_ttl(t + time_now, args[1]);
-                Ok(String::from("OK"))
-            },
-            Err(_) => Err(RunError{message: String::from(args[0]), cause: String::from("Couldn't parse timestamp from string.")})
+        
+        let structure = app_info.get_structure();
+        let string = structure.get_string(String::from(args[0]));
+        match string.as_str() {
+            NIL => Ok(String::from(NOT_FOUND)),
+            _ => {
+                let ttl_scheduler = app_info.get_ttl_scheduler();
+                let ttl = args[1].parse::<u64>(); // This ttl is in seconds.
+                match ttl {
+                    Ok(ttl) => {
+                        let time_now = timestamp_now();
+                        if ttl <= 0 {
+                            return Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_TTL_TYPE)});
+                        }
+                        return ttl_scheduler.set_ttl(ttl + time_now, String::from(args[0]))
+                    },
+                    Err(_) => Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_TTL_TYPE)}),
+                }}
         }
     }
 }

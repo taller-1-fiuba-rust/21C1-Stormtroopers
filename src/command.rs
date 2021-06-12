@@ -18,3 +18,4 @@ pub mod pubsub_cmd;
 pub mod rename_cmd;
 pub mod set_cmd;
 pub mod strlen_cmd;
+pub mod ttl_cmd;

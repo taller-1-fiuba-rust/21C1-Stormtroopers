@@ -1,7 +1,8 @@
 use crate::command::cmd_trait::{
     Command, APPEND_COMMAND_STR, COPY_COMMAND_STR, DBSIZE_COMMAND_STR, DEL_COMMAND_STR,
     EXISTS_COMMAND_STR, FLUSHDB_COMMAND_STR, GET_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR,
-    RENAME_COMMAND_STR, SET_COMMAND_STR, STRLEN_COMMAND_STR, EXPIREAT_COMMAND_STR, EXPIRE_COMMAND_STR
+    RENAME_COMMAND_STR, SET_COMMAND_STR, STRLEN_COMMAND_STR, EXPIREAT_COMMAND_STR, EXPIRE_COMMAND_STR,
+    TTL_COMMAND_STR,
 };
 use crate::command::command_parser::obtain_str_command;
 use crate::command::get_cmd::GetCommand;
@@ -19,6 +20,7 @@ use crate::command::rename_cmd::RenameCommmand;
 use crate::command::strlen_cmd::StrlenCommand;
 use crate::command::expire_cmd::ExpireCommand;
 use crate::command::expireat_cmd::ExpireAtCommand;
+use crate::command::ttl_cmd::TtlCommand;
 
 use crate::errors::builder_error::BuilderError;
 use crate::logger::Logger;
@@ -87,7 +89,11 @@ impl CommandBuilder {
         );
         commands.insert(
             String::from(EXPIREAT_COMMAND_STR),
-            Box::new(ExpireAtCommand::new(id_job, logger)),
+            Box::new(ExpireAtCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(TTL_COMMAND_STR),
+            Box::new(TtlCommand::new(id_job, logger.clone())),
         );
 
         CommandBuilder {
