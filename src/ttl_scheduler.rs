@@ -3,6 +3,10 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc::{SyncSender, Receiver, sync_channel};
 use crate::errors::run_error::RunError;
+use crate::structure_string::StructureString;
+use crate::AppInfo;
+use std::time::Duration;
+use std::thread;
 
 const TTL_CHECK_RANGE: u64 = 10;
 const RESPONSE_NIL: &str = "(nil)";
@@ -59,9 +63,20 @@ impl TTLScheduler {
         }
     }
 
-    pub fn run(&mut self) {
-        std::thread::spawn(move || {
+    // 1° check if ttl is in ttl_map
+    // 2° pass ttl_map values as a Vec to structure string
+    // 3° delete entries from ttl_map and helper
+    pub fn run(&mut self, app_info: &AppInfo) {
+        let mut ttl_scheduler = self.clone();
+        let mut structure_string = app_info.get_structure().clone();
+        let mut ttl_map = self.ttl_map.clone();
+        thread::spawn(move || {
             loop {
+                thread::sleep(Duration::from_secs(1)); // 2
+                for n in 0..TTL_CHECK_RANGE {
+                    //ttl_map.get(now - n)
+                    println!("{}", n);
+                }
             }
         });
     }
@@ -76,7 +91,7 @@ impl TTLScheduler {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.ttl_map.clone();
 
-        let ttl_h = std::thread::spawn(move || {
+        let ttl_h = thread::spawn(move || {
             ttl_scheduler.sender.send(key_val).unwrap();
             ttl_scheduler.store(&mut ttl_map)
         }).join().unwrap();
@@ -91,7 +106,7 @@ impl TTLScheduler {
         let mut ttl_scheduler = self.clone();
         let mut helper_map = self.helper_map.clone();
 
-        std::thread::spawn(move || {
+        thread::spawn(move || {
             ttl_scheduler.sender.send(arg).unwrap();
             ttl_scheduler.store_helper(&mut helper_map)
         }).join().unwrap();
@@ -101,9 +116,9 @@ impl TTLScheduler {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.helper_map.clone();
 
-        let handle = std::thread::spawn(move || {
+        let handle = thread::spawn(move || {
             ttl_scheduler.sender.send(arg).unwrap();
-            ttl_scheduler.retrieve(&mut ttl_map)
+            ttl_scheduler.retrieve_helper(&mut ttl_map)
         })
         .join()
         .unwrap();
@@ -134,12 +149,18 @@ impl TTLScheduler {
         );
     }
 
-    pub fn retrieve(&mut self, map: &mut Arc<Mutex<HashMap<String, u64>>>) -> String {
-        let value = self.receiver.lock().unwrap().recv().unwrap();
+    pub fn retrieve(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> String {
+        let key = self.receiver.lock().unwrap().recv().unwrap();
+        String::from("")
+
+    }
+
+    pub fn retrieve_helper(&mut self, map: &mut Arc<Mutex<HashMap<String, u64>>>) -> String {
+        let key = self.receiver.lock().unwrap().recv().unwrap();
 
         let map_t = map.lock().unwrap();
 
-        match map_t.get(&value) {
+        match map_t.get(&key) {
             Some(ttl) => ttl.to_string(),
             None => String::from(RESPONSE_NIL)
         }

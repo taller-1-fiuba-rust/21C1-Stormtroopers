@@ -5,7 +5,6 @@ use crate::threadpool::ThreadPool;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
 use std::net::{TcpListener, TcpStream};
-use std::sync::{Arc, Mutex};
 
 use std::env::args;
 mod app_info;
@@ -55,7 +54,7 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
 
     let mut pubsub = app_info.get_pubsub();
 
-    app_info.get_ttl_scheduler().run();
+    app_info.get_ttl_scheduler().run(&app_info);
 
     let listener = TcpListener::bind(&address)?;
     for stream in listener.incoming() {

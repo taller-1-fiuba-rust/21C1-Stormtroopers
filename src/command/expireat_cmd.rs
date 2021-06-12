@@ -6,10 +6,10 @@ use crate::logger::{Loggable, Logger};
 
 const INFO_EXPIREAT_COMMAND: &str = "Run command EXPIRE_AT\n";
 const CLIENT_ID: &str = "ExpireAtCommmand";
-const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.";
-const WRONG_TTL_TYPE: &str = "Can't parse to expire time.";
+const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
+const WRONG_TTL_TYPE: &str = "Can't parse to expire time.\n";
 const NIL: &str = "(nil)";
-const NOT_FOUND: &str = "Key not found.";
+const NOT_FOUND: &str = "Key not found.\n";
 const WHITESPACE: &str = " ";
 
 pub struct ExpireAtCommand {
@@ -63,7 +63,9 @@ impl Command for ExpireAtCommand {
                         if ttl <= timestamp_now() {
                             return Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_TTL_TYPE)});
                         }
-                        return ttl_scheduler.set_ttl(ttl, String::from(args[0]))
+                        let mut return_value = ttl_scheduler.set_ttl(ttl, String::from(args[0])).unwrap();
+                        return_value.push('\n');
+                        Ok(return_value)
                     },
                     Err(_) => Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_TTL_TYPE)}),
                 }
