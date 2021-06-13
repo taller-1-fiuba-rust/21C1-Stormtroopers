@@ -1,5 +1,5 @@
+use regex::Regex;
 use std::collections::{BTreeSet, HashMap};
-
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -93,6 +93,11 @@ impl Pubsub {
         subbed_clients.insert(client);
     }
 
+    pub fn create_channel(&mut self, channel: String) {
+        let mut channels_lock = self.channels.lock().unwrap();
+        channels_lock.insert(channel, BTreeSet::new());
+    }
+
     pub fn len_channels(&self) -> usize {
         let channels = self.channels.lock().unwrap();
         channels.len()
@@ -148,6 +153,20 @@ impl Pubsub {
 
         for key in channels.keys() {
             channels_vec.push((*(key.clone())).to_string());
+        }
+
+        channels_vec
+    }
+
+    pub fn available_channels_pattern(&self, pattern: &str) -> Vec<String> {
+        let mut channels_vec = Vec::<String>::new();
+        let channels = self.channels.lock().unwrap();
+        let re = Regex::new(pattern).unwrap();
+
+        for key in channels.keys() {
+            if re.is_match(&key) {
+                channels_vec.push((*(key.clone())).to_string());
+            }
         }
 
         channels_vec

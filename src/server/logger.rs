@@ -1,3 +1,4 @@
+use crate::server::utils::format_timestamp_now;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::Error;
@@ -5,8 +6,6 @@ use std::io::SeekFrom;
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::sync::{Arc, Mutex};
 use std::thread;
-
-use crate::server::utils::format_timestamp_now;
 
 const ERROR_LOG_CREATE_FILE: &str = "Error creating file";
 
