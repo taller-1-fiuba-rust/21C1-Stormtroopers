@@ -1,3 +1,4 @@
+use crate::data_base::data_db::Data;
 use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -6,7 +7,7 @@ const SUCCESS: &str = "OK";
 const EMPTY_LIST: usize = 0;
 
 pub struct DataBaseList<String> {
-    db_list: Arc<Mutex<HashMap<String, Vec<String>>>>,
+    db_list: Arc<Mutex<HashMap<String, Data<String>>>>,
 }
 
 impl Default for DataBaseList<String> {
@@ -28,12 +29,18 @@ impl DataBaseList<String> {
         Self { db_list }
     }
 
+    fn get_value(&self, key: String) -> Data<String> {
+        let db = self.db_list.lock().unwrap();
+        db.get(&key).unwrap().clone() //chequear que esté
+    }
+
     #[allow(dead_code)]
     pub fn lpush(&self, key: String, value: String) {
         let mut db_list = self.db_list.lock().unwrap();
 
-        let vec_values = db_list.entry(key).or_insert_with(Vec::<String>::new);
-        vec_values.push(value);
+        let vec_values = db_list.entry(key).or_insert_with(Data::new);
+        //vec_values.push(List::new(value));
+        vec_values.get_value().push(value);
     }
 
     pub fn clear_key(&self, key: String) {
@@ -61,7 +68,7 @@ impl DataBaseList<String> {
 
         let db = self.db_list.lock().unwrap();
         if let Some(list) = db.get(&key) {
-            return Ok(list.to_vec());
+            return Ok(list.get_value().to_vec());
         }
 
         Err(RunError {
@@ -78,7 +85,7 @@ impl DataBaseList<String> {
     pub fn llen(&self, key: String) -> Result<usize, RunError> {
         let db = self.db_list.lock().unwrap();
         if let Some(list) = db.get(&key) {
-            return Ok(list.len());
+            return Ok(list.get_value().len());
         }
 
         Ok(EMPTY_LIST) //lista vacía por no existir
@@ -126,7 +133,7 @@ impl DataBaseList<String> {
             return true;
         }
 
-        db.insert(key, Vec::<String>::new());
+        db.insert(key, Data::new());
         false
     }
 
@@ -141,7 +148,9 @@ impl DataBaseList<String> {
 
     fn insert(&self, key: String, value: Vec<String>) {
         let mut db = self.db_list.lock().unwrap();
-        db.insert(key, value);
+        let mut list = Data::new();
+        list.insert_values(value);
+        db.insert(key, list);
     }
 
     fn insert_value_in_pos(&self, key: String, pos: usize, value: String) {
@@ -165,8 +174,8 @@ impl DataBaseList<String> {
         self.validate_or_insert_key(key.clone());
         let mut db = self.db_list.lock().unwrap();
         let mut list = db.get(&key).unwrap().clone(); //sé que existe, porque la validé o inserté antes
-        list.push(value);
-        db.insert(key, list.to_vec());
+        list.insert_value(value);
+        db.insert(key, list);
     }
 
     pub fn rpush(&self, key: String, values: Vec<&str>) -> Result<String, RunError> {
@@ -174,5 +183,39 @@ impl DataBaseList<String> {
             self.insert_value(key.clone(), value.to_string().clone());
         }
         Ok(SUCCESS.to_string())
+    }
+
+    pub fn contains(&self, key: String) -> bool {
+        let db = self.db_list.lock().unwrap().clone();
+        db.contains_key(&key)
+    }
+
+    pub fn sort(&self, key: String) -> Result<Vec<String>, RunError> {
+        if let Ok(list) = self.get_list(key) {
+            let mut list_client = list;
+            list_client.sort();
+            return Ok(list_client);
+        }
+
+        Err(RunError {
+            message: "Key is not a list".to_string(),
+            cause: "The key may be a string/set or may not be in the db\n".to_string(),
+        })
+    }
+
+    pub fn touch_key(&self, key: String) -> usize {
+        if self.contains(key.clone()) {
+            self.get_value(key).update_touch();
+            return 1;
+        }
+        0
+    }
+
+    pub fn touch(&self, keys: Vec<String>) -> usize {
+        let mut cont = 0;
+        for key in keys {
+            cont += self.touch_key(key);
+        }
+        cont
     }
 }

@@ -7,7 +7,8 @@ use crate::command::constants::{
     GET_COMMAND_STR, INCRBY_COMMAND_STR, LINDEX_COMMAND_STR, LLEN_COMMAND_STR, LSET_COMMAND_STR,
     MGET_COMMAND_STR, MSET_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR, RENAME_COMMAND_STR,
     RPUSH_COMMAND_STR, SADD_COMMAND_STR, SCARD_COMMAND_STR, SET_COMMAND_STR, SISMEMBER_COMMAND_STR,
-    SMEMBERS_COMMAND_STR, SREM_COMMAND_STR, STRLEN_COMMAND_STR,
+    SMEMBERS_COMMAND_STR, SORT_COMMAND_STR, SREM_COMMAND_STR, STRLEN_COMMAND_STR,
+    TOUCH_COMMAND_STR, TYPE_COMMAND_STR,
 };
 use crate::command::copy_cmd::CopyCommand;
 use crate::command::dbsize_cmd::DbsizeCommand;
@@ -32,8 +33,11 @@ use crate::command::scard_cmd::ScardCommmand;
 use crate::command::set_cmd::SetCommand;
 use crate::command::sismember_cmd::SismemberCommmand;
 use crate::command::smembers_cmd::SmembersCommand;
+use crate::command::sort_cmd::SortCommand;
 use crate::command::srem_cmd::SremCommmand;
 use crate::command::strlen_cmd::StrlenCommand;
+use crate::command::touch_cmd::TouchCommand;
+use crate::command::type_cmd::TypeCommand;
 use crate::errors::builder_error::BuilderError;
 use crate::server::logger::Logger;
 use std::collections::HashMap;
@@ -76,6 +80,10 @@ impl CommandBuilder {
             Box::new(GetDelCommand::new(id_job, logger.clone())),
         );
         commands.insert(
+            String::from(TYPE_COMMAND_STR),
+            Box::new(TypeCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
             String::from(COPY_COMMAND_STR),
             Box::new(CopyCommand::new(id_job, logger.clone())),
         );
@@ -84,12 +92,20 @@ impl CommandBuilder {
             Box::new(ExistsCommand::new(id_job, logger.clone())),
         );
         commands.insert(
+            String::from(TOUCH_COMMAND_STR),
+            Box::new(TouchCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
             String::from(APPEND_COMMAND_STR),
             Box::new(AppendCommmand::new(id_job, logger.clone())),
         );
         commands.insert(
             String::from(RENAME_COMMAND_STR),
             Box::new(RenameCommmand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(SORT_COMMAND_STR),
+            Box::new(SortCommand::new(id_job, logger.clone())),
         );
         commands.insert(
             String::from(STRLEN_COMMAND_STR),

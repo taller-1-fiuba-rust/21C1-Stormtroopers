@@ -1,7 +1,7 @@
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_set::DataBaseSet;
 use crate::data_base::db_string::DataBaseString;
-//use crate::errors::run_error::RunError;
+use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -128,5 +128,65 @@ impl DataBaseResolver {
             DataBase::DataBaseSet(s) => s,
             _ => panic!("Esto no deberia pasar!"),
         }
+    }
+
+    //1. chequeo si existe en list o set -> si no existe, error (aunque exista en strings)
+    //2. si existe, le dejo a esa db que la ordene
+    pub fn sort(&self, key: String) -> Result<Vec<String>, RunError> {
+        let db_list = self.get_list_db();
+        let db_set = self.get_set_db();
+
+        if db_list.contains(key.clone()) {
+            return db_list.sort(key);
+        } else if db_set.contains(key.clone()) {
+            return db_set.sort(key);
+        }
+
+        Err(RunError {
+            message: "Key is not a list or set".to_string(),
+            cause: "The key may be a string or may not be in the db\n".to_string(),
+        })
+    }
+
+    pub fn check_db_string(&self, key: String) -> bool {
+        let db_string = self.get_string_db();
+        db_string.contains(key)
+    }
+
+    pub fn check_db_list(&self, key: String) -> bool {
+        let db_list = self.get_list_db();
+        db_list.contains(key)
+    }
+
+    pub fn check_db_set(&self, key: String) -> bool {
+        let db_set = self.get_set_db();
+        db_set.contains(key)
+    }
+
+    pub fn type_key(&self, key: String) -> Result<String, RunError> {
+        if self.check_db_string(key.clone()) {
+            return Ok("String".to_string());
+        } else if self.check_db_list(key.clone()) {
+            return Ok("List".to_string());
+        } else if self.check_db_set(key) {
+            return Ok("Set".to_string());
+        }
+
+        Err(RunError {
+            message: "Key is not in db".to_string(),
+            cause: "First, insert the key in the db".to_string(),
+        })
+    }
+
+    pub fn touch(&self, keys: Vec<String>) -> usize {
+        let db_string = self.get_string_db();
+        let db_list = self.get_list_db();
+        let db_set = self.get_set_db();
+
+        let mut cont = db_string.touch(keys.clone());
+        cont += db_list.touch(keys.clone());
+        cont += db_set.touch(keys);
+
+        cont
     }
 }

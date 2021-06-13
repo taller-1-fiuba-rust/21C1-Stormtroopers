@@ -6,8 +6,51 @@ use std::thread;
 
 const RESPONSE_NIL: &str = "(nil)";
 
+use std::time::SystemTime;
+
+pub struct DataString<String> {
+    value: String,
+    time_touch: SystemTime,
+}
+
+impl Clone for DataString<String> {
+    fn clone(&self) -> Self {
+        Self {
+            value: self.value.clone(),
+            time_touch: self.time_touch,
+        }
+    }
+}
+
+impl DataString<String> {
+    pub fn new() -> Self {
+        Self {
+            value: String::new(),
+            time_touch: SystemTime::now(),
+        }
+    }
+
+    pub fn get_value(&self) -> String {
+        self.value.clone()
+    }
+
+    #[allow(dead_code)]
+    pub fn get_time_touch(&self) -> SystemTime {
+        self.time_touch
+    }
+
+    pub fn update_touch(&mut self) {
+        self.time_touch = SystemTime::now();
+    }
+
+    pub fn insert_value(&mut self, value: String) {
+        self.value = value;
+        self.time_touch = SystemTime::now();
+    }
+}
+
 pub struct DataBaseString<String> {
-    db: Arc<Mutex<HashMap<String, String>>>,
+    db: Arc<Mutex<HashMap<String, DataString<String>>>>,
     sender: Arc<SyncSender<String>>,
     receiver: Arc<Mutex<Receiver<String>>>,
 }
@@ -48,6 +91,12 @@ impl DataBaseString<String> {
             sender,
             receiver,
         }
+    }
+
+    fn get_value(&self, key: String) -> DataString<String> {
+        let db = self.db.lock().unwrap();
+
+        db.get(&key).unwrap().clone() //chequear que esté antes
     }
 
     pub fn set_string(&self, key: String, value: String) {
@@ -149,7 +198,7 @@ impl DataBaseString<String> {
     pub fn get_del(&mut self, key: String) -> Result<String, RunError> {
         if self.contains(key.clone()) {
             let mut db = self.db.lock().unwrap();
-            return Ok(db.remove(&key).unwrap()); //ya sabemos que está, ese unwrap está bien
+            return Ok(db.remove(&key).unwrap().get_value()); //ya sabemos que está, ese unwrap está bien
         }
         Err(RunError {
             message: "Error getting the key".to_string(),
@@ -161,9 +210,11 @@ impl DataBaseString<String> {
         if self.contains(key.clone()) {
             let mut db = self.db.lock().unwrap();
             let value = db.remove(&key).unwrap(); //ya sabemos que está, ese unwrap está bien
-            db.insert(key, new_value);
+            let mut data = DataString::new();
+            data.insert_value(new_value);
+            db.insert(key, data);
 
-            return Ok(value);
+            return Ok(value.get_value());
         }
         Err(RunError {
             message: "Error getting the key".to_string(),
@@ -290,7 +341,7 @@ impl DataBaseString<String> {
         let mut resp_get;
         for key in keys_splited.iter() {
             resp_get = match db.get(*key) {
-                Some(value) => value.clone(),
+                Some(value) => value.get_value(),
                 None => String::from(RESPONSE_NIL),
             };
             to_ret.push(resp_get);
@@ -303,37 +354,35 @@ impl DataBaseString<String> {
         let keys_splited: Vec<&str> = keys_sender.split(':').collect();
         let mut db = self.db.lock().unwrap();
         for idx in 0..keys_splited.len() / 2 {
-            //println!("{} {}", keys_splited[idx], keys_splited[(idx * 2) + 1]);
-            db.insert(
-                keys_splited[idx * 2].trim().to_string(),
-                keys_splited[(idx * 2) + 1].trim().to_string(),
-            );
+            let mut data = DataString::new();
+            data.insert_value(keys_splited[(idx * 2) + 1].trim().to_string());
+
+            db.insert(keys_splited[idx * 2].trim().to_string(), data);
         }
     }
 
-    fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) {
+    fn save(&mut self, data: &mut Arc<Mutex<HashMap<String, DataString<String>>>>) {
         let key_val_sender = self.receiver.lock().unwrap().recv().unwrap();
         let key_val_splited: Vec<&str> = key_val_sender.split(':').collect();
 
         let mut db = data.lock().unwrap();
-        db.insert(
-            String::from(key_val_splited[0].trim()),
-            String::from(key_val_splited[1].trim()),
-        );
+        let mut data = DataString::new();
+        data.insert_value(String::from(key_val_splited[1].trim()));
+        db.insert(String::from(key_val_splited[0].trim()), data);
     }
 
-    fn get(&mut self, db: &mut Arc<Mutex<HashMap<String, String>>>) -> String {
+    fn get(&mut self, db: &mut Arc<Mutex<HashMap<String, DataString<String>>>>) -> String {
         let key_val = self.receiver.lock().unwrap().recv().unwrap();
 
         let data = db.lock().unwrap();
         match data.get(&key_val) {
-            Some(value) => value.clone(),
+            Some(value) => value.get_value(),
             None => String::from(RESPONSE_NIL),
         }
     }
 
     #[allow(dead_code)]
-    fn clean(&mut self, data: &mut Arc<Mutex<HashMap<String, String>>>) -> bool {
+    fn clean(&mut self, data: &mut Arc<Mutex<HashMap<String, DataString<String>>>>) -> bool {
         self.receiver.lock().unwrap().recv().unwrap();
         let mut db = data.lock().unwrap();
         db.clear();
@@ -348,6 +397,22 @@ impl DataBaseString<String> {
         }
         str.pop();
         str
+    }
+
+    pub fn touch_key(&self, key: String) -> usize {
+        if self.contains(key.clone()) {
+            self.get_value(key).update_touch();
+            return 1;
+        }
+        0
+    }
+
+    pub fn touch(&self, keys: Vec<String>) -> usize {
+        let mut cont = 0;
+        for key in keys {
+            cont += self.touch_key(key);
+        }
+        cont
     }
 }
 

@@ -29,5 +29,8 @@ pub mod scard_cmd;
 pub mod set_cmd;
 pub mod sismember_cmd;
 pub mod smembers_cmd;
+pub mod sort_cmd;
 pub mod srem_cmd;
 pub mod strlen_cmd;
+pub mod touch_cmd;
+pub mod type_cmd;
