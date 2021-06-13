@@ -19,6 +19,7 @@ pub mod lindex_cmd;
 pub mod llen_cmd;
 pub mod lset_cmd;
 pub mod mget_cmd;
+pub mod monitor_cmd;
 pub mod mset_cmd;
 pub mod ping_cmd;
 pub mod pubsub_cmd;

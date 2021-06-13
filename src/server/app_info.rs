@@ -28,6 +28,7 @@ pub struct AppInfo {
     logger: Logger<String>,
     db: DataBaseResolver,
     pubsub: Pubsub,
+    private_pubsub: Pubsub,
 }
 
 impl Clone for AppInfo {
@@ -37,6 +38,7 @@ impl Clone for AppInfo {
         let args = self.args.clone();
         let db = self.db.clone();
         let pubsub = self.pubsub.clone();
+        let private_pubsub = self.private_pubsub.clone();
 
         Self {
             args,
@@ -44,6 +46,7 @@ impl Clone for AppInfo {
             logger,
             db,
             pubsub,
+            private_pubsub,
         }
     }
 }
@@ -72,6 +75,13 @@ fn create_structure() -> DataBaseResolver {
     db_resolver
 }
 
+fn create_private_pubsub() -> Pubsub {
+    //ver si lo necesito, o con los sucribe de los comandos ya basta
+    let mut pubsub = Pubsub::new();
+    pubsub.create_channel("MONITOR".to_string());
+    pubsub
+}
+
 impl AppInfo {
     pub fn new(args: Vec<String>) -> Self {
         let config_server = ConfigServer::new();
@@ -80,6 +90,7 @@ impl AppInfo {
         let db = create_structure();
 
         let pubsub = Pubsub::new();
+        let private_pubsub = create_private_pubsub();
 
         Self {
             args,
@@ -87,6 +98,7 @@ impl AppInfo {
             logger,
             db,
             pubsub,
+            private_pubsub,
         }
     }
 
@@ -104,6 +116,10 @@ impl AppInfo {
 
     pub fn get_pubsub(&self) -> Pubsub {
         self.pubsub.clone()
+    }
+
+    pub fn get_private_pubsub(&self) -> Pubsub {
+        self.private_pubsub.clone()
     }
 
     pub fn load_config(&mut self, argv: Vec<String>) -> Result<(), std::io::Error> {
@@ -137,5 +153,9 @@ impl AppInfo {
 
     pub fn get_set_db(&self) -> DataBaseSet<String> {
         self.db.get_set_db()
+    }
+
+    pub fn get_server_port(&self) -> String {
+        self.config_server.get_server_port(self.get_logger())
     }
 }

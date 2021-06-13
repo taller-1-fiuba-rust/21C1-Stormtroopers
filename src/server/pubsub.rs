@@ -93,6 +93,11 @@ impl Pubsub {
         subbed_clients.insert(client);
     }
 
+    pub fn create_channel(&mut self, channel: String) {
+        let mut channels_lock = self.channels.lock().unwrap();
+        channels_lock.insert(channel, BTreeSet::new());
+    }
+
     pub fn len_channels(&self) -> usize {
         let channels = self.channels.lock().unwrap();
         channels.len()

@@ -27,3 +27,4 @@ pub static SREM_COMMAND_STR: &str = "srem";
 pub static SORT_COMMAND_STR: &str = "sort";
 pub static TYPE_COMMAND_STR: &str = "type";
 pub static TOUCH_COMMAND_STR: &str = "touch";
+pub static MONITOR_COMMAND_STR: &str = "monitor";
