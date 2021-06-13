@@ -127,7 +127,7 @@ fn handle_client(
 
     for line in lines {
         //hacer un poco más prolijo esto
-        if request != "monitor".to_string() {
+        if request != *"monitor" {
             let app_info = app_info.clone();
             request = line.unwrap_or_else(|_| String::from(END_FLAG));
 
