@@ -34,83 +34,64 @@ impl DataBaseList<String> {
         db.get(&key).unwrap().clone() //chequear que esté
     }
 
-    #[allow(dead_code)]
-    pub fn lpush(&self, key: String, value: String) {
+    pub fn lpush(&self, mut args: Vec<&str>) -> u32 {
         let mut db_list = self.db_list.lock().unwrap();
-
-        let vec_values = db_list.entry(key).or_insert_with(Data::new);
-        //vec_values.push(List::new(value));
-        vec_values.get_value().push(value);
-    }
-
-    pub fn clear_key(&self, key: String) {
-        let mut db = self.db_list.lock().unwrap().clone();
-        if db.contains_key(&key) {
-            db.remove(&key);
+        let key = args.remove(0);
+        args.reverse();
+        let vec_values = db_list.entry(String::from(key)).or_insert_with(Data::new);
+        let mut insertions = 0_u32;
+        for val in args.iter() {
+            vec_values.insert_value(String::from(*val));
+            insertions += 1;
         }
+        insertions
     }
 
-    #[allow(dead_code)]
-    pub fn clean_all_data(&self) -> bool {
-        let mut db_list = self.db_list.lock().unwrap();
-        db_list.clear();
-        db_list.is_empty()
-    }
-
-    #[allow(dead_code)]
-    pub fn dbsize(&self) -> usize {
+    //TODO: ver impl con nros negativos!
+    pub fn lrange(&self, args: Vec<&str>) -> Vec<String> {
+        let key = args[0];
         let db_list = self.db_list.lock().unwrap();
-        db_list.len()
-    }
+        let list: Vec<String> = match db_list.get(key) {
+            Some(l) => l.get_value(),
+            None => return vec![],
+        };
 
-    fn get_list(&self, key: String) -> Result<Vec<String>, RunError> {
-        self.validate_or_insert_key(key.clone());
-
-        let db = self.db_list.lock().unwrap();
-        if let Some(list) = db.get(&key) {
-            return Ok(list.get_value().to_vec());
+        let mut rini_i32 = args[1].parse::<i32>().unwrap();
+        let mut rend_i32 = args[2].parse::<i32>().unwrap();
+        if rini_i32 < 0 {
+            rini_i32 += list.len() as i32;
         }
-
-        Err(RunError {
-            message: "Key not in db".to_string(),
-            cause: "First, insert the key in db\n".to_string(),
-        })
-    }
-
-    fn get_in_pos(&self, key: String, pos: usize) -> Result<String, RunError> {
-        let list = self.get_list(key)?;
-        Ok(list[pos].clone())
-    }
-
-    pub fn llen(&self, key: String) -> Result<usize, RunError> {
-        let db = self.db_list.lock().unwrap();
-        if let Some(list) = db.get(&key) {
-            return Ok(list.get_value().len());
+        if rend_i32 < 0 {
+            rend_i32 += list.len() as i32;
         }
+        if rini_i32 > rend_i32 || (rini_i32 < 0 && rend_i32 < 0) {
+            return vec![];
+        }
+        if rend_i32 > (list.len() as i32 - 1) {
+            rend_i32 = list.len() as i32 - 1;
+        }
+        let rini = rini_i32 as usize;
+        let rend = rend_i32 as usize;
 
-        Ok(EMPTY_LIST) //lista vacía por no existir
+        list[rini..=rend].to_vec()
     }
 
-    fn validate_pos(&self, pos: String) -> Result<i32, RunError> {
-        if let Ok(val) = pos.parse::<i32>() {
-            Ok(val)
-        } else {
-            Err(RunError {
-                message: "Position is not an integer".to_string(),
-                cause: "The argument cannot be interpreted as an integer\n".to_string(),
-            })
-        }
-    }
+    pub fn lpop(&self, args: Vec<&str>) -> Vec<String> {
+        let key = args[0];
+        let mut db_list = self.db_list.lock().unwrap();
+        let mut list: Vec<String> = match db_list.get(key) {
+            Some(l) => l.get_value(),
+            None => return vec![],
+        };
 
-    fn validate_pos_and_len(&self, key: String, position: &i32) -> Result<(), RunError> {
-        let list = self.get_list(key)?;
-        if (*position as usize) >= list.len() {
-            return Err(RunError {
-                message: "Position is bigger than the len of the list".to_string(),
-                cause: "The argument exceeds the limits of the list\n".to_string(),
-            });
-        }
-        Ok(())
+        let item = list.remove(0);
+
+        let mut data = Data::new();
+        data.insert_values(list);
+
+        db_list.insert(String::from(key), data);
+
+        vec![item]
     }
 
     pub fn lindex(&self, key: String, pos: String) -> Result<String, RunError> {
@@ -126,15 +107,13 @@ impl DataBaseList<String> {
         }
     }
 
-    fn validate_or_insert_key(&self, key: String) -> bool {
-        //devuelve true si existía previamente
-        let mut db = self.db_list.lock().unwrap();
-        if db.contains_key(&key) {
-            return true;
+    pub fn llen(&self, key: String) -> Result<usize, RunError> {
+        let db = self.db_list.lock().unwrap();
+        if let Some(list) = db.get(&key) {
+            return Ok(list.get_value().len());
         }
 
-        db.insert(key, Data::new());
-        false
+        Ok(EMPTY_LIST) //lista vacía por no existir
     }
 
     pub fn lset(&self, key: String, pos: String, value: String) -> Result<String, RunError> {
@@ -144,38 +123,6 @@ impl DataBaseList<String> {
 
         self.insert_and_remove_value_in_pos(key, position as usize, value);
         Ok(SUCCESS.to_string())
-    }
-
-    fn insert(&self, key: String, value: Vec<String>) {
-        let mut db = self.db_list.lock().unwrap();
-        let mut list = Data::new();
-        list.insert_values(value);
-        db.insert(key, list);
-    }
-
-    fn insert_value_in_pos(&self, key: String, pos: usize, value: String) {
-        let mut list = self.get_list(key.clone()).unwrap();
-        list.insert(pos, value);
-        self.insert(key, list.to_vec());
-    }
-
-    fn remove_value_in_pos(&self, key: String, pos: usize) {
-        let mut list = self.get_list(key.clone()).unwrap();
-        list.remove(pos);
-        self.insert(key, list.to_vec());
-    }
-
-    fn insert_and_remove_value_in_pos(&self, key: String, pos: usize, value: String) {
-        self.remove_value_in_pos(key.clone(), pos);
-        self.insert_value_in_pos(key, pos, value);
-    }
-
-    fn insert_value(&self, key: String, value: String) {
-        self.validate_or_insert_key(key.clone());
-        let mut db = self.db_list.lock().unwrap();
-        let mut list = db.get(&key).unwrap().clone(); //sé que existe, porque la validé o inserté antes
-        list.insert_value(value);
-        db.insert(key, list);
     }
 
     pub fn rpush(&self, key: String, values: Vec<&str>) -> Result<String, RunError> {
@@ -217,5 +164,109 @@ impl DataBaseList<String> {
             cont += self.touch_key(key);
         }
         cont
+    }
+
+    pub fn clear_key(&self, key: String) {
+        let mut db = self.db_list.lock().unwrap().clone();
+        if db.contains_key(&key) {
+            db.remove(&key);
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn clean_all_data(&self) -> bool {
+        let mut db_list = self.db_list.lock().unwrap();
+        db_list.clear();
+        db_list.is_empty()
+    }
+
+    #[allow(dead_code)]
+    pub fn dbsize(&self) -> usize {
+        let db_list = self.db_list.lock().unwrap();
+        db_list.len()
+    }
+
+    fn get_list(&self, key: String) -> Result<Vec<String>, RunError> {
+        self.validate_or_insert_key(key.clone());
+
+        let db = self.db_list.lock().unwrap();
+        if let Some(list) = db.get(&key) {
+            return Ok(list.get_value().to_vec());
+        }
+
+        Err(RunError {
+            message: "Key not in db".to_string(),
+            cause: "First, insert the key in db\n".to_string(),
+        })
+    }
+
+    fn get_in_pos(&self, key: String, pos: usize) -> Result<String, RunError> {
+        let list = self.get_list(key)?;
+        Ok(list[pos].clone())
+    }
+
+    fn validate_pos(&self, pos: String) -> Result<i32, RunError> {
+        if let Ok(val) = pos.parse::<i32>() {
+            Ok(val)
+        } else {
+            Err(RunError {
+                message: "Position is not an integer".to_string(),
+                cause: "The argument cannot be interpreted as an integer\n".to_string(),
+            })
+        }
+    }
+
+    fn validate_pos_and_len(&self, key: String, position: &i32) -> Result<(), RunError> {
+        let list = self.get_list(key)?;
+        if (*position as usize) >= list.len() {
+            return Err(RunError {
+                message: "Position is bigger than the len of the list".to_string(),
+                cause: "The argument exceeds the limits of the list\n".to_string(),
+            });
+        }
+        Ok(())
+    }
+
+    fn validate_or_insert_key(&self, key: String) -> bool {
+        //devuelve true si existía previamente
+        let mut db = self.db_list.lock().unwrap();
+        if db.contains_key(&key) {
+            return true;
+        }
+
+        db.insert(key, Data::new());
+        false
+    }
+
+    fn insert(&self, key: String, value: Vec<String>) {
+        let mut db = self.db_list.lock().unwrap();
+        let mut list = Data::new();
+        list.insert_values(value);
+        db.insert(key, list);
+    }
+
+    fn insert_value_in_pos(&self, key: String, pos: usize, value: String) {
+        let mut list = self.get_list(key.clone()).unwrap();
+        list.insert(pos, value);
+        self.insert(key, list.to_vec());
+    }
+
+    fn remove_value_in_pos(&self, key: String, pos: usize) {
+        let mut list = self.get_list(key.clone()).unwrap();
+        list.remove(pos);
+        self.insert(key, list.to_vec());
+    }
+
+    fn insert_and_remove_value_in_pos(&self, key: String, pos: usize, value: String) {
+        self.remove_value_in_pos(key.clone(), pos);
+        self.insert_value_in_pos(key, pos, value);
+    }
+
+    fn insert_value(&self, key: String, value: String) {
+        self.validate_or_insert_key(key.clone());
+        let mut db = self.db_list.lock().unwrap();
+        let mut list = db.get(&key).unwrap().clone(); //sé que existe, porque la validé o inserté antes
+        list.insert_value(value);
+        db.insert(key, list);
     }
 }

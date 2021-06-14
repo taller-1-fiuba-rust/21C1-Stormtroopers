@@ -28,3 +28,6 @@ pub static SORT_COMMAND_STR: &str = "sort";
 pub static TYPE_COMMAND_STR: &str = "type";
 pub static TOUCH_COMMAND_STR: &str = "touch";
 pub static MONITOR_COMMAND_STR: &str = "monitor";
+pub static LPUSH_COMMAND_STR: &str = "lpush";
+pub static LRANGE_COMMAND_STR: &str = "lrange";
+pub static LPOP_COMMAND_STR: &str = "lpop";
