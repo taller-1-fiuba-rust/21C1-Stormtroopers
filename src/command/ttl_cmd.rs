@@ -9,7 +9,6 @@ const CLIENT_ID: &str = "ExpireCommmand";
 const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
 const TTL_ZERO_OR_ABSENT: &str = "-2\n";
 const NIL: &str = "(nil)";
-const NOT_FOUND: &str = "Key not found.\n";
 const WHITESPACE: &str = " ";
 const NEW_LINE: &str = "\n";
 
