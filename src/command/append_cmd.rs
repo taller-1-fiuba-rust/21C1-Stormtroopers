@@ -1,7 +1,7 @@
-use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
+use crate::server::app_info::AppInfo;
+use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command APPEND\n";
 const CLIENT_ID: &str = "AppendCommmand";
@@ -37,13 +37,18 @@ impl Clone for AppendCommmand {
 }
 
 impl Command for AppendCommmand {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(
+        &self,
+        args: Vec<&str>,
+        app_info: &AppInfo,
+        _id_client: usize,
+    ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let structure = app_info.get_structure();
+        let db = app_info.get_string_db();
 
-        let mut len_val_str = structure
+        let mut len_val_str = db
             .append(String::from(args[0]), String::from(args[1]))
             .to_string();
         len_val_str.push('\n');

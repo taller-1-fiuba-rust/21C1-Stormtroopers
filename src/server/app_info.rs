@@ -1,10 +1,10 @@
-use crate::config_server::ConfigServer;
-use crate::logger::{Loggable, Logger};
-use crate::pubsub::Pubsub;
-use crate::structure_string::StructureString;
-use crate::ttl_scheduler::TTLScheduler;
-use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::{Arc, Mutex};
+use crate::data_base::db_list::DataBaseList;
+use crate::data_base::db_resolver::*;
+use crate::data_base::db_set::DataBaseSet;
+use crate::data_base::db_string::DataBaseString;
+use crate::server::config_server::ConfigServer;
+use crate::server::logger::{Loggable, Logger};
+use crate::server::pubsub::Pubsub;
 
 const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...\n";
@@ -26,10 +26,11 @@ pub struct AppInfo {
     args: Vec<String>,
     config_server: ConfigServer,
     logger: Logger<String>,
-    structure: StructureString<String>,
+    db: DataBaseResolver,
     pubsub: Pubsub,
     ttl_scheduler: TTLScheduler,
     ids_clients: i32,
+    private_pubsub: Pubsub,
 }
 
 impl Clone for AppInfo {
@@ -37,20 +38,53 @@ impl Clone for AppInfo {
         let config_server = self.config_server.clone();
         let logger = self.logger.clone();
         let args = self.args.clone();
-        let structure = self.structure.clone();
+        let db = self.db.clone();
         let pubsub = self.pubsub.clone();
         let ttl_scheduler = self.ttl_scheduler.clone();
+        let private_pubsub = self.private_pubsub.clone();
 
         Self {
             args,
             config_server,
             logger,
-            structure,
+            db,
             pubsub,
             ttl_scheduler,
             ids_clients: 0,
+            private_pubsub,
         }
     }
+}
+
+fn add_string(db_resolver: &DataBaseResolver) {
+    let db_string = DataBase::DataBaseString(DataBaseString::new());
+    db_resolver.add_data_base("String".to_string(), db_string);
+}
+
+fn add_list(db_resolver: &DataBaseResolver) {
+    let db_list = DataBase::DataBaseList(DataBaseList::new());
+    db_resolver.add_data_base("List".to_string(), db_list);
+}
+
+fn add_set(db_resolver: &DataBaseResolver) {
+    let db_set = DataBase::DataBaseSet(DataBaseSet::new());
+    db_resolver.add_data_base("Set".to_string(), db_set);
+}
+
+fn create_structure() -> DataBaseResolver {
+    let db_resolver = DataBaseResolver::new();
+    add_string(&db_resolver);
+    add_list(&db_resolver);
+    add_set(&db_resolver);
+
+    db_resolver
+}
+
+fn create_private_pubsub() -> Pubsub {
+    //ver si lo necesito, o con los sucribe de los comandos ya basta
+    let mut pubsub = Pubsub::new();
+    pubsub.create_channel("MONITOR".to_string());
+    pubsub
 }
 
 impl AppInfo {
@@ -58,18 +92,21 @@ impl AppInfo {
         let config_server = ConfigServer::new();
         let logger =
             Logger::new(LOG_NAME.to_string(), LOG_PATH.to_string()).expect(ERROR_LOG_CREATE);
-        let structure = StructureString::new();
+        let db = create_structure();
+
         let pubsub = Pubsub::new();
         let ttl_scheduler = TTLScheduler::new();
+        let private_pubsub = create_private_pubsub();
 
         Self {
             args,
             config_server,
             logger,
-            structure,
+            db,
             pubsub,
             ttl_scheduler,
             ids_clients: 0,
+            private_pubsub,
         }
     }
 
@@ -81,8 +118,8 @@ impl AppInfo {
         self.config_server.clone()
     }
 
-    pub fn get_structure(&self) -> StructureString<String> {
-        self.structure.clone()
+    pub fn get_db_resolver(&self) -> DataBaseResolver {
+        self.db.clone()
     }
 
     pub fn get_pubsub(&self) -> Pubsub {
@@ -99,6 +136,10 @@ impl AppInfo {
 
     pub fn inc_ids(&mut self) {
         self.ids_clients += 1;
+    }
+    
+    pub fn get_private_pubsub(&self) -> Pubsub {
+        self.private_pubsub.clone()
     }
 
     pub fn load_config(&mut self, argv: Vec<String>) -> Result<(), std::io::Error> {
@@ -121,42 +162,20 @@ impl AppInfo {
     pub fn server_name(&self) -> String {
         self.args[0].to_owned()
     }
-}
 
-//IMPORTANTE -> Después divido esto en file Connection
-//asigno, por cada conexión nueva, un Connection nuevo
-pub struct Connection<String> {
-    sender: Arc<Mutex<Sender<String>>>,
-    receiver: Arc<Mutex<Receiver<String>>>,
-}
-
-impl<String> Connection<String> {
-    pub fn new() -> Self {
-        let (tx, rx) = channel();
-        Self {
-            sender: Arc::new(Mutex::new(tx)),
-            receiver: Arc::new(Mutex::new(rx)),
-        }
+    pub fn get_string_db(&self) -> DataBaseString<String> {
+        self.db.get_string_db()
     }
 
-    pub fn send(&self, response: String) {
-        let sender = self.sender.lock().unwrap();
-        sender.send(response).unwrap();
+    pub fn get_list_db(&self) -> DataBaseList<String> {
+        self.db.get_list_db()
     }
 
-    pub fn get_sender(&self) -> Arc<Mutex<Sender<String>>> {
-        self.sender.clone()
+    pub fn get_set_db(&self) -> DataBaseSet<String> {
+        self.db.get_set_db()
     }
 
-    pub fn get_receiver(&self) -> Arc<Mutex<Receiver<String>>> {
-        self.receiver.clone()
-    }
-}
-
-impl<String> Clone for Connection<String> {
-    fn clone(&self) -> Self {
-        let sender = self.sender.clone();
-        let receiver = self.receiver.clone();
-        Self { sender, receiver }
+    pub fn get_server_port(&self) -> String {
+        self.config_server.get_server_port(self.get_logger())
     }
 }

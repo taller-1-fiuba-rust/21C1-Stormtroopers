@@ -3,21 +3,21 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
-const INFO_COMMAND: &str = "Run command EXISTS\n";
-const CLIENT_ID: &str = "ExistsCommmand";
+const INFO_COMMAND: &str = "Run command LSET\n";
+const CLIENT_ID: &str = "LSetCommmand";
 
-pub struct ExistsCommand {
+pub struct LSetCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl ExistsCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> ExistsCommand {
-        ExistsCommand { id_job, logger }
+impl LSetCommand {
+    pub fn new(id_job: u32, logger: Logger<String>) -> LSetCommand {
+        LSetCommand { id_job, logger }
     }
 }
 
-impl Loggable for ExistsCommand {
+impl Loggable for LSetCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -27,16 +27,16 @@ impl Loggable for ExistsCommand {
     }
 }
 
-impl Clone for ExistsCommand {
-    fn clone(&self) -> ExistsCommand {
-        ExistsCommand {
+impl Clone for LSetCommand {
+    fn clone(&self) -> LSetCommand {
+        LSetCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for ExistsCommand {
+impl Command for LSetCommand {
     fn run(
         &self,
         args: Vec<&str>,
@@ -46,11 +46,15 @@ impl Command for ExistsCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let db = app_info.get_string_db();
+        let db = app_info.get_list_db();
 
-        let mut result_del = db.exists(args).to_string();
-        result_del.push('\n');
+        let mut result = db.lset(
+            args[0].to_string(),
+            args[1].to_string(),
+            args[2].to_string(),
+        )?;
+        result.push('\n');
 
-        Ok(result_del)
+        Ok(result)
     }
 }
