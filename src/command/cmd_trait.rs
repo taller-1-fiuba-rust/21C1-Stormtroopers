@@ -13,9 +13,10 @@ pub static EXISTS_COMMAND_STR: &str = "exists";
 pub static APPEND_COMMAND_STR: &str = "append";
 pub static RENAME_COMMAND_STR: &str = "rename";
 pub static STRLEN_COMMAND_STR: &str = "strlen";
-pub static EXPIREAT_COMMAND_STR: &str = "expire_at";
+pub static EXPIREAT_COMMAND_STR: &str = "expireat";
 pub static EXPIRE_COMMAND_STR: &str = "expire";
 pub static TTL_COMMAND_STR: &str = "ttl";
+pub static PERSIST_COMMAND_STR: &str = "persist";
 
 pub trait Command: Send + CommandClone {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError>;

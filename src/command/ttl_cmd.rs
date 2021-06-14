@@ -7,10 +7,11 @@ use crate::utils::timestamp_now;
 const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
 const CLIENT_ID: &str = "ExpireCommmand";
 const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
-const WRONG_TTL_TYPE: &str = "Can't parse to expire time.\n";
+const TTL_ZERO_OR_ABSENT: &str = "-2\n";
 const NIL: &str = "(nil)";
 const NOT_FOUND: &str = "Key not found.\n";
 const WHITESPACE: &str = " ";
+const NEW_LINE: &str = "\n";
 
 pub struct TtlCommand {
     id_job: u32,
@@ -54,18 +55,22 @@ impl Command for TtlCommand {
         let structure = app_info.get_structure();
         let string = structure.get_string(String::from(args[0]));
         match string.as_str() {
-            NIL => Ok(String::from(NOT_FOUND)),
+            NIL => Ok(String::from(TTL_ZERO_OR_ABSENT)),
             _ => {
                 let ttl_scheduler = app_info.get_ttl_scheduler();
                 let now = timestamp_now();
-                match ttl_scheduler.get_ttl(String::from(args[0])) {
+                match ttl_scheduler.get_ttl_helper(String::from(args[0])) {
                     Ok(val) => {
-                        let delta_ttl = val.parse::<u64>().unwrap() - now;
-                        let mut delta_ttl_str = delta_ttl.to_string();
-                        delta_ttl_str.push('\n');
-                        Ok(delta_ttl_str)
+                        match val.parse::<u64>().unwrap().overflowing_sub(now) {
+                            (res, false) => {
+                               let mut ret_value = res.to_string();
+                               ret_value.push_str(NEW_LINE);
+                                Ok(ret_value)
+                            },
+                            (_, true) => Ok(String::from(TTL_ZERO_OR_ABSENT))
+                        }
                     },
-                    Err(_) => Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_TTL_TYPE)}),
+                    Err(_) => Ok(String::from(TTL_ZERO_OR_ABSENT)),
                 }
             }
         }

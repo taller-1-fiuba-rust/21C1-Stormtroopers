@@ -2,15 +2,14 @@ use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::logger::{Loggable, Logger};
-use crate::utils::timestamp_now;
 
 const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
 const CLIENT_ID: &str = "ExpireCommmand";
 const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
-const WRONG_TTL_TYPE: &str = "Can't parse to expire time.\n";
 const NIL: &str = "(nil)";
 const NOT_FOUND: &str = "Key not found.\n";
 const WHITESPACE: &str = " ";
+const OK: &str = "OK.\n";
 
 pub struct PersistCommand {
     id_job: u32,
@@ -57,15 +56,12 @@ impl Command for PersistCommand {
             NIL => Ok(String::from(NOT_FOUND)),
             _ => {
                 let ttl_scheduler = app_info.get_ttl_scheduler();
-                let now = timestamp_now();
-                match ttl_scheduler.get_ttl(String::from(args[0])) {
+                match ttl_scheduler.delete_ttl_helper(String::from(args[0])) {
                     Ok(val) => {
-                        let delta_ttl = val.parse::<u64>().unwrap() - now;
-                        let mut delta_ttl_str = delta_ttl.to_string();
-                        delta_ttl_str.push('\n');
-                        Ok(delta_ttl_str)
+                        ttl_scheduler.delete_ttl(val).unwrap_or(String::from(""));
+                        Ok(String::from(OK))
                     },
-                    Err(_) => Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_TTL_TYPE)}),
+                    Err(_) => Ok(String::from(OK)),
                 }
             }
         }

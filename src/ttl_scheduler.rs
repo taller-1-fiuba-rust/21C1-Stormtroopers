@@ -3,13 +3,14 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc::{SyncSender, Receiver, sync_channel};
 use crate::errors::run_error::RunError;
-use crate::structure_string::StructureString;
 use crate::AppInfo;
+use crate::utils;
 use std::time::Duration;
 use std::thread;
 
-const TTL_CHECK_RANGE: u64 = 10;
-const RESPONSE_NIL: &str = "(nil)";
+const TTL_CHECK_RANGE: u64 = 5;
+const NOT_FOUND: &str = "Key not found.";
+const OK: &str = "Ok";
 
 pub struct TTLScheduler {
     pub ttl_map: Arc<Mutex<HashMap<u64, String>>>,
@@ -63,50 +64,59 @@ impl TTLScheduler {
         }
     }
 
-    // 1° check if ttl is in ttl_map
-    // 2° pass ttl_map values as a Vec to structure string
-    // 3° delete entries from ttl_map and helper
     pub fn run(&mut self, app_info: &AppInfo) {
-        let mut ttl_scheduler = self.clone();
+        let ttl_scheduler = self.clone();
         let mut structure_string = app_info.get_structure().clone();
-        let mut ttl_map = self.ttl_map.clone();
         thread::spawn(move || {
             loop {
-                thread::sleep(Duration::from_secs(1)); // 2
-                for n in 0..TTL_CHECK_RANGE {
-                    //ttl_map.get(now - n)
-                    println!("{}", n);
+                let now: u64 = utils::timestamp_now();
+                thread::sleep(Duration::from_secs(1));
+                for n in TTL_CHECK_RANGE..0 {
+                    let time = now - n;
+                    let time_str = time.to_string();
+                    match ttl_scheduler.get_ttl(time_str.clone()) { 
+                        Ok(val) => {
+                            let ttl_clone = val.clone();
+                            ttl_scheduler.delete_ttl(ttl_clone);
+                            ttl_scheduler.delete_ttl_helper(time_str.clone());
+
+                            let db_clone = val.clone();
+                            structure_string.delete(vec![db_clone.as_str()]);
+                        },
+                        Err(_) => continue,
+                    }
                 }
             }
         });
     }
 
-    // ttl is the timestamp, args is a string with the key
     pub fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
-        self.set_helper_ttl(ttl.clone(), arg.clone());
-        let mut key_val = ttl.to_string();
-        key_val.push(':');
-        key_val.push_str(&arg);
-
-        let mut ttl_scheduler = self.clone();
-        let mut ttl_map = self.ttl_map.clone();
-
-        let ttl_h = thread::spawn(move || {
-            ttl_scheduler.sender.send(key_val).unwrap();
-            ttl_scheduler.store(&mut ttl_map)
-        }).join().unwrap();
-
-        Ok(ttl_h)
+        match self.set_helper_ttl(ttl.clone(), arg.clone()) {
+            Ok(_) => {
+                let mut key_val = ttl.to_string();
+                key_val.push(':');
+                key_val.push_str(&arg);
+        
+                let mut ttl_scheduler = self.clone();
+                let mut ttl_map = self.ttl_map.clone();
+        
+                return thread::spawn(move || {
+                    ttl_scheduler.sender.send(key_val).unwrap();
+                    ttl_scheduler.store(&mut ttl_map)
+                }).join().unwrap();
+            },
+            Err(e) => Err(e) 
+        }
     }
 
-    pub fn set_helper_ttl(&self, ttl: u64, mut arg: String) {
+    fn set_helper_ttl(&self, ttl: u64, mut arg: String) -> Result<String, RunError> {
         arg.push(':');
         arg.push_str(ttl.to_string().as_str());
 
         let mut ttl_scheduler = self.clone();
         let mut helper_map = self.helper_map.clone();
 
-        thread::spawn(move || {
+        return thread::spawn(move || {
             ttl_scheduler.sender.send(arg).unwrap();
             ttl_scheduler.store_helper(&mut helper_map)
         }).join().unwrap();
@@ -114,19 +124,52 @@ impl TTLScheduler {
     
     pub fn get_ttl(&self, arg: String) -> Result<String, RunError> {
         let mut ttl_scheduler = self.clone();
+        let mut ttl_map = self.ttl_map.clone();
+
+        return thread::spawn(move || {
+            ttl_scheduler.sender.send(arg).unwrap();
+            ttl_scheduler.retrieve(&mut ttl_map)
+        })
+        .join()
+        .unwrap();
+    }
+
+    pub fn get_ttl_helper(&self, arg: String) -> Result<String, RunError> {
+        let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.helper_map.clone();
 
-        let handle = thread::spawn(move || {
+        return thread::spawn(move || {
             ttl_scheduler.sender.send(arg).unwrap();
             ttl_scheduler.retrieve_helper(&mut ttl_map)
         })
         .join()
         .unwrap();
-
-        Ok(handle)
     }
 
-    pub fn store(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> String {
+    pub fn delete_ttl(&self, arg: String) -> Result<String, String> {
+        let mut ttl_scheduler = self.clone();
+        let mut ttl_map = self.ttl_map.clone();
+
+        thread::spawn(move || {
+            ttl_scheduler.sender.send(arg).unwrap();
+            ttl_scheduler.delete(&mut ttl_map)
+        })
+        .join()
+        .unwrap()
+    }
+    pub fn delete_ttl_helper(&self, arg: String) -> Result<String, String> {
+        let mut ttl_scheduler = self.clone();
+        let mut ttl_map = self.helper_map.clone();
+
+        thread::spawn(move || {
+            ttl_scheduler.sender.send(arg).unwrap();
+            ttl_scheduler.delete_helper(&mut ttl_map)
+        })
+        .join()
+        .unwrap()
+    }
+
+    fn store(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> Result<String, RunError> {
         let key_val = self.receiver.lock().unwrap().recv().unwrap();
         let kv_splitted: Vec<&str> = key_val.split(':').collect();
 
@@ -135,10 +178,10 @@ impl TTLScheduler {
             kv_splitted[0].trim().parse::<u64>().unwrap(),
             String::from(kv_splitted[1].trim())
         );
-        String::from("Ok")
+        Ok(String::from(OK))
     }
 
-    pub fn store_helper(&mut self, map: &mut Arc<Mutex<HashMap<String, u64>>>) {
+    fn store_helper(&mut self, map: &mut Arc<Mutex<HashMap<String, u64>>>) -> Result<String, RunError> {
         let key_val = self.receiver.lock().unwrap().recv().unwrap();
         let kv_splitted: Vec<&str> = key_val.split(':').collect();
 
@@ -147,22 +190,47 @@ impl TTLScheduler {
             String::from(kv_splitted[0].trim()),
             kv_splitted[1].trim().parse::<u64>().unwrap(),
         );
+        Ok(String::from(OK))
     }
 
-    pub fn retrieve(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> String {
+    fn retrieve(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> Result<String, RunError> {
         let key = self.receiver.lock().unwrap().recv().unwrap();
-        String::from("")
+        let key_parsed = key.parse::<u64>().unwrap();
 
+        let map = map.lock().unwrap();
+        match map.get(&key_parsed) {
+            Some(value) => Ok(value.clone()),
+            None => Err(RunError{message: key, cause: String::from(NOT_FOUND)})
+        }
     }
 
-    pub fn retrieve_helper(&mut self, map: &mut Arc<Mutex<HashMap<String, u64>>>) -> String {
+    fn retrieve_helper(&mut self, map: &mut Arc<Mutex<HashMap<String, u64>>>) -> Result<String, RunError> {
         let key = self.receiver.lock().unwrap().recv().unwrap();
 
-        let map_t = map.lock().unwrap();
+        let map = map.lock().unwrap();
 
-        match map_t.get(&key) {
-            Some(ttl) => ttl.to_string(),
-            None => String::from(RESPONSE_NIL)
+        match map.get(&key) {
+            Some(ttl) => Ok(ttl.to_string()),
+            None => Err(RunError{message: key, cause: String::from(NOT_FOUND)})
+        }
+    }
+
+    fn delete(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> Result<String, String> {
+        let key = self.receiver.lock().unwrap().recv().unwrap();
+        let key_parsed = key.parse::<u64>().unwrap();
+        let mut map = map.lock().unwrap();
+        match map.remove(&key_parsed) {
+            Some(v) => Ok(String::from(v)),
+            None => Err(("").to_string())
+        }
+    }
+
+    fn delete_helper(&mut self, map: &mut Arc<Mutex<HashMap<String, u64>>>) -> Result<String, String> {
+        let key = self.receiver.lock().unwrap().recv().unwrap();
+        let mut map = map.lock().unwrap();
+        match map.remove(&key) {
+            Some(v) => Ok(v.to_string()),
+            None => Err(("").to_string())
         }
     }
 }
