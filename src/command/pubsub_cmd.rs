@@ -1,8 +1,8 @@
-use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
-use crate::LINE_BREAK;
+use crate::server::app_info::AppInfo;
+use crate::server::logger::{Loggable, Logger};
+//use crate::LINE_BREAK;
 
 const INFO_RUN_COMMAND: &str = "Run command PUBSUB\n";
 
@@ -37,14 +37,19 @@ impl Clone for PubsubCommand {
 }
 
 impl Command for PubsubCommand {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(
+        &self,
+        args: Vec<&str>,
+        app_info: &AppInfo,
+        id_client: usize,
+    ) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
 
         let arg = args[0];
         let mut response = "".to_string();
 
-        let id_client = app_info.get_id_client();
         let mut pubsub = app_info.get_pubsub();
+
         match arg {
             "suscribe" => pubsub.suscribe(args[1].to_string(), id_client),
             "len_channel" => {
@@ -56,18 +61,24 @@ impl Command for PubsubCommand {
                 response = format!("{:?}", suscribers_vec);
             }
             "publish" => {
-                pubsub.publish(args[1].to_string(), args[2].to_string());
+                let val = pubsub.publish(args[1].to_string(), args[2].to_string());
+                if val.is_none() {
+                    response = "NO EXISTE CHANNEL\n".to_string();
+                }
             }
             "unsuscribe" => pubsub.unsuscribe(args[1].to_string(), id_client),
             "CHANNELS" => {
-                let channels_vec = pubsub.available_channels();
-                response = format!("{:?}", channels_vec);
-                response.push(LINE_BREAK);
+                if args.len() == 1 {
+                    let channels_vec = pubsub.available_channels();
+                    response = format!("{:?}\n", channels_vec);
+                } else {
+                    let channels_vec = pubsub.available_channels_pattern(args[1]);
+                    response = format!("{:?}\n", channels_vec);
+                }
             }
             "NUMSUB" => {
                 let vec = pubsub.numsub();
                 response = format!("{:?}", vec);
-                response.push(LINE_BREAK)
             }
             _ => {
                 return Err(RunError {

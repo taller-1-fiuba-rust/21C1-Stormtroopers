@@ -1,3 +1,4 @@
+use crate::server::utils::format_timestamp_now;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::Error;
@@ -5,8 +6,6 @@ use std::io::SeekFrom;
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::sync::{Arc, Mutex};
 use std::thread;
-
-use crate::utils::format_timestamp_now;
 
 const ERROR_LOG_CREATE_FILE: &str = "Error creating file";
 
@@ -54,7 +53,7 @@ impl Logger<String> {
         let path = generate_path_file(name_file, path_file);
 
         let file = File::create(path)?;
-        let (sender, receiver) = sync_channel(1);
+        let (sender, receiver) = sync_channel(100000);
         let sender = Arc::new(sender);
         let receiver = Arc::new(Mutex::new(receiver));
         Ok(Self {

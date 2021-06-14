@@ -1,7 +1,7 @@
-use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
+use crate::server::app_info::AppInfo;
+use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command RENAME\n";
 const CLIENT_ID: &str = "RenameCommmand";
@@ -38,12 +38,18 @@ impl Clone for RenameCommmand {
 }
 
 impl Command for RenameCommmand {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(
+        &self,
+        args: Vec<&str>,
+        app_info: &AppInfo,
+        _id_client: usize,
+    ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let mut structure = app_info.get_structure();
-        match structure.rename(String::from(args[0]), String::from(args[1])) {
+        let mut db = app_info.get_string_db();
+
+        match db.rename(String::from(args[0]), String::from(args[1])) {
             Ok(()) => Ok(String::from(RESPONSE_COMMAND)),
             Err(e) => Err(e),
         }

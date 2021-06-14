@@ -1,3 +1,4 @@
+use regex::Regex;
 use std::collections::{BTreeSet, HashMap};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
@@ -8,14 +9,7 @@ pub struct Client {
     receiver: Arc<Mutex<Receiver<String>>>,
 }
 
-impl Default for Pubsub {
-    fn default() -> Self {
-        Pubsub::new()
-    }
-}
-
 impl Client {
-    #[allow(dead_code)]
     pub fn new() -> Self {
         let (tx, rx) = channel();
         Self {
@@ -35,7 +29,6 @@ impl Client {
         self.receiver.clone()
     }
 
-    #[allow(dead_code)]
     pub fn publish(&self, msg: String) {
         let sender = self.sender.lock().unwrap();
         sender.send(msg).unwrap();
@@ -52,8 +45,14 @@ impl Clone for Client {
 }
 
 pub struct Pubsub {
-    suscribers: Arc<Mutex<HashMap<i32, Client>>>, //cada cliente tiene su id
-    channels: Arc<Mutex<HashMap<String, BTreeSet<i32>>>>,
+    suscribers: Arc<Mutex<HashMap<usize, Client>>>, //cada cliente tiene su id
+    channels: Arc<Mutex<HashMap<String, BTreeSet<usize>>>>,
+}
+
+impl Default for Pubsub {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Pubsub {
@@ -68,7 +67,7 @@ impl Pubsub {
 
     pub fn add_client_with_recv(
         &mut self,
-        id_client: i32,
+        id_client: usize,
         sender: Arc<Mutex<Sender<String>>>,
         receiver: Arc<Mutex<Receiver<String>>>,
     ) -> Arc<Mutex<Receiver<String>>> {
@@ -79,8 +78,7 @@ impl Pubsub {
         client.get_recv()
     }
 
-    #[allow(dead_code)]
-    pub fn add_client(&mut self, id_client: i32) -> Arc<Mutex<Receiver<String>>> {
+    pub fn add_client(&mut self, id_client: usize) -> Arc<Mutex<Receiver<String>>> {
         let client = Client::new();
 
         let mut suscribers_lock = self.suscribers.lock().unwrap();
@@ -88,34 +86,29 @@ impl Pubsub {
         client.get_recv()
     }
 
-    #[allow(dead_code)]
-    fn suscribe_channel(&mut self, channel: String, client: i32) {
+    pub fn suscribe(&mut self, channel: String, client: usize) {
         let mut channels_lock = self.channels.lock().unwrap();
 
         let subbed_clients = channels_lock.entry(channel).or_insert_with(BTreeSet::new);
         subbed_clients.insert(client);
     }
 
-    #[allow(dead_code)]
-    pub fn suscribe(&mut self, channel: String, client: i32) {
-        //unificar el anterior y este (son lo mismo)
-        self.suscribe_channel(channel, client);
+    pub fn create_channel(&mut self, channel: String) {
+        let mut channels_lock = self.channels.lock().unwrap();
+        channels_lock.insert(channel, BTreeSet::new());
     }
 
-    #[allow(dead_code)]
     pub fn len_channels(&self) -> usize {
         let channels = self.channels.lock().unwrap();
         channels.len()
     }
 
-    #[allow(dead_code)]
     pub fn len_channel(&self, channel: String) -> usize {
         let channels = self.channels.lock().unwrap();
         channels.get(&channel).unwrap().len()
     }
 
-    #[allow(dead_code)]
-    pub fn get_suscribers(&self, channel: String) -> Vec<i32> {
+    pub fn get_suscribers(&self, channel: String) -> Vec<usize> {
         let mut suscribers_vec = vec![];
         let channels = self.channels.lock().unwrap();
         let suscribers = channels.get(&channel).unwrap();
@@ -127,30 +120,33 @@ impl Pubsub {
         suscribers_vec
     }
 
-    #[allow(dead_code)]
-    pub fn publish(&self, name_channel: String, msg: String) {
+    pub fn publish(&self, name_channel: String, msg: String) -> Option<()> {
         let channels = self.channels.lock().unwrap();
         let suscribers = self.suscribers.lock().unwrap();
 
-        let channel = channels.get(&name_channel).unwrap();
+        //let channel = channels.get(&name_channel).unwrap();
 
-        for suscriber in channel.iter() {
-            let client = suscribers.get(&suscriber).unwrap();
-            client.publish(msg.clone());
+        if let Some(channel) = channels.get(&name_channel) {
+            for suscriber in channel.iter() {
+                let client = suscribers.get(&suscriber).unwrap();
+                client.publish(msg.clone());
+            }
+        } else {
+            return None;
         }
+
+        Some(())
     }
 
-    #[allow(dead_code)]
-    pub fn unsuscribe(&self, name_channel: String, client: i32) {
+    pub fn unsuscribe(&self, name_channel: String, client: usize) {
         let mut channels = self.channels.lock().unwrap();
-        //let channel: &BTreeSet<i32> = channels.get(&name_channel).unwrap();
+        //let channel: &BTreeSet<usize> = channels.get(&name_channel).unwrap();
 
         if let Some(subbed_clients) = channels.get_mut(&name_channel) {
             subbed_clients.remove(&client);
         }
     }
 
-    #[allow(dead_code)]
     pub fn available_channels(&self) -> Vec<String> {
         let mut channels_vec = Vec::<String>::new();
         let channels = self.channels.lock().unwrap();
@@ -162,7 +158,20 @@ impl Pubsub {
         channels_vec
     }
 
-    #[allow(dead_code)]
+    pub fn available_channels_pattern(&self, pattern: &str) -> Vec<String> {
+        let mut channels_vec = Vec::<String>::new();
+        let channels = self.channels.lock().unwrap();
+        let re = Regex::new(pattern).unwrap();
+
+        for key in channels.keys() {
+            if re.is_match(&key) {
+                channels_vec.push((*(key.clone())).to_string());
+            }
+        }
+
+        channels_vec
+    }
+
     pub fn numsub(&self) -> Vec<(String, usize)> {
         let mut channels_vec = Vec::<(String, usize)>::new();
         let channels = self.channels.lock().unwrap();

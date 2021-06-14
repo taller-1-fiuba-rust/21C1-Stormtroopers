@@ -1,7 +1,7 @@
-use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
+use crate::server::app_info::AppInfo;
+use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command STRLEN\n";
 const CLIENT_ID: &str = "StrlenCommmand";
@@ -37,12 +37,17 @@ impl Clone for StrlenCommand {
 }
 
 impl Command for StrlenCommand {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(
+        &self,
+        args: Vec<&str>,
+        app_info: &AppInfo,
+        _id_client: usize,
+    ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let structure = app_info.get_structure();
-        let mut len = structure.strlen(String::from(args[0])).to_string();
+        let db = app_info.get_string_db();
+        let mut len = db.strlen(String::from(args[0])).to_string();
         len.push('\n');
 
         Ok(len)

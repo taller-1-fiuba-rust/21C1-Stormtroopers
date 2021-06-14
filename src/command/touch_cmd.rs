@@ -3,21 +3,21 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
-const INFO_COMMAND: &str = "Run command EXISTS\n";
-const CLIENT_ID: &str = "ExistsCommmand";
+const INFO_COMMAND: &str = "Run command TOUCH\n";
+const CLIENT_ID: &str = "TouchCommand";
 
-pub struct ExistsCommand {
+pub struct TouchCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl ExistsCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> ExistsCommand {
-        ExistsCommand { id_job, logger }
+impl TouchCommand {
+    pub fn new(id_job: u32, logger: Logger<String>) -> TouchCommand {
+        TouchCommand { id_job, logger }
     }
 }
 
-impl Loggable for ExistsCommand {
+impl Loggable for TouchCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -27,16 +27,16 @@ impl Loggable for ExistsCommand {
     }
 }
 
-impl Clone for ExistsCommand {
-    fn clone(&self) -> ExistsCommand {
-        ExistsCommand {
+impl Clone for TouchCommand {
+    fn clone(&self) -> TouchCommand {
+        TouchCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for ExistsCommand {
+impl Command for TouchCommand {
     fn run(
         &self,
         args: Vec<&str>,
@@ -46,11 +46,15 @@ impl Command for ExistsCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let db = app_info.get_string_db();
+        let db = app_info.get_db_resolver();
 
-        let mut result_del = db.exists(args).to_string();
-        result_del.push('\n');
+        let mut vec_args = Vec::<String>::new();
+        for arg in args {
+            vec_args.push(arg.to_string());
+        }
+        let mut response = db.touch(vec_args).to_string();
+        response.push('\n');
 
-        Ok(result_del)
+        Ok(response)
     }
 }

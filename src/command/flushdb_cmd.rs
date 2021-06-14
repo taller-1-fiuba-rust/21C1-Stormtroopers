@@ -1,7 +1,7 @@
-use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
+use crate::server::app_info::AppInfo;
+use crate::server::logger::{Loggable, Logger};
 use crate::RESP_SIMPLE_STRING;
 
 const INFO_FLUSHDB_COMMAND: &str = "Run command FLUSHDB\n";
@@ -38,12 +38,17 @@ impl Clone for FlushdbCommand {
 }
 
 impl Command for FlushdbCommand {
-    fn run(&self, _args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(
+        &self,
+        _args: Vec<&str>,
+        app_info: &AppInfo,
+        _id_client: usize,
+    ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_FLUSHDB_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let structure = app_info.get_structure();
-        let res = match structure.clean_all_data() {
+        let db = app_info.get_db_resolver();
+        let res = match db.clean_all_data() {
             true => String::from(RESP_SIMPLE_STRING),
             false => panic!("Esto no deberia pasar!"),
         };

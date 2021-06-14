@@ -1,21 +1,17 @@
-use crate::app_info::AppInfo;
-use crate::app_info::Connection;
 use crate::command::command_builder::CommandBuilder;
-use crate::threadpool::ThreadPool;
+use crate::server::app_info::AppInfo;
+use crate::server::connection::Connection;
+use crate::server::threadpool::ThreadPool;
+use crate::server::utils::format_timestamp_now;
+use std::env::args;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
 use std::net::{TcpListener, TcpStream};
 
-use std::env::args;
-mod app_info;
 mod command;
-mod config_server;
+mod data_base;
 mod errors;
-mod logger;
-mod pubsub;
-mod structure_string;
-mod threadpool;
-mod utils;
+mod server;
 
 static THREAD_POOL_COUNT: usize = 8;
 static END_FLAG: &str = "EOF";
@@ -37,9 +33,9 @@ fn main() -> Result<(), std::io::Error> {
 
     println!("Server {} is up!", server.server_name());
 
-    let config_server = server.get_config_server();
+    //let config_server = server.get_config_server();
 
-    let server_port = config_server.get_server_port(server.get_logger());
+    let server_port = server.get_server_port();
 
     println!("\nServer address: {}\n", server_port);
     println!("Execute listener ...");
@@ -51,19 +47,23 @@ fn main() -> Result<(), std::io::Error> {
 fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Error> {
     let threadpool = ThreadPool::new(THREAD_POOL_COUNT);
 
-    let mut pubsub = app_info.get_pubsub();
+    let pubsub = app_info.get_pubsub();
+    let mut priv_pubsub = app_info.get_private_pubsub();
 
     let listener = TcpListener::bind(&address)?;
-    for stream in listener.incoming() {
+
+    for (ids_clients, stream) in listener.incoming().enumerate() {
+        let id_client = ids_clients;
+
+        let mut pubsub = pubsub.clone();
         let connection_client = Connection::<String>::new();
-        let id_client = app_info.get_id_client();
-        app_info.inc_ids();
 
         let (tx_client, rx_client) = (
             connection_client.get_sender(),
             connection_client.get_receiver(),
         );
 
+        let _ = priv_pubsub.add_client_with_recv(id_client, tx_client.clone(), rx_client.clone());
         let _rx_client = pubsub.add_client_with_recv(id_client, tx_client, rx_client);
 
         println!("Handler stream request ...");
@@ -80,11 +80,11 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
                 stream.try_clone().unwrap(),
                 &app_info,
                 _id_global,
+                id_client,
             );
         });
 
         let rx = receiver.clone();
-        let _connection = connection_client.clone();
         threadpool.execute(move |_| {
             let r = rx.lock().unwrap();
             for msg in r.iter() {
@@ -105,8 +105,9 @@ fn handle_connection(
     mut stream: TcpStream,
     app_info: &AppInfo,
     id: u32,
+    id_client: usize,
 ) {
-    handle_client(connection_client, &mut stream, app_info, id);
+    handle_client(connection_client, &mut stream, app_info, id, id_client);
 }
 
 fn handle_client(
@@ -114,6 +115,7 @@ fn handle_client(
     stream: &mut TcpStream,
     app_info: &AppInfo,
     id: u32,
+    id_client: usize,
 ) {
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
@@ -121,35 +123,61 @@ fn handle_client(
     let lines = reader.lines();
     println!("Reading stream conections, job {} ...", id);
 
+    let mut request = "".to_string();
+
     for line in lines {
-        let app_info = app_info.clone();
-        let request = line.unwrap_or_else(|_| String::from(END_FLAG));
+        //hacer un poco más prolijo esto
+        if request != *"monitor" {
+            let app_info = app_info.clone();
+            request = line.unwrap_or_else(|_| String::from(END_FLAG));
 
-        if request == END_FLAG {
-            return; //tendríamos que cerrar a los clientes (drop y demás)
+            if request == END_FLAG {
+                return; //tendríamos que cerrar al cliente (drop y demás)
+            }
+
+            println!("Server job {}, receive: {:?}", id, request);
+
+            let response = process_request(request.clone(), &app_info, id, id_client);
+            connection_client.send(response);
         }
-
-        println!("Server job {}, receive: {:?}", id, request);
-
-        let response = process_request(request, &app_info, id);
-        connection_client.send(response);
     }
     println!("End handle client, job {}", id);
 }
 
 //TODO: ver porque si vienen mal los args explota
-fn process_request(request: String, app_info: &AppInfo, id_job: u32) -> String {
+fn process_request(request: String, app_info: &AppInfo, id_job: u32, id_client: usize) -> String {
     let command_builder = CommandBuilder::new(id_job, app_info.get_logger());
 
     let comm = command_builder.get_command(&String::from(request.trim()));
     let mut command_splited: Vec<&str> = request.split(' ').collect();
+    publish_monitor(app_info.clone(), command_splited.clone(), id_client);
+
     command_splited.remove(0);
 
     match comm {
-        Ok(comm) => match comm.run(command_splited, app_info) {
+        Ok(comm) => match comm.run(command_splited, app_info, id_client) {
             Ok(res) => res,
             Err(res) => res.to_string(),
         },
         Err(comm) => comm.to_string(),
     }
+}
+
+fn publish_monitor(app_info: AppInfo, args: Vec<&str>, id_client: usize) {
+    let priv_pubsub = app_info.get_private_pubsub();
+    let port = app_info.get_server_port();
+
+    let mut msg = format!(
+        "{:?} [id: {:?} -- port: {:?}] ",
+        format_timestamp_now(),
+        id_client,
+        port
+    );
+
+    for arg in args {
+        let msg_aux = format!("{:?} ", arg);
+        msg.push_str(&msg_aux);
+    }
+
+    priv_pubsub.publish("MONITOR".to_string(), msg);
 }

@@ -1,24 +1,24 @@
 use crate::command::cmd_trait::Command;
-use crate::server::app_info::AppInfo;
-//use crate::db_resolver::get_string;
 use crate::errors::run_error::RunError;
+use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
-const INFO_RUN_COMMAND: &str = "Run command GET\n";
-const CLIENT_ID: &str = "SetCommand";
+const INFO_COMMAND: &str = "Run command MSET\n";
+const CLIENT_ID: &str = "MsetCommmand";
+const RESPONSE_COMMAND: &str = "OK\n";
 
-pub struct GetCommand {
+pub struct MsetCommmand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl GetCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> GetCommand {
-        GetCommand { id_job, logger }
+impl MsetCommmand {
+    pub fn new(id_job: u32, logger: Logger<String>) -> MsetCommmand {
+        MsetCommmand { id_job, logger }
     }
 }
 
-impl Loggable for GetCommand {
+impl Loggable for MsetCommmand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -28,29 +28,28 @@ impl Loggable for GetCommand {
     }
 }
 
-impl Clone for GetCommand {
-    fn clone(&self) -> GetCommand {
-        GetCommand {
+impl Clone for MsetCommmand {
+    fn clone(&self) -> MsetCommmand {
+        MsetCommmand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for GetCommand {
+impl Command for MsetCommmand {
     fn run(
         &self,
         args: Vec<&str>,
         app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
-        let log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
+        let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
         let db = app_info.get_string_db();
-        let mut string = db.get_string(String::from(args[0]));
-        string.push('\n');
+        db.mset(args);
 
-        Ok(string)
+        Ok(String::from(RESPONSE_COMMAND))
     }
 }

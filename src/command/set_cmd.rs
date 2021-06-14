@@ -1,7 +1,7 @@
-use crate::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
+use crate::server::app_info::AppInfo;
+use crate::server::logger::{Loggable, Logger};
 
 const INFO_RUN_COMMAND: &str = "Run command SET\n";
 const CLIENT_ID: &str = "SetCommand";
@@ -38,12 +38,22 @@ impl Clone for SetCommand {
 }
 
 impl Command for SetCommand {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(
+        &self,
+        args: Vec<&str>,
+        app_info: &AppInfo,
+        _id_client: usize,
+    ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let structure = app_info.get_structure();
-        structure.set_string(String::from(args[0]), String::from(args[1]));
+        let db_resolver = app_info.get_db_resolver();
+
+        db_resolver.clear_key(String::from(args[0]));
+
+        db_resolver
+            .get_string_db()
+            .set_string(String::from(args[0]), String::from(args[1]));
 
         Ok(String::from(RESPONSE_COMMAND))
     }

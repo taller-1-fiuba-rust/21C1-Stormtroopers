@@ -2,22 +2,23 @@ use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
+use crate::LINE_BREAK;
 
-const INFO_COMMAND: &str = "Run command EXISTS\n";
-const CLIENT_ID: &str = "ExistsCommmand";
+const INFO_COMMAND: &str = "Run command TYPE\n";
+const CLIENT_ID: &str = "TypeCommand";
 
-pub struct ExistsCommand {
+pub struct TypeCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl ExistsCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> ExistsCommand {
-        ExistsCommand { id_job, logger }
+impl TypeCommand {
+    pub fn new(id_job: u32, logger: Logger<String>) -> TypeCommand {
+        TypeCommand { id_job, logger }
     }
 }
 
-impl Loggable for ExistsCommand {
+impl Loggable for TypeCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -27,16 +28,16 @@ impl Loggable for ExistsCommand {
     }
 }
 
-impl Clone for ExistsCommand {
-    fn clone(&self) -> ExistsCommand {
-        ExistsCommand {
+impl Clone for TypeCommand {
+    fn clone(&self) -> TypeCommand {
+        TypeCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for ExistsCommand {
+impl Command for TypeCommand {
     fn run(
         &self,
         args: Vec<&str>,
@@ -46,11 +47,11 @@ impl Command for ExistsCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND);
         if let Ok(_r) = log_info_res {}
 
-        let db = app_info.get_string_db();
+        let db = app_info.get_db_resolver();
 
-        let mut result_del = db.exists(args).to_string();
-        result_del.push('\n');
+        let mut response = db.type_key(args[0].to_string())?;
+        response.push(LINE_BREAK);
 
-        Ok(result_del)
+        Ok(response)
     }
 }
