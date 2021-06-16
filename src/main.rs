@@ -11,8 +11,6 @@ use std::net::{TcpListener, TcpStream};
 mod command;
 mod data_base;
 mod errors;
-mod structure_string;
-mod ttl_scheduler;
 mod server;
 
 static THREAD_POOL_COUNT: usize = 8;

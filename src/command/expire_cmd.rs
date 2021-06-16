@@ -1,8 +1,8 @@
-use crate::app_info::AppInfo;
+use crate::server::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
-use crate::utils::timestamp_now;
+use crate::server::logger::{Loggable, Logger};
+use crate::server::utils::timestamp_now;
 
 const INFO_EXPIRE_COMMAND: &str = "Run command EXPIRE\n";
 const CLIENT_ID: &str = "ExpireCommmand";
@@ -43,10 +43,9 @@ impl Clone for ExpireCommand {
 }
 
 impl Command for ExpireCommand {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(&self, args: Vec<&str>, app_info: &AppInfo, _id_client: usize) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_EXPIRE_COMMAND);
-        // First, check number of args.
-        // Second, check if the key is present. If true, set the ttl, if not, do nothing.
+        
         if args.len() != 2 {
             return Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_NUMBER_ARGUMENTS)});
         }

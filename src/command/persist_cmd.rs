@@ -1,7 +1,7 @@
-use crate::app_info::AppInfo;
+use crate::server::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
-use crate::logger::{Loggable, Logger};
+use crate::server::logger::{Loggable, Logger};
 
 const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
 const CLIENT_ID: &str = "ExpireCommmand";
@@ -42,15 +42,14 @@ impl Clone for PersistCommand {
 }
 
 impl Command for PersistCommand {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo) -> Result<String, RunError> {
+    fn run(&self, args: Vec<&str>, app_info: &AppInfo, _id_client: usize) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_EXPIRE_COMMAND);
-        // First, check number of args.
-        // Second, check if the key is present. If true, set the ttl, if not, do nothing.
+        
         if args.len() != 1 {
             return Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_NUMBER_ARGUMENTS)});
         }
         
-        let structure = app_info.get_structure();
+        let structure = app_info.get_db_resolver();
         let string = structure.get_string(String::from(args[0]));
         match string.as_str() {
             NIL => Ok(String::from(NOT_FOUND)),

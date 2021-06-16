@@ -1,10 +1,10 @@
-use crate::logger::Loggable;
+use crate::server::logger::Loggable;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc::{SyncSender, Receiver, sync_channel};
 use crate::errors::run_error::RunError;
 use crate::AppInfo;
-use crate::utils;
+use crate::server::utils;
 use std::time::Duration;
 use std::thread;
 
@@ -90,7 +90,7 @@ impl TTLScheduler {
         });
     }
 
-    pub fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
+    fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
         match self.set_helper_ttl(ttl.clone(), arg.clone()) {
             Ok(_) => {
                 let mut key_val = ttl.to_string();
@@ -121,8 +121,10 @@ impl TTLScheduler {
             ttl_scheduler.store_helper(&mut helper_map)
         }).join().unwrap();
     }
+
+    pub fn ttl_cmd() {}
     
-    pub fn get_ttl(&self, arg: String) -> Result<String, RunError> {
+    fn get_ttl(&self, arg: String) -> Result<String, RunError> {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.ttl_map.clone();
 
@@ -134,7 +136,7 @@ impl TTLScheduler {
         .unwrap();
     }
 
-    pub fn get_ttl_helper(&self, arg: String) -> Result<String, RunError> {
+    fn get_ttl_helper(&self, arg: String) -> Result<String, RunError> {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.helper_map.clone();
 
@@ -146,7 +148,7 @@ impl TTLScheduler {
         .unwrap();
     }
 
-    pub fn delete_ttl(&self, arg: String) -> Result<String, String> {
+    fn delete_ttl(&self, arg: String) -> Result<String, String> {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.ttl_map.clone();
 
@@ -157,7 +159,7 @@ impl TTLScheduler {
         .join()
         .unwrap()
     }
-    pub fn delete_ttl_helper(&self, arg: String) -> Result<String, String> {
+    fn delete_ttl_helper(&self, arg: String) -> Result<String, String> {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.helper_map.clone();
 
