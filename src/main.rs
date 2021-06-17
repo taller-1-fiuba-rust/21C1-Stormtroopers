@@ -6,7 +6,7 @@ use crate::server::utils::format_timestamp_now;
 use std::env::args;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
-use std::net::{TcpListener, TcpStream};
+use std::net::{Shutdown, TcpListener, TcpStream};
 
 mod command;
 mod data_base;
@@ -14,7 +14,8 @@ mod errors;
 mod server;
 
 static THREAD_POOL_COUNT: usize = 8;
-static END_FLAG: &str = "EOF";
+static END_FLAG: &str = "quit";
+static MSG_OVER: &str = "MESSAGE: Connection over\n";
 static LINE_BREAK: char = '\n';
 #[allow(dead_code)]
 static RESP_SIMPLE_STRING: &str = "OK\r\n";
@@ -32,8 +33,6 @@ fn main() -> Result<(), std::io::Error> {
     server.load_config(argv)?;
 
     println!("Server {} is up!", server.server_name());
-
-    //let config_server = server.get_config_server();
 
     let server_port = server.get_server_port();
 
@@ -69,35 +68,54 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
         println!("Handler stream request ...");
         let app_info = app_info.clone();
         let stream = stream?;
-        let _id_global = -1;
+        let _id_global = 0;
         let connection_clone = connection_client.clone();
         let receiver = connection_client.get_receiver();
         let stream_lectura = stream.try_clone().unwrap();
+        let ad = address.to_string();
+        let ad_clone = ad.clone();
 
-        threadpool.execute(move |_id_global| {
+        let _thread_write = threadpool.execute(move || {
             handle_connection(
                 connection_clone,
                 stream.try_clone().unwrap(),
                 &app_info,
                 _id_global,
                 id_client,
+                ad_clone,
             );
         });
 
         let rx = receiver.clone();
-        threadpool.execute(move |_| {
+        let _thread_read = threadpool.execute(move || {
             let r = rx.lock().unwrap();
             for msg in r.iter() {
                 stream_lectura
                     .try_clone()
                     .unwrap()
                     .write_all(msg.as_bytes())
-                    .unwrap();
+                    .unwrap_or(());
+
+                if msg == *MSG_OVER {
+                    stream_lectura
+                        .shutdown(Shutdown::Both)
+                        .expect("shutdown call failed");
+                } else {
+                    write_redis_msg(ad.clone(), stream_lectura.try_clone().unwrap());
+                }
             }
         });
+
+        //drop(thread_write);
+        //drop(thread_read);
     }
 
     Ok(())
+}
+
+fn write_redis_msg(address: String, mut stream: TcpStream) {
+    let msg = format!("{:?}> ", address);
+    stream.write_all(msg.as_bytes()).unwrap();
 }
 
 fn handle_connection(
@@ -106,8 +124,16 @@ fn handle_connection(
     app_info: &AppInfo,
     id: u32,
     id_client: usize,
+    address: String,
 ) {
-    handle_client(connection_client, &mut stream, app_info, id, id_client);
+    handle_client(
+        connection_client,
+        &mut stream,
+        app_info,
+        id,
+        id_client,
+        address,
+    );
 }
 
 fn handle_client(
@@ -116,9 +142,11 @@ fn handle_client(
     app_info: &AppInfo,
     id: u32,
     id_client: usize,
+    address: String,
 ) {
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
+    write_redis_msg(address, stream.try_clone().unwrap());
 
     let lines = reader.lines();
     println!("Reading stream conections, job {} ...", id);
@@ -132,6 +160,9 @@ fn handle_client(
             request = line.unwrap_or_else(|_| String::from(END_FLAG));
 
             if request == END_FLAG {
+                //printear en servidor que el cliente se desconectó
+                connection_client.send(MSG_OVER.to_string());
+                //drop(connection_client);
                 return; //tendríamos que cerrar al cliente (drop y demás)
             }
 

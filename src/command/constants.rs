@@ -31,3 +31,4 @@ pub static MONITOR_COMMAND_STR: &str = "monitor";
 pub static LPUSH_COMMAND_STR: &str = "lpush";
 pub static LRANGE_COMMAND_STR: &str = "lrange";
 pub static LPOP_COMMAND_STR: &str = "lpop";
+pub static CONFIG_COMMAND_STR: &str = "config";
