@@ -8,7 +8,6 @@ const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
 const CLIENT_ID: &str = "ExpireCommmand";
 const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
 const TTL_ZERO_OR_ABSENT: &str = "-2\n";
-const NIL: &str = "(nil)";
 const WHITESPACE: &str = " ";
 const NEW_LINE: &str = "\n";
 
@@ -50,27 +49,28 @@ impl Command for TtlCommand {
             return Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_NUMBER_ARGUMENTS)});
         }
         
-        let structure = app_info.get_structure();
-        let string = structure.get_string(String::from(args[0]));
-        match string.as_str() {
-            NIL => Ok(String::from(TTL_ZERO_OR_ABSENT)),
-            _ => {
+        let key_str = args[0]; // The key for the DB
+        let db = app_info.get_db_resolver();
+
+        match db.type_key(String::from(key_str)) {
+            Ok(_db_type) => {
                 let ttl_scheduler = app_info.get_ttl_scheduler();
                 let now = timestamp_now();
-                match ttl_scheduler.get_ttl_helper(String::from(args[0])) {
-                    Ok(val) => {
-                        match val.parse::<u64>().unwrap().overflowing_sub(now) {
-                            (res, false) => {
-                               let mut ret_value = res.to_string();
-                               ret_value.push_str(NEW_LINE);
-                                Ok(ret_value)
-                            },
-                            (_, true) => Ok(String::from(TTL_ZERO_OR_ABSENT))
+                match ttl_scheduler.get_ttl_helper(String::from(key_str)) {
+                    Ok(ttl) => {
+                        match ttl.parse::<u64>().unwrap().overflowing_sub(now) {
+                        (res, false) => {
+                            let mut ret_value = res.to_string();
+                            ret_value.push_str(NEW_LINE);
+                            Ok(ret_value)
+                        },
+                        (_, true) => Ok(String::from(TTL_ZERO_OR_ABSENT))
                         }
                     },
                     Err(_) => Ok(String::from(TTL_ZERO_OR_ABSENT)),
                 }
-            }
+            },
+            Err(e) => Err(e)
         }
     }
 }

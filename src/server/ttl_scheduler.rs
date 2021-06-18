@@ -66,7 +66,7 @@ impl TTLScheduler {
 
     pub fn run(&mut self, app_info: &AppInfo) {
         let ttl_scheduler = self.clone();
-        let mut structure_string = app_info.get_structure().clone();
+        let db = app_info.get_db_resolver().clone();
         thread::spawn(move || {
             loop {
                 let now: u64 = utils::timestamp_now();
@@ -74,14 +74,23 @@ impl TTLScheduler {
                 for n in TTL_CHECK_RANGE..0 {
                     let time = now - n;
                     let time_str = time.to_string();
-                    match ttl_scheduler.get_ttl(time_str.clone()) { 
-                        Ok(val) => {
-                            let ttl_clone = val.clone();
-                            ttl_scheduler.delete_ttl(ttl_clone);
-                            ttl_scheduler.delete_ttl_helper(time_str.clone());
-
-                            let db_clone = val.clone();
-                            structure_string.delete(vec![db_clone.as_str()]);
+                    match ttl_scheduler.delete_ttl(time_str.clone()) { 
+                        Ok(key) => {
+                            let _aux = ttl_scheduler.delete_ttl_helper(key.clone());
+                            
+                            match db.type_key(key.clone()) {
+                                Ok(val) => {
+                                    match val.as_str() {
+                                        "String" => {
+                                            println!("{}", db.get_string_db().delete(vec![key.as_str()]));
+                                        },
+                                        "List" => {db.get_list_db().clear_key(key);},
+                                        "Set" => {db.get_set_db().clear_key(key);},
+                                        _ => ()
+                                    }
+                                },
+                                Err(_) => {();}
+                            }
                         },
                         Err(_) => continue,
                     }
@@ -90,7 +99,7 @@ impl TTLScheduler {
         });
     }
 
-    fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
+    pub fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
         match self.set_helper_ttl(ttl.clone(), arg.clone()) {
             Ok(_) => {
                 let mut key_val = ttl.to_string();
@@ -121,10 +130,8 @@ impl TTLScheduler {
             ttl_scheduler.store_helper(&mut helper_map)
         }).join().unwrap();
     }
-
-    pub fn ttl_cmd() {}
     
-    fn get_ttl(&self, arg: String) -> Result<String, RunError> {
+    /*fn get_ttl(&self, arg: String) -> Result<String, RunError> {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.ttl_map.clone();
 
@@ -134,9 +141,9 @@ impl TTLScheduler {
         })
         .join()
         .unwrap();
-    }
+    }*/
 
-    fn get_ttl_helper(&self, arg: String) -> Result<String, RunError> {
+    pub fn get_ttl_helper(&self, arg: String) -> Result<String, RunError> {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.helper_map.clone();
 
@@ -148,7 +155,7 @@ impl TTLScheduler {
         .unwrap();
     }
 
-    fn delete_ttl(&self, arg: String) -> Result<String, String> {
+    pub fn delete_ttl(&self, arg: String) -> Result<String, String> {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.ttl_map.clone();
 
@@ -159,7 +166,7 @@ impl TTLScheduler {
         .join()
         .unwrap()
     }
-    fn delete_ttl_helper(&self, arg: String) -> Result<String, String> {
+    pub fn delete_ttl_helper(&self, arg: String) -> Result<String, String> {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.helper_map.clone();
 
@@ -195,7 +202,7 @@ impl TTLScheduler {
         Ok(String::from(OK))
     }
 
-    fn retrieve(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> Result<String, RunError> {
+    /*fn retrieve(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> Result<String, RunError> {
         let key = self.receiver.lock().unwrap().recv().unwrap();
         let key_parsed = key.parse::<u64>().unwrap();
 
@@ -204,7 +211,7 @@ impl TTLScheduler {
             Some(value) => Ok(value.clone()),
             None => Err(RunError{message: key, cause: String::from(NOT_FOUND)})
         }
-    }
+    }*/
 
     fn retrieve_helper(&mut self, map: &mut Arc<Mutex<HashMap<String, u64>>>) -> Result<String, RunError> {
         let key = self.receiver.lock().unwrap().recv().unwrap();

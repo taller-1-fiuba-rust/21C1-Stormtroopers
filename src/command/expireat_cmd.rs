@@ -8,8 +8,6 @@ const INFO_EXPIREAT_COMMAND: &str = "Run command EXPIRE_AT\n";
 const CLIENT_ID: &str = "ExpireAtCommmand";
 const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
 const WRONG_TTL_TYPE: &str = "Can't parse to expire time.\n";
-const NIL: &str = "(nil)";
-const NOT_FOUND: &str = "Key not found.\n";
 const WHITESPACE: &str = " ";
 
 pub struct ExpireAtCommand {
@@ -45,30 +43,31 @@ impl Clone for ExpireAtCommand {
 impl Command for ExpireAtCommand {
     fn run(&self, args: Vec<&str>, app_info: &AppInfo, _id_client: usize) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_EXPIREAT_COMMAND);
-        
+
         if args.len() != 2 {
             return Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_NUMBER_ARGUMENTS)});
         }
         
-        let structure = app_info.get_structure();
-        let string = structure.get_string(String::from(args[0]));
-        match string.as_str() {
-            NIL => Ok(String::from(NOT_FOUND)),
-            _ => {
+        let key_str = args[0]; // The key for the DB
+        let ttl_str = args[1]; // The ttl
+        let db = app_info.get_db_resolver();
+
+        match db.type_key(String::from(key_str)) {
+            Ok(_db_type) => {
                 let ttl_scheduler = app_info.get_ttl_scheduler();
-                let ttl = args[1].parse::<u64>(); // This ttl is in unix time.
-                match ttl {
-                    Ok(ttl) => { // Maybe check if ttl is less than actual timestamp?
+                match ttl_str.parse::<u64>() {
+                    Ok(ttl) => {
                         if ttl <= timestamp_now() {
                             return Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_TTL_TYPE)});
                         }
-                        let mut return_value = ttl_scheduler.set_ttl(ttl, String::from(args[0])).unwrap();
+                        let mut return_value = ttl_scheduler.set_ttl(ttl, String::from(key_str)).unwrap();
                         return_value.push('\n');
                         Ok(return_value)
                     },
-                    Err(_) => Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_TTL_TYPE)}),
+                    Err(_) => Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_TTL_TYPE)})
                 }
-            }
+            },
+            Err(e) => Err(e)
         }
     }
 }
