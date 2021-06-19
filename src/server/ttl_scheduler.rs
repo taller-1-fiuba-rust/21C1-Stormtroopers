@@ -223,10 +223,7 @@ impl TTLScheduler {
         }
     }
 
-    fn delete_key(
-        &mut self,
-        map: &mut Arc<Mutex<HashMap<String, u64>>>,
-    ) -> Result<String, String> {
+    fn delete_key(&mut self, map: &mut Arc<Mutex<HashMap<String, u64>>>) -> Result<String, String> {
         let key = self.receiver.lock().unwrap().recv().unwrap();
         let mut map = map.lock().unwrap();
         match map.remove(&key) {
