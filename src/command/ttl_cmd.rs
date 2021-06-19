@@ -1,6 +1,6 @@
-use crate::server::app_info::AppInfo;
 use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
+use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 use crate::server::utils::timestamp_now;
 
@@ -42,13 +42,21 @@ impl Clone for TtlCommand {
 }
 
 impl Command for TtlCommand {
-    fn run(&self, args: Vec<&str>, app_info: &AppInfo, _id_client: usize) -> Result<String, RunError> {
+    fn run(
+        &self,
+        args: Vec<&str>,
+        app_info: &AppInfo,
+        _id_client: usize,
+    ) -> Result<String, RunError> {
         let _log_info_res = self.logger.info(self, INFO_EXPIRE_COMMAND);
-        
+
         if args.len() != 1 {
-            return Err(RunError{message: args.join(WHITESPACE), cause: String::from(WRONG_NUMBER_ARGUMENTS)});
+            return Err(RunError {
+                message: args.join(WHITESPACE),
+                cause: String::from(WRONG_NUMBER_ARGUMENTS),
+            });
         }
-        
+
         let key_str = args[0]; // The key for the DB
         let db = app_info.get_db_resolver();
 
@@ -57,20 +65,18 @@ impl Command for TtlCommand {
                 let ttl_scheduler = app_info.get_ttl_scheduler();
                 let now = timestamp_now();
                 match ttl_scheduler.get_ttl_helper(String::from(key_str)) {
-                    Ok(ttl) => {
-                        match ttl.parse::<u64>().unwrap().overflowing_sub(now) {
+                    Ok(ttl) => match ttl.parse::<u64>().unwrap().overflowing_sub(now) {
                         (res, false) => {
                             let mut ret_value = res.to_string();
                             ret_value.push_str(NEW_LINE);
                             Ok(ret_value)
-                        },
-                        (_, true) => Ok(String::from(TTL_ZERO_OR_ABSENT))
                         }
+                        (_, true) => Ok(String::from(TTL_ZERO_OR_ABSENT)),
                     },
                     Err(_) => Ok(String::from(TTL_ZERO_OR_ABSENT)),
                 }
-            },
-            Err(e) => Err(e)
+            }
+            Err(e) => Err(e),
         }
     }
 }

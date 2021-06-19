@@ -3,19 +3,21 @@ use crate::command::cmd_trait::Command;
 use crate::command::command_parser::obtain_str_command;
 use crate::command::constants::{
     APPEND_COMMAND_STR, COPY_COMMAND_STR, DBSIZE_COMMAND_STR, DECRBY_COMMAND_STR,
-    EXISTS_COMMAND_STR, FLUSHDB_COMMAND_STR, GETDEL_COMMAND_STR, GETSET_COMMAND_STR,
-    GET_COMMAND_STR, INCRBY_COMMAND_STR, LINDEX_COMMAND_STR, LLEN_COMMAND_STR, LPOP_COMMAND_STR,
-    LPUSH_COMMAND_STR, LRANGE_COMMAND_STR, LSET_COMMAND_STR, MGET_COMMAND_STR, MONITOR_COMMAND_STR,
-    MSET_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR, RENAME_COMMAND_STR, RPUSH_COMMAND_STR,
-    SADD_COMMAND_STR, SCARD_COMMAND_STR, SET_COMMAND_STR, SISMEMBER_COMMAND_STR,
-    SMEMBERS_COMMAND_STR, SORT_COMMAND_STR, SREM_COMMAND_STR, STRLEN_COMMAND_STR,
-    TOUCH_COMMAND_STR, TYPE_COMMAND_STR, EXPIREAT_COMMAND_STR, EXPIRE_COMMAND_STR,
-    TTL_COMMAND_STR, PERSIST_COMMAND_STR,
+    EXISTS_COMMAND_STR, EXPIREAT_COMMAND_STR, EXPIRE_COMMAND_STR, FLUSHDB_COMMAND_STR,
+    GETDEL_COMMAND_STR, GETSET_COMMAND_STR, GET_COMMAND_STR, INCRBY_COMMAND_STR,
+    LINDEX_COMMAND_STR, LLEN_COMMAND_STR, LPOP_COMMAND_STR, LPUSH_COMMAND_STR, LRANGE_COMMAND_STR,
+    LSET_COMMAND_STR, MGET_COMMAND_STR, MONITOR_COMMAND_STR, MSET_COMMAND_STR, PERSIST_COMMAND_STR,
+    PING_COMMAND_STR, PUBSUB_COMMAND_STR, RENAME_COMMAND_STR, RPUSH_COMMAND_STR, SADD_COMMAND_STR,
+    SCARD_COMMAND_STR, SET_COMMAND_STR, SISMEMBER_COMMAND_STR, SMEMBERS_COMMAND_STR,
+    SORT_COMMAND_STR, SREM_COMMAND_STR, STRLEN_COMMAND_STR, TOUCH_COMMAND_STR, TTL_COMMAND_STR,
+    TYPE_COMMAND_STR,
 };
 use crate::command::copy_cmd::CopyCommand;
 use crate::command::dbsize_cmd::DbsizeCommand;
 use crate::command::decrby_cmd::DecrbyCommand;
 use crate::command::exists_cmd::ExistsCommand;
+use crate::command::expire_cmd::ExpireCommand;
+use crate::command::expireat_cmd::ExpireAtCommand;
 use crate::command::flushdb_cmd::FlushdbCommand;
 use crate::command::get_cmd::GetCommand;
 use crate::command::getdel_cmd::GetDelCommand;
@@ -30,6 +32,7 @@ use crate::command::lset_cmd::LSetCommand;
 use crate::command::mget_cmd::MgetCommmand;
 use crate::command::monitor_cmd::MonitorCommand;
 use crate::command::mset_cmd::MsetCommmand;
+use crate::command::persist_cmd::PersistCommand;
 use crate::command::ping_cmd;
 use crate::command::pubsub_cmd::PubsubCommand;
 use crate::command::rename_cmd::RenameCommmand;
@@ -42,11 +45,8 @@ use crate::command::smembers_cmd::SmembersCommand;
 use crate::command::sort_cmd::SortCommand;
 use crate::command::srem_cmd::SremCommmand;
 use crate::command::strlen_cmd::StrlenCommand;
-use crate::command::expire_cmd::ExpireCommand;
-use crate::command::expireat_cmd::ExpireAtCommand;
-use crate::command::ttl_cmd::TtlCommand;
-use crate::command::persist_cmd::PersistCommand;
 use crate::command::touch_cmd::TouchCommand;
+use crate::command::ttl_cmd::TtlCommand;
 use crate::command::type_cmd::TypeCommand;
 use crate::errors::builder_error::BuilderError;
 use crate::server::logger::Logger;
