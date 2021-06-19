@@ -64,7 +64,7 @@ impl Command for TtlCommand {
             Ok(_db_type) => {
                 let ttl_scheduler = app_info.get_ttl_scheduler();
                 let now = timestamp_now();
-                match ttl_scheduler.get_ttl_helper(String::from(key_str)) {
+                match ttl_scheduler.get_ttl_key(String::from(key_str)) {
                     Ok(ttl) => match ttl.parse::<u64>().unwrap().overflowing_sub(now) {
                         (res, false) => {
                             let mut ret_value = res.to_string();

@@ -14,7 +14,7 @@ const OK: &str = "Ok";
 
 pub struct TTLScheduler {
     pub ttl_map: Arc<Mutex<HashMap<u64, String>>>,
-    pub helper_map: Arc<Mutex<HashMap<String, u64>>>,
+    pub key_map: Arc<Mutex<HashMap<String, u64>>>,
     sender: Arc<SyncSender<String>>,
     receiver: Arc<Mutex<Receiver<String>>>,
 }
@@ -33,10 +33,10 @@ impl Clone for TTLScheduler {
         let sender = self.sender.clone();
         let receiver = self.receiver.clone();
         let ttl_map = self.ttl_map.clone();
-        let helper_map = self.helper_map.clone();
+        let key_map = self.key_map.clone();
         Self {
             ttl_map,
-            helper_map,
+            key_map,
             sender,
             receiver,
         }
@@ -52,13 +52,13 @@ impl Default for TTLScheduler {
 impl TTLScheduler {
     pub fn new() -> TTLScheduler {
         let ttl_map = Arc::new(Mutex::new(HashMap::new()));
-        let helper_map = Arc::new(Mutex::new(HashMap::new()));
+        let key_map = Arc::new(Mutex::new(HashMap::new()));
         let (tx, rx) = sync_channel(1);
         let sender = Arc::new(tx);
         let receiver = Arc::new(Mutex::new(rx));
         TTLScheduler {
             ttl_map,
-            helper_map,
+            key_map,
             sender,
             receiver,
         }
@@ -75,7 +75,7 @@ impl TTLScheduler {
                 let time_str = time.to_string();
                 match ttl_scheduler.delete_ttl(time_str.clone()) {
                     Ok(key) => {
-                        let _aux = ttl_scheduler.delete_ttl_helper(key.clone());
+                        let _aux = ttl_scheduler.delete_ttl_key(key.clone());
 
                         if let Ok(val) = db.type_key(key.clone()) {
                             match val.as_str() {
@@ -99,7 +99,7 @@ impl TTLScheduler {
     }
 
     pub fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
-        match self.set_helper_ttl(ttl, arg.clone()) {
+        match self.set_key_ttl(ttl, arg.clone()) {
             Ok(_) => {
                 let mut key_val = ttl.to_string();
                 key_val.push(':');
@@ -119,40 +119,28 @@ impl TTLScheduler {
         }
     }
 
-    fn set_helper_ttl(&self, ttl: u64, mut arg: String) -> Result<String, RunError> {
+    fn set_key_ttl(&self, ttl: u64, mut arg: String) -> Result<String, RunError> {
         arg.push(':');
         arg.push_str(ttl.to_string().as_str());
 
         let mut ttl_scheduler = self.clone();
-        let mut helper_map = self.helper_map.clone();
+        let mut key_map = self.key_map.clone();
 
         return thread::spawn(move || {
             ttl_scheduler.sender.send(arg).unwrap();
-            ttl_scheduler.store_helper(&mut helper_map)
+            ttl_scheduler.store_key(&mut key_map)
         })
         .join()
         .unwrap();
     }
 
-    /*fn get_ttl(&self, arg: String) -> Result<String, RunError> {
+    pub fn get_ttl_key(&self, arg: String) -> Result<String, RunError> {
         let mut ttl_scheduler = self.clone();
-        let mut ttl_map = self.ttl_map.clone();
+        let mut ttl_map = self.key_map.clone();
 
         return thread::spawn(move || {
             ttl_scheduler.sender.send(arg).unwrap();
-            ttl_scheduler.retrieve(&mut ttl_map)
-        })
-        .join()
-        .unwrap();
-    }*/
-
-    pub fn get_ttl_helper(&self, arg: String) -> Result<String, RunError> {
-        let mut ttl_scheduler = self.clone();
-        let mut ttl_map = self.helper_map.clone();
-
-        return thread::spawn(move || {
-            ttl_scheduler.sender.send(arg).unwrap();
-            ttl_scheduler.retrieve_helper(&mut ttl_map)
+            ttl_scheduler.retrieve_key(&mut ttl_map)
         })
         .join()
         .unwrap();
@@ -169,13 +157,13 @@ impl TTLScheduler {
         .join()
         .unwrap()
     }
-    pub fn delete_ttl_helper(&self, arg: String) -> Result<String, String> {
+    pub fn delete_ttl_key(&self, arg: String) -> Result<String, String> {
         let mut ttl_scheduler = self.clone();
-        let mut ttl_map = self.helper_map.clone();
+        let mut ttl_map = self.key_map.clone();
 
         thread::spawn(move || {
             ttl_scheduler.sender.send(arg).unwrap();
-            ttl_scheduler.delete_helper(&mut ttl_map)
+            ttl_scheduler.delete_key(&mut ttl_map)
         })
         .join()
         .unwrap()
@@ -193,7 +181,7 @@ impl TTLScheduler {
         Ok(String::from(OK))
     }
 
-    fn store_helper(
+    fn store_key(
         &mut self,
         map: &mut Arc<Mutex<HashMap<String, u64>>>,
     ) -> Result<String, RunError> {
@@ -208,18 +196,7 @@ impl TTLScheduler {
         Ok(String::from(OK))
     }
 
-    /*fn retrieve(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> Result<String, RunError> {
-        let key = self.receiver.lock().unwrap().recv().unwrap();
-        let key_parsed = key.parse::<u64>().unwrap();
-
-        let map = map.lock().unwrap();
-        match map.get(&key_parsed) {
-            Some(value) => Ok(value.clone()),
-            None => Err(RunError{message: key, cause: String::from(NOT_FOUND)})
-        }
-    }*/
-
-    fn retrieve_helper(
+    fn retrieve_key(
         &mut self,
         map: &mut Arc<Mutex<HashMap<String, u64>>>,
     ) -> Result<String, RunError> {
@@ -246,7 +223,7 @@ impl TTLScheduler {
         }
     }
 
-    fn delete_helper(
+    fn delete_key(
         &mut self,
         map: &mut Arc<Mutex<HashMap<String, u64>>>,
     ) -> Result<String, String> {

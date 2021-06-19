@@ -61,7 +61,7 @@ impl Command for PersistCommand {
         match db.type_key(String::from(key_str)) {
             Ok(_db_type) => {
                 let ttl_scheduler = app_info.get_ttl_scheduler();
-                match ttl_scheduler.delete_ttl_helper(String::from(key_str)) {
+                match ttl_scheduler.delete_ttl_key(String::from(key_str)) {
                     Ok(key) => {
                         ttl_scheduler
                             .delete_ttl(key)
