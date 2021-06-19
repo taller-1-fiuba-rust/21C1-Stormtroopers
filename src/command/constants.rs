@@ -31,3 +31,7 @@ pub static MONITOR_COMMAND_STR: &str = "monitor";
 pub static LPUSH_COMMAND_STR: &str = "lpush";
 pub static LRANGE_COMMAND_STR: &str = "lrange";
 pub static LPOP_COMMAND_STR: &str = "lpop";
+pub static EXPIREAT_COMMAND_STR: &str = "expireat";
+pub static EXPIRE_COMMAND_STR: &str = "expire";
+pub static TTL_COMMAND_STR: &str = "ttl";
+pub static PERSIST_COMMAND_STR: &str = "persist";

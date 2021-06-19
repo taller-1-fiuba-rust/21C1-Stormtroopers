@@ -302,11 +302,10 @@ impl DataBaseString<String> {
         let mut value = self.get_string(key.clone());
         if value == *RESPONSE_NIL {
             value = value_append;
-            self.set_string(key, value.clone());
         } else {
             value.push_str(&value_append);
-            self.set_string(key, value.clone());
         }
+        self.set_string(key, value.clone());
         value.chars().count() as u32
     }
 

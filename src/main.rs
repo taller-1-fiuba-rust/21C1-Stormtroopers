@@ -50,6 +50,8 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
     let pubsub = app_info.get_pubsub();
     let mut priv_pubsub = app_info.get_private_pubsub();
 
+    app_info.get_ttl_scheduler().run(&app_info);
+
     let listener = TcpListener::bind(&address)?;
 
     for (ids_clients, stream) in listener.incoming().enumerate() {
