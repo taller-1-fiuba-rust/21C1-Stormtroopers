@@ -63,7 +63,7 @@ impl Command for PersistCommand {
                 let ttl_scheduler = app_info.get_ttl_scheduler();
                 match ttl_scheduler.delete_ttl_helper(String::from(key_str)) {
                     Ok(key) => {
-                        ttl_scheduler.delete_ttl(key).unwrap_or(String::from(""));
+                        ttl_scheduler.delete_ttl(key).unwrap_or_else(|_| String::from(""));
                         Ok(String::from(OK))
                     }
                     Err(_) => Ok(String::from(OK)),

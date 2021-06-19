@@ -57,16 +57,16 @@ impl TTLScheduler {
         let sender = Arc::new(tx);
         let receiver = Arc::new(Mutex::new(rx));
         TTLScheduler {
-            ttl_map: ttl_map,
-            helper_map: helper_map,
-            sender: sender,
-            receiver: receiver,
+            ttl_map,
+            helper_map,
+            sender,
+            receiver,
         }
     }
 
     pub fn run(&mut self, app_info: &AppInfo) {
         let ttl_scheduler = self.clone();
-        let db = app_info.get_db_resolver().clone();
+        let db = app_info.get_db_resolver();
         thread::spawn(move || loop {
             let now: u64 = utils::timestamp_now();
             thread::sleep(Duration::from_secs(1));
@@ -77,8 +77,8 @@ impl TTLScheduler {
                     Ok(key) => {
                         let _aux = ttl_scheduler.delete_ttl_helper(key.clone());
 
-                        match db.type_key(key.clone()) {
-                            Ok(val) => match val.as_str() {
+                        if let Ok(val) = db.type_key(key.clone()) {
+                            match val.as_str() {
                                 "String" => {
                                     db.get_string_db().delete(vec![key.as_str()]);
                                 }
@@ -89,8 +89,7 @@ impl TTLScheduler {
                                     db.get_set_db().clear_key(key);
                                 }
                                 _ => (),
-                            },
-                            Err(_) => (),
+                            }
                         }
                     }
                     Err(_) => continue,
@@ -100,7 +99,7 @@ impl TTLScheduler {
     }
 
     pub fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
-        match self.set_helper_ttl(ttl.clone(), arg.clone()) {
+        match self.set_helper_ttl(ttl, arg.clone()) {
             Ok(_) => {
                 let mut key_val = ttl.to_string();
                 key_val.push(':');
