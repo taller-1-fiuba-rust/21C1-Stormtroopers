@@ -1,3 +1,4 @@
+use crate::command::constants::{TYPE_LIST, TYPE_SET, TYPE_STRING};
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_set::DataBaseSet;
 use crate::data_base::db_string::DataBaseString;
@@ -9,6 +10,7 @@ const DB_STRING: &str = "String";
 const DB_LIST: &str = "List";
 const DB_SET: &str = "Set";
 
+const ERROR_MSG_GET_DB: &str = "Error al recuperar el tipo de la db";
 #[derive(Clone)]
 pub enum DataBase {
     DataBaseString(DataBaseString<String>),
@@ -87,6 +89,21 @@ impl DataBaseResolver {
         response
     }
 
+    pub fn delete_keys(&self, keys: Vec<&str>) -> u32 {
+        let databases = self.data_base.lock().unwrap();
+        let mut clear_count = 0_u32;
+        for db in databases.values() {
+            if let DataBase::DataBaseString(mut db_string) = db.clone() {
+                clear_count = db_string.delete(keys.clone());
+            } else if let DataBase::DataBaseList(mut db_list) = db.clone() {
+                clear_count = db_list.delete(keys.clone());
+            } else if let DataBase::DataBaseSet(mut db_set) = db.clone() {
+                clear_count = db_set.delete(keys.clone());
+            }
+        }
+        clear_count
+    }
+
     pub fn clear_key(&self, key: String) {
         let databases = self.data_base.lock().unwrap();
         for db in databases.values() {
@@ -110,7 +127,7 @@ impl DataBaseResolver {
             .clone();
         match db_gral {
             DataBase::DataBaseString(s) => s,
-            _ => panic!("Esto no deberia pasar!"),
+            _ => panic!("{}", ERROR_MSG_GET_DB),
         }
     }
 
@@ -118,7 +135,7 @@ impl DataBaseResolver {
         let db_gral = self.data_base.lock().unwrap().get(DB_LIST).unwrap().clone();
         match db_gral {
             DataBase::DataBaseList(s) => s,
-            _ => panic!("Esto no deberia pasar!"),
+            _ => panic!("{}", ERROR_MSG_GET_DB),
         }
     }
 
@@ -126,7 +143,7 @@ impl DataBaseResolver {
         let db_gral = self.data_base.lock().unwrap().get(DB_SET).unwrap().clone();
         match db_gral {
             DataBase::DataBaseSet(s) => s,
-            _ => panic!("Esto no deberia pasar!"),
+            _ => panic!("{}", ERROR_MSG_GET_DB),
         }
     }
 
@@ -148,6 +165,7 @@ impl DataBaseResolver {
         })
     }
 
+    //TODO: Es thread safety esto?
     pub fn check_db_string(&self, key: String) -> bool {
         let db_string = self.get_string_db();
         db_string.contains(key)
@@ -165,11 +183,11 @@ impl DataBaseResolver {
 
     pub fn type_key(&self, key: String) -> Result<String, RunError> {
         if self.check_db_string(key.clone()) {
-            return Ok("String".to_string());
+            return Ok(TYPE_STRING.to_string());
         } else if self.check_db_list(key.clone()) {
-            return Ok("List".to_string());
+            return Ok(TYPE_LIST.to_string());
         } else if self.check_db_set(key) {
-            return Ok("Set".to_string());
+            return Ok(TYPE_SET.to_string());
         }
 
         Err(RunError {

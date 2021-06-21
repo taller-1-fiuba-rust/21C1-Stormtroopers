@@ -85,7 +85,18 @@ impl DataBaseSet<String> {
     fn get_value(&self, key: String) -> DataSet<String> {
         let db = self.db_set.lock().unwrap();
 
-        db.get(&key).unwrap().clone() //chequear que esté antes
+        db.get(&key).unwrap().clone() //TODO: chequear que esté antes
+    }
+
+    pub fn delete(&mut self, args: Vec<&str>) -> u32 {
+        let mut count = 0_u32;
+        let mut db = self.db_set.lock().unwrap();
+        for key in args.iter() {
+            if let Some(_v) = db.remove(*key) {
+                count += 1
+            }
+        }
+        count
     }
 
     #[allow(dead_code)]

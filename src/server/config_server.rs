@@ -1,14 +1,18 @@
+use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::str::FromStr;
+use std::sync::Arc;
+use std::sync::Mutex;
 
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_LOAD_FILE_CONFIG: &str = "Init load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_OK: &str = "Load file config OK\n";
-const ERROR_GETTING_PROP: &str = "Error getting property\n";
-const ERROR_GETTING_PROP_DEFAULT: &str = "Error getting property default\n";
+//const ERROR_GETTING_PROP: &str = "Error getting property\n";
+//const ERROR_GETTING_PROP_DEFAULT: &str = "Error getting property default\n";
 const PATH_FILE_CONFIG_DEFAULT: &str = "./redis.config";
 /*
  * Min redis.config props
@@ -37,7 +41,7 @@ impl Loggable for ConfigServer {
 }
 
 pub struct ConfigServer {
-    pub props: HashMap<String, String>,
+    pub props: Arc<Mutex<HashMap<String, String>>>,
 }
 
 impl Default for ConfigServer {
@@ -56,7 +60,9 @@ impl Clone for ConfigServer {
 impl ConfigServer {
     pub fn new() -> ConfigServer {
         let map = HashMap::new();
-        ConfigServer { props: map }
+        ConfigServer {
+            props: Arc::new(Mutex::new(map)),
+        }
     }
 
     pub fn load_config_server_with_path(
@@ -64,16 +70,15 @@ impl ConfigServer {
         path_file: &str,
         logger: Logger<String>,
     ) -> Result<(), std::io::Error> {
-        logger.info(self, INFO_LOAD_FILE_CONFIG)?;
+        logger.info(self, INFO_LOAD_FILE_CONFIG, false)?;
+        let mut props = self.props.lock().unwrap();
         if let Ok(lines) = read_lines(path_file) {
             for line in lines.into_iter().flatten() {
+                //let mut props = props.clone();
                 let prop_slited: Vec<&str> = line.split('=').collect();
-                if prop_slited.len() == 2 {
-                    self.props
-                        .insert(String::from(prop_slited[0]), String::from(prop_slited[1]));
-                }
+                props.insert(String::from(prop_slited[0]), String::from(prop_slited[1]));
             }
-            return logger.info(self, INFO_LOAD_FILE_CONFIG_OK);
+            return logger.info(self, INFO_LOAD_FILE_CONFIG_OK, false);
         }
         Ok(())
     }
@@ -82,30 +87,67 @@ impl ConfigServer {
         self.load_config_server_with_path(PATH_FILE_CONFIG_DEFAULT, logger)
     }
 
-    pub fn get_server_port(&self, logger: Logger<String>) -> String {
-        let logger2 = logger.clone();
-        let port = self.get_prop("port", logger);
+    pub fn get_server_port(&self, _logger: Logger<String>) -> String {
+        let port = self.get_prop("port");
 
-        let mut path_server_port = self.get_prop("server", logger2);
+        let mut path_server_port = self.get_prop("server");
 
         path_server_port.push(':');
         path_server_port.push_str(&port);
         path_server_port
     }
 
-    pub fn get_prop(&self, prop_name: &str, logger: Logger<String>) -> String {
-        if let Some(prop) = self.props.get(prop_name) {
-            logger
-                .info(self, format!("Getting property: {}\n", prop).as_str())
-                .expect(ERROR_GETTING_PROP);
-            return String::from(prop.as_str());
-        };
-        logger
-            .info(
-                self,
-                format!("Getting property default: {}\n", prop_name).as_str(),
-            )
-            .expect(ERROR_GETTING_PROP_DEFAULT);
-        String::from(prop_name)
+    pub fn get_prop(&self, prop: &str) -> String {
+        let map = self.props.lock().unwrap();
+        map.get(prop).unwrap().to_string()
     }
+
+    pub fn get(&self) -> String {
+        let mut msg = "".to_string();
+        let props = self.props.lock().unwrap();
+        for (i, (key, value)) in props.iter().enumerate() {
+            let str_aux = format!("{:?}) {:?}: {:?}\n", i, key, value);
+            msg.push_str(&str_aux);
+        }
+        msg
+    }
+
+    pub fn get_verbose(&self) -> bool {
+        let props = self.props.lock().unwrap();
+        let verbose = props.get("verbose").unwrap(); //hacerlo bien
+        parse_value(verbose.to_string(), false)
+    }
+
+    pub fn get_timeout(&self) -> u64 {
+        let props = self.props.lock().unwrap();
+        let timeout = props.get("timeout").unwrap(); //hacerlo bien
+        parse_value(timeout.to_string(), 0)
+    }
+
+    pub fn set(&self, key: String, value: String) -> Result<String, RunError> {
+        let mut map = self.props.lock().unwrap();
+        if !map.contains_key(&key) | key_not_allowed(key.clone()) {
+            return Err(RunError {
+                message: "Property is not allowed to change".to_string(),
+                cause: "The property must be: verbose, logfile or dbfilename\n".to_string(),
+            });
+        }
+        map.insert(key, value);
+        Ok("OK".to_string())
+    }
+}
+
+fn parse_value<T>(value: String, type_to_parse: T) -> T
+where
+    T: FromStr,
+{
+    if let Ok(val) = value.parse::<T>() {
+        return val;
+    }
+
+    type_to_parse
+}
+
+fn key_not_allowed(key: String) -> bool {
+    !((key == *"verbose") | (key == *"logfile") | (key == *"dbfilename"))
 }
