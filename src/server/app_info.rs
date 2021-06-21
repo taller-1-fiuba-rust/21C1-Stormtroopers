@@ -96,6 +96,7 @@ impl AppInfo {
         let db = create_structure();
 
         let pubsub = Pubsub::new();
+        let ttl_scheduler = TtlScheduler::new();
         let private_pubsub = create_private_pubsub();
         let ttl_scheduler = TtlScheduler::new();
 
@@ -125,6 +126,18 @@ impl AppInfo {
 
     pub fn get_pubsub(&self) -> Pubsub {
         self.pubsub.clone()
+    }
+
+    pub fn get_id_client(&self) -> i32 {
+        self.ids_clients
+    }
+
+    pub fn get_ttl_scheduler(&self) -> TtlScheduler {
+        self.ttl_scheduler.clone()
+    }
+
+    pub fn inc_ids(&mut self) {
+        self.ids_clients += 1;
     }
 
     pub fn get_private_pubsub(&self) -> Pubsub {

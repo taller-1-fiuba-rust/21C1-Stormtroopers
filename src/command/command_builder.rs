@@ -240,7 +240,6 @@ impl CommandBuilder {
             String::from(RPUSHX_COMMAND_STR),
             Box::new(RPushxCommmand::new(id_job, logger)),
         );
-
         CommandBuilder {
             commands,
             id_job_exec: id_job,
