@@ -191,6 +191,26 @@ impl DataBaseList<String> {
         Ok(SUCCESS.to_string())
     }
 
+    //TODO: falta implementar bien el retorno del size de la lista un vez insertado los valores.
+    //TODO: OJO que no es completamente thread safety!
+    pub fn rpushx(&self, key_list: String, values: Vec<&str>) -> Result<u32, RunError> {
+        {
+            let db_list = self.db_list.lock().unwrap();
+            let list: Vec<String> = match db_list.get(&key_list) {
+                Some(l) => l.get_value(),
+                None => return Ok(0_u32),
+            };
+            let inserted = 0_u32;
+            if list.is_empty() {
+                return Ok(inserted);
+            }
+        }
+
+        self.rpush(key_list, values.clone())?;
+
+        Ok(values.len() as u32)
+    }
+
     pub fn rpush(&self, key: String, values: Vec<&str>) -> Result<String, RunError> {
         for value in values {
             self.insert_value(key.clone(), value.to_string().clone());
@@ -304,23 +324,23 @@ impl DataBaseList<String> {
         false
     }
 
-    fn insert(&self, key: String, value: Vec<String>) {
+    fn insert_values(&self, key: String, values: Vec<String>) {
         let mut db = self.db_list.lock().unwrap();
         let mut list = Data::new();
-        list.insert_values(value);
+        list.insert_values(values);
         db.insert(key, list);
     }
 
     fn insert_value_in_pos(&self, key: String, pos: usize, value: String) {
         let mut list = self.get_list(key.clone()).unwrap();
         list.insert(pos, value);
-        self.insert(key, list.to_vec());
+        self.insert_values(key, list.to_vec());
     }
 
     fn remove_value_in_pos(&self, key: String, pos: usize) {
         let mut list = self.get_list(key.clone()).unwrap();
         list.remove(pos);
-        self.insert(key, list.to_vec());
+        self.insert_values(key, list.to_vec());
     }
 
     fn insert_and_remove_value_in_pos(&self, key: String, pos: usize, value: String) {

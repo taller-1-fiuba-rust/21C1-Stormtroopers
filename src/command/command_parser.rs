@@ -9,13 +9,16 @@ pub struct ParsedMessage {
 impl ParsedMessage {
     pub fn validate_args(
         args: Vec<&str>,
-        min_num_args_valid: u32,
-        max_num_args_valid: u32,
+        min_num_args_valid: i32,
+        max_num_args_valid: i32,
     ) -> Result<bool, RunError> {
-        let args_len = args.len() as u32;
-        if args_len >= min_num_args_valid && args_len <= max_num_args_valid {
+        let args_len = args.len() as i32;
+        if args_len >= min_num_args_valid
+            && (max_num_args_valid < 0 || args_len <= max_num_args_valid)
+        {
             return Ok(true);
         }
+
         let msg_err = "Numero de argumentos inválido para el comando".to_string();
         Err(RunError {
             message: "ERR.".to_string(),

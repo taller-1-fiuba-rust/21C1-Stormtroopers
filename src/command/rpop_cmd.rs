@@ -10,8 +10,8 @@ const CLIENT_ID: &str = "RpopCommand";
 
 const NIL_RESULT: &str = "(nil)\n";
 
-const MIN_VALID_ARGS: u32 = 1;
-const MAX_VALID_ARGS: u32 = 2;
+const MIN_VALID_ARGS: i32 = 1;
+const MAX_VALID_ARGS: i32 = 2;
 
 pub struct RpopCommand {
     id_job: u32,

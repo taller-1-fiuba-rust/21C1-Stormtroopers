@@ -10,8 +10,8 @@ const CLIENT_ID: &str = "LremCommand";
 
 const ZERO_RESULT: &str = "0";
 
-const MIN_VALID_ARGS: u32 = 3;
-const MAX_VALID_ARGS: u32 = 3;
+const MIN_VALID_ARGS: i32 = 3;
+const MAX_VALID_ARGS: i32 = 3;
 
 pub struct LremCommand {
     id_job: u32,

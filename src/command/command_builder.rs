@@ -8,9 +8,10 @@ use crate::command::constants::{
     LINDEX_COMMAND_STR, LLEN_COMMAND_STR, LPOP_COMMAND_STR, LPUSHX_COMMAND_STR, LPUSH_COMMAND_STR,
     LRANGE_COMMAND_STR, LREM_COMMAND_STR, LSET_COMMAND_STR, MGET_COMMAND_STR, MONITOR_COMMAND_STR,
     MSET_COMMAND_STR, PERSIST_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR,
-    RENAME_COMMAND_STR, RPOP_COMMAND_STR, RPUSH_COMMAND_STR, SADD_COMMAND_STR, SCARD_COMMAND_STR,
-    SET_COMMAND_STR, SISMEMBER_COMMAND_STR, SMEMBERS_COMMAND_STR, SORT_COMMAND_STR,
-    SREM_COMMAND_STR, STRLEN_COMMAND_STR, TOUCH_COMMAND_STR, TTL_COMMAND_STR, TYPE_COMMAND_STR,
+    RENAME_COMMAND_STR, RPOP_COMMAND_STR, RPUSHX_COMMAND_STR, RPUSH_COMMAND_STR, SADD_COMMAND_STR,
+    SCARD_COMMAND_STR, SET_COMMAND_STR, SISMEMBER_COMMAND_STR, SMEMBERS_COMMAND_STR,
+    SORT_COMMAND_STR, SREM_COMMAND_STR, STRLEN_COMMAND_STR, TOUCH_COMMAND_STR, TTL_COMMAND_STR,
+    TYPE_COMMAND_STR,
 };
 use crate::command::copy_cmd::CopyCommand;
 use crate::command::dbsize_cmd::DbsizeCommand;
@@ -40,6 +41,7 @@ use crate::command::pubsub_cmd::PubsubCommand;
 use crate::command::rename_cmd::RenameCommmand;
 use crate::command::rpop_cmd::RpopCommand;
 use crate::command::rpush_cmd::RPushCommand;
+use crate::command::rpushx_cmd::RPushxCommmand;
 use crate::command::sadd_cmd::SAddCommand;
 use crate::command::scard_cmd::ScardCommmand;
 use crate::command::set_cmd::SetCommand;
@@ -222,7 +224,11 @@ impl CommandBuilder {
         );
         commands.insert(
             String::from(RPOP_COMMAND_STR),
-            Box::new(RpopCommand::new(id_job, logger)),
+            Box::new(RpopCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(RPUSHX_COMMAND_STR),
+            Box::new(RPushxCommmand::new(id_job, logger)),
         );
         CommandBuilder {
             commands,

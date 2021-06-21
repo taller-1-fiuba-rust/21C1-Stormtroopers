@@ -34,6 +34,7 @@ pub mod pubsub_cmd;
 pub mod rename_cmd;
 pub mod rpop_cmd;
 pub mod rpush_cmd;
+pub mod rpushx_cmd;
 pub mod sadd_cmd;
 pub mod scard_cmd;
 pub mod set_cmd;
