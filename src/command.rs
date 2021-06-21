@@ -9,6 +9,7 @@ pub mod constants;
 pub mod copy_cmd;
 pub mod dbsize_cmd;
 pub mod decrby_cmd;
+pub mod del_cmd;
 pub mod exists_cmd;
 pub mod expire_cmd;
 pub mod expireat_cmd;

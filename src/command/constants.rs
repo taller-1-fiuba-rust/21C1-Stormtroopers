@@ -45,3 +45,4 @@ pub static LPUSHX_COMMAND_STR: &str = "lpushx";
 pub static LREM_COMMAND_STR: &str = "lrem";
 pub static RPOP_COMMAND_STR: &str = "rpop";
 pub static RPUSHX_COMMAND_STR: &str = "rpushx";
+pub static DEL_COMMAND_STR: &str = "del";

@@ -89,6 +89,21 @@ impl DataBaseResolver {
         response
     }
 
+    pub fn delete_keys(&self, keys: Vec<&str>) -> u32 {
+        let databases = self.data_base.lock().unwrap();
+        let mut clear_count = 0_u32;
+        for db in databases.values() {
+            if let DataBase::DataBaseString(mut db_string) = db.clone() {
+                clear_count = db_string.delete(keys.clone());
+            } else if let DataBase::DataBaseList(mut db_list) = db.clone() {
+                clear_count = db_list.delete(keys.clone());
+            } else if let DataBase::DataBaseSet(mut db_set) = db.clone() {
+                clear_count = db_set.delete(keys.clone());
+            }
+        }
+        clear_count
+    }
+
     pub fn clear_key(&self, key: String) {
         let databases = self.data_base.lock().unwrap();
         for db in databases.values() {

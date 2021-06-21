@@ -36,6 +36,17 @@ impl DataBaseList<String> {
         db.get(&key).unwrap().clone() //chequear que esté
     }
 
+    pub fn delete(&mut self, args: Vec<&str>) -> u32 {
+        let mut count = 0_u32;
+        let mut db = self.db_list.lock().unwrap();
+        for key in args.iter() {
+            if let Some(_v) = db.remove(*key) {
+                count += 1
+            }
+        }
+        count
+    }
+
     pub fn lpush(&self, mut args: Vec<&str>) -> u32 {
         let mut db_list = self.db_list.lock().unwrap();
         let key = args.remove(0);
