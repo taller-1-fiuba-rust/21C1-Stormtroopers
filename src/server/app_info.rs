@@ -5,7 +5,7 @@ use crate::data_base::db_string::DataBaseString;
 use crate::server::config_server::ConfigServer;
 use crate::server::logger::{Loggable, Logger};
 use crate::server::pubsub::Pubsub;
-use crate::server::ttl_scheduler::TTLScheduler;
+use crate::server::ttl_scheduler::TtlScheduler;
 
 const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...\n";
@@ -29,7 +29,7 @@ pub struct AppInfo {
     logger: Logger<String>,
     db: DataBaseResolver,
     pubsub: Pubsub,
-    ttl_scheduler: TTLScheduler,
+    ttl_scheduler: TtlScheduler,
     ids_clients: i32,
     private_pubsub: Pubsub,
 }
@@ -96,7 +96,7 @@ impl AppInfo {
         let db = create_structure();
 
         let pubsub = Pubsub::new();
-        let ttl_scheduler = TTLScheduler::new();
+        let ttl_scheduler = TtlScheduler::new();
         let private_pubsub = create_private_pubsub();
 
         Self {
@@ -131,7 +131,7 @@ impl AppInfo {
         self.ids_clients
     }
 
-    pub fn get_ttl_scheduler(&self) -> TTLScheduler {
+    pub fn get_ttl_scheduler(&self) -> TtlScheduler {
         self.ttl_scheduler.clone()
     }
 
