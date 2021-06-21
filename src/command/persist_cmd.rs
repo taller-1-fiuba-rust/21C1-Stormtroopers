@@ -4,7 +4,7 @@ use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
-const CLIENT_ID: &str = "ExpireCommmand";
+const CLIENT_ID: &str = "PersistCommmand";
 const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
 const WHITESPACE: &str = " ";
 const OK: &str = "OK.\n";
@@ -46,7 +46,9 @@ impl Command for PersistCommand {
         app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
-        let _log_info_res = self.logger.info(self, INFO_EXPIRE_COMMAND);
+        let _log_info_res = self
+            .logger
+            .info(self, INFO_EXPIRE_COMMAND, app_info.get_verbose());
 
         if args.len() != 1 {
             return Err(RunError {

@@ -47,7 +47,9 @@ impl Command for ExpireCommand {
         app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
-        let _log_info_res = self.logger.info(self, INFO_EXPIRE_COMMAND);
+        let _log_info_res = self
+            .logger
+            .info(self, INFO_EXPIRE_COMMAND, app_info.get_verbose());
 
         if args.len() != 2 {
             return Err(RunError {

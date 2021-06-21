@@ -1,17 +1,18 @@
 use crate::command::append_cmd::AppendCommmand;
 use crate::command::cmd_trait::Command;
 use crate::command::command_parser::obtain_str_command;
+use crate::command::config_cmd::ConfigCommand;
 use crate::command::constants::{
-    APPEND_COMMAND_STR, COPY_COMMAND_STR, DBSIZE_COMMAND_STR, DECRBY_COMMAND_STR, DEL_COMMAND_STR,
-    EXISTS_COMMAND_STR, EXPIREAT_COMMAND_STR, EXPIRE_COMMAND_STR, FLUSHDB_COMMAND_STR,
-    GETDEL_COMMAND_STR, GETSET_COMMAND_STR, GET_COMMAND_STR, INCRBY_COMMAND_STR,
-    LINDEX_COMMAND_STR, LLEN_COMMAND_STR, LPOP_COMMAND_STR, LPUSHX_COMMAND_STR, LPUSH_COMMAND_STR,
-    LRANGE_COMMAND_STR, LREM_COMMAND_STR, LSET_COMMAND_STR, MGET_COMMAND_STR, MONITOR_COMMAND_STR,
-    MSET_COMMAND_STR, PERSIST_COMMAND_STR, PING_COMMAND_STR, PUBSUB_COMMAND_STR,
-    RENAME_COMMAND_STR, RPOP_COMMAND_STR, RPUSHX_COMMAND_STR, RPUSH_COMMAND_STR, SADD_COMMAND_STR,
-    SCARD_COMMAND_STR, SET_COMMAND_STR, SISMEMBER_COMMAND_STR, SMEMBERS_COMMAND_STR,
-    SORT_COMMAND_STR, SREM_COMMAND_STR, STRLEN_COMMAND_STR, TOUCH_COMMAND_STR, TTL_COMMAND_STR,
-    TYPE_COMMAND_STR,
+    APPEND_COMMAND_STR, CONFIG_COMMAND_STR, COPY_COMMAND_STR, DBSIZE_COMMAND_STR,
+    DECRBY_COMMAND_STR, DEL_COMMAND_STR, EXISTS_COMMAND_STR, EXPIREAT_COMMAND_STR,
+    EXPIRE_COMMAND_STR, FLUSHDB_COMMAND_STR, GETDEL_COMMAND_STR, GETSET_COMMAND_STR,
+    GET_COMMAND_STR, INCRBY_COMMAND_STR, LINDEX_COMMAND_STR, LLEN_COMMAND_STR, LPOP_COMMAND_STR,
+    LPUSHX_COMMAND_STR, LPUSH_COMMAND_STR, LRANGE_COMMAND_STR, LREM_COMMAND_STR, LSET_COMMAND_STR,
+    MGET_COMMAND_STR, MONITOR_COMMAND_STR, MSET_COMMAND_STR, PERSIST_COMMAND_STR, PING_COMMAND_STR,
+    PUBSUB_COMMAND_STR, RENAME_COMMAND_STR, RPOP_COMMAND_STR, RPUSHX_COMMAND_STR,
+    RPUSH_COMMAND_STR, SADD_COMMAND_STR, SCARD_COMMAND_STR, SET_COMMAND_STR, SISMEMBER_COMMAND_STR,
+    SMEMBERS_COMMAND_STR, SORT_COMMAND_STR, SREM_COMMAND_STR, STRLEN_COMMAND_STR,
+    TOUCH_COMMAND_STR, TTL_COMMAND_STR, TYPE_COMMAND_STR,
 };
 use crate::command::copy_cmd::CopyCommand;
 use crate::command::dbsize_cmd::DbsizeCommand;
@@ -80,6 +81,10 @@ impl CommandBuilder {
             Box::new(GetCommand::new(id_job, logger.clone())),
         );
         commands.insert(
+            String::from(CONFIG_COMMAND_STR),
+            Box::new(ConfigCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
             String::from(PUBSUB_COMMAND_STR),
             Box::new(PubsubCommand::new(id_job, logger.clone())),
         );
@@ -90,6 +95,10 @@ impl CommandBuilder {
         commands.insert(
             String::from(DBSIZE_COMMAND_STR),
             Box::new(DbsizeCommand::new(id_job, logger.clone())),
+        );
+        commands.insert(
+            String::from(DEL_COMMAND_STR),
+            Box::new(DelCommmand::new(id_job, logger.clone())),
         );
         commands.insert(
             String::from(GETDEL_COMMAND_STR),
@@ -229,11 +238,7 @@ impl CommandBuilder {
         );
         commands.insert(
             String::from(RPUSHX_COMMAND_STR),
-            Box::new(RPushxCommmand::new(id_job, logger.clone())),
-        );
-        commands.insert(
-            String::from(DEL_COMMAND_STR),
-            Box::new(DelCommmand::new(id_job, logger)),
+            Box::new(RPushxCommmand::new(id_job, logger)),
         );
         CommandBuilder {
             commands,

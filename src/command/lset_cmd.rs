@@ -43,7 +43,7 @@ impl Command for LSetCommand {
         app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
-        let log_info_res = self.logger.info(self, INFO_COMMAND);
+        let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
         let db = app_info.get_list_db();

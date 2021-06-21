@@ -5,6 +5,7 @@ pub mod append_cmd;
 pub mod cmd_trait;
 pub mod command_builder;
 pub mod command_parser;
+pub mod config_cmd;
 pub mod constants;
 pub mod copy_cmd;
 pub mod dbsize_cmd;

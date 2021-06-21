@@ -72,9 +72,15 @@ impl Logger<String> {
         Ok(())
     }
 
-    pub fn info(&self, service: &dyn Loggable, message_info: &str) -> Result<(), Error> {
+    pub fn info(
+        &self,
+        service: &dyn Loggable,
+        message_info: &str,
+        print_msg: bool,
+    ) -> Result<(), Error> {
         let msg = generate_menssage(service, message_info);
         let mut log = self.clone();
+        print_info(msg.clone(), print_msg);
 
         thread::spawn(move || {
             log.sender.send(msg).unwrap();
@@ -84,6 +90,12 @@ impl Logger<String> {
         .unwrap();
 
         Ok(())
+    }
+}
+
+fn print_info(msg: String, print_msg: bool) {
+    if print_msg {
+        println!("{:?}", msg);
     }
 }
 
@@ -126,13 +138,13 @@ mod tests {
         )
         .unwrap();
 
-        log.info(&Client(1, 1), "hola").unwrap();
-        log.info(&Client(2, 1), "hola").unwrap();
-        log.info(&Client(3, 1), "hola").unwrap();
-        log.info(&Client(4, 1), "hola").unwrap();
-        log.info(&Client(5, 1), "hola").unwrap();
-        log.info(&Client(6, 1), "hola").unwrap();
-        log.info(&Client(7, 1), "hola").unwrap();
-        log.info(&Client(8, 1), "hola").unwrap();
+        log.info(&Client(1, 1), "hola", false).unwrap();
+        log.info(&Client(2, 1), "hola", false).unwrap();
+        log.info(&Client(3, 1), "hola", false).unwrap();
+        log.info(&Client(4, 1), "hola", false).unwrap();
+        log.info(&Client(5, 1), "hola", false).unwrap();
+        log.info(&Client(6, 1), "hola", false).unwrap();
+        log.info(&Client(7, 1), "hola", false).unwrap();
+        log.info(&Client(8, 1), "hola", false).unwrap();
     }
 }

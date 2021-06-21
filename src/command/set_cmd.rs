@@ -44,7 +44,9 @@ impl Command for SetCommand {
         app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
-        let log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
+        let log_info_res = self
+            .logger
+            .info(self, INFO_RUN_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
         let db_resolver = app_info.get_db_resolver();

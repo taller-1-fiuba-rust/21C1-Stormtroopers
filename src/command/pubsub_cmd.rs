@@ -43,7 +43,9 @@ impl Command for PubsubCommand {
         app_info: &AppInfo,
         id_client: usize,
     ) -> Result<String, RunError> {
-        let _log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
+        let _log_info_res = self
+            .logger
+            .info(self, INFO_RUN_COMMAND, app_info.get_verbose());
 
         let arg = args[0];
         let mut response = "".to_string();

@@ -44,7 +44,9 @@ impl Command for FlushdbCommand {
         app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
-        let log_info_res = self.logger.info(self, INFO_FLUSHDB_COMMAND);
+        let log_info_res = self
+            .logger
+            .info(self, INFO_FLUSHDB_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
         let db = app_info.get_db_resolver();

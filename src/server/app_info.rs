@@ -96,8 +96,8 @@ impl AppInfo {
         let db = create_structure();
 
         let pubsub = Pubsub::new();
-        let ttl_scheduler = TtlScheduler::new();
         let private_pubsub = create_private_pubsub();
+        let ttl_scheduler = TtlScheduler::new();
 
         Self {
             args,
@@ -146,17 +146,18 @@ impl AppInfo {
     pub fn load_config(&mut self, argv: Vec<String>) -> Result<(), std::io::Error> {
         match argv.len() {
             2 => {
-                self.logger.info(self, INFO_LOAD_FILE_CONFIG)?;
+                self.logger.info(self, INFO_LOAD_FILE_CONFIG, false)?;
                 self.config_server
                     .load_config_server_with_path(argv[1].as_str(), self.get_logger())?;
                 Ok(())
             }
             1 => {
-                self.logger.info(self, INFO_LOAD_FILE_CONFIG_DEFAULT)?;
+                self.logger
+                    .info(self, INFO_LOAD_FILE_CONFIG_DEFAULT, false)?;
                 self.config_server.load_config_server(self.get_logger())?;
                 Ok(())
             }
-            _ => self.logger.info(self, ERROR_COUNT_ARGS),
+            _ => self.logger.info(self, ERROR_COUNT_ARGS, false),
         }
     }
 
@@ -177,6 +178,14 @@ impl AppInfo {
     }
 
     pub fn get_server_port(&self) -> String {
-        self.config_server.get_server_port(self.get_logger())
+        self.config_server.get_server_port(self.logger.clone())
+    }
+
+    pub fn get_verbose(&self) -> bool {
+        self.config_server.get_verbose()
+    }
+
+    pub fn get_timeout(&self) -> u64 {
+        self.config_server.get_timeout()
     }
 }
