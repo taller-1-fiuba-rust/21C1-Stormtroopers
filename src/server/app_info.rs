@@ -2,7 +2,7 @@ use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_resolver::*;
 use crate::data_base::db_set::DataBaseSet;
 use crate::data_base::db_string::DataBaseString;
-use crate::server::config_server::{ConfigServer, ConfigServerBuilder};
+use crate::server::config_server::ConfigServer;
 use crate::server::logger::{Loggable, Logger};
 use crate::server::pubsub::Pubsub;
 
@@ -84,12 +84,7 @@ fn create_private_pubsub() -> Pubsub {
 
 impl AppInfo {
     pub fn new(args: Vec<String>) -> Self {
-        let config_server;
-        if args.len() > 1 {
-            config_server = ConfigServerBuilder::build_with_path(args[1].clone());
-        } else {
-            config_server = ConfigServerBuilder::build_without_path();
-        }
+        let config_server = ConfigServer::new();
         let logger =
             Logger::new(LOG_NAME.to_string(), LOG_PATH.to_string()).expect(ERROR_LOG_CREATE);
         let db = create_structure();
@@ -130,17 +125,18 @@ impl AppInfo {
     pub fn load_config(&mut self, argv: Vec<String>) -> Result<(), std::io::Error> {
         match argv.len() {
             2 => {
-                self.logger.info(self, INFO_LOAD_FILE_CONFIG)?;
-                //self.config_server
-                //.load_config_server_with_path(argv[1].as_str(), self.get_logger())?;
+                self.logger.info(self, INFO_LOAD_FILE_CONFIG, false)?;
+                self.config_server
+                    .load_config_server_with_path(argv[1].as_str(), self.get_logger())?;
                 Ok(())
             }
             1 => {
-                self.logger.info(self, INFO_LOAD_FILE_CONFIG_DEFAULT)?;
-                //self.config_server.load_config_server(self.get_logger())?;
+                self.logger
+                    .info(self, INFO_LOAD_FILE_CONFIG_DEFAULT, false)?;
+                self.config_server.load_config_server(self.get_logger())?;
                 Ok(())
             }
-            _ => self.logger.info(self, ERROR_COUNT_ARGS),
+            _ => self.logger.info(self, ERROR_COUNT_ARGS, false),
         }
     }
 
@@ -161,6 +157,14 @@ impl AppInfo {
     }
 
     pub fn get_server_port(&self) -> String {
-        self.config_server.get_server_port()
+        self.config_server.get_server_port(self.logger.clone())
+    }
+
+    pub fn get_verbose(&self) -> bool {
+        self.config_server.get_verbose()
+    }
+
+    pub fn get_timeout(&self) -> u64 {
+        self.config_server.get_timeout()
     }
 }

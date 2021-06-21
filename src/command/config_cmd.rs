@@ -1,5 +1,6 @@
 use crate::command::cmd_trait::Command;
 use crate::server::app_info::AppInfo;
+use crate::LINE_BREAK;
 //use crate::db_resolver::get_string;
 use crate::errors::run_error::RunError;
 use crate::server::logger::{Loggable, Logger};
@@ -44,23 +45,28 @@ impl Command for ConfigCommand {
         app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
-        let log_info_res = self.logger.info(self, INFO_RUN_COMMAND);
+        let log_info_res = self
+            .logger
+            .info(self, INFO_RUN_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
         let config_server = app_info.get_config_server();
-        let _cmd = args[0];
+        let cmd = args[0];
         args.remove(0);
 
-        let response: String;
-        /*if cmd == "get" {
+        let mut response: String;
+        if cmd == "get" {
             response = config_server.get();
         } else if cmd == "set" {
-            response = config_server.set(args);
+            response = config_server.set(args[0].to_string(), args[1].to_string())?;
         } else {
-            //devolver error
-        }*/
-        response = config_server.get();
+            return Err(RunError {
+                message: "Value is not allowed".to_string(),
+                cause: "The value must be: get or set\n".to_string(),
+            });
+        }
 
+        response.push(LINE_BREAK);
         Ok(response)
     }
 }

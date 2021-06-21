@@ -48,6 +48,8 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
 
     let pubsub = app_info.get_pubsub();
     let mut priv_pubsub = app_info.get_private_pubsub();
+    let timeout = app_info.get_timeout();
+    println!("Timeout for connections: {:?} secs", timeout);
 
     let listener = TcpListener::bind(&address)?;
 
@@ -55,7 +57,7 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
         let id_client = ids_clients;
 
         let mut pubsub = pubsub.clone();
-        let connection_client = Connection::<String>::new();
+        let connection_client = Connection::<String>::new(timeout);
 
         let (tx_client, rx_client) = (
             connection_client.get_sender(),
@@ -137,7 +139,7 @@ fn handle_connection(
 }
 
 fn handle_client(
-    connection_client: Connection<String>,
+    mut connection_client: Connection<String>,
     stream: &mut TcpStream,
     app_info: &AppInfo,
     id: u32,
@@ -159,9 +161,10 @@ fn handle_client(
             let app_info = app_info.clone();
             request = line.unwrap_or_else(|_| String::from(END_FLAG));
 
-            if request == END_FLAG {
+            if request == END_FLAG || connection_client.over() {
                 //printear en servidor que el cliente se desconectó
                 connection_client.send(MSG_OVER.to_string());
+                println!("Disconnecting client {:?}", id);
                 //drop(connection_client);
                 return; //tendríamos que cerrar al cliente (drop y demás)
             }
@@ -170,6 +173,7 @@ fn handle_client(
 
             let response = process_request(request.clone(), &app_info, id, id_client);
             connection_client.send(response);
+            connection_client.renew_connection();
         }
     }
     println!("End handle client, job {}", id);

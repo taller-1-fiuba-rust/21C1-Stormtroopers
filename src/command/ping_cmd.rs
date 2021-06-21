@@ -34,10 +34,12 @@ impl Command for PingCommand {
     fn run(
         &self,
         _args: Vec<&str>,
-        _app_info: &AppInfo,
+        app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
-        let _log_info_res = self.logger.info(self, INFO_PING_COMMAND);
+        let _log_info_res = self
+            .logger
+            .info(self, INFO_PING_COMMAND, app_info.get_verbose());
 
         Ok(String::from(RESPONSE_PING_COMMAND))
     }
