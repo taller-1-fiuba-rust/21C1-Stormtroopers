@@ -3,6 +3,8 @@ use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
+use std::cmp::Ordering;
+
 const SUCCESS: &str = "OK";
 const EMPTY_LIST: usize = 0;
 
@@ -45,6 +47,70 @@ impl DataBaseList<String> {
             insertions += 1;
         }
         insertions
+    }
+
+    pub fn rpop(&self, key_list: String, count: u32) -> Vec<String> {
+        let mut db_list = self.db_list.lock().unwrap();
+        let mut list: Vec<String> = match db_list.get(&key_list) {
+            Some(l) => l.get_value(),
+            None => vec![],
+        };
+        let mut result = vec![];
+        for _i in 0..count {
+            if let Some(elem) = list.pop() {
+                result.push(elem)
+            }
+        }
+        let mut data = Data::new();
+        data.insert_values(list);
+        db_list.insert(key_list, data);
+
+        result
+    }
+
+    pub fn lrem(&self, args: Vec<&str>) -> u32 {
+        let key_list = args[0];
+        let mut count = args[1].parse::<i32>().unwrap();
+        let val_rem = args[2];
+
+        let mut db_list = self.db_list.lock().unwrap();
+
+        let mut list: Vec<String> = match db_list.get(key_list) {
+            Some(l) => l.get_value(),
+            None => vec![],
+        };
+
+        match count.cmp(&0) {
+            Ordering::Greater => {}
+            Ordering::Less => {
+                list.reverse();
+                count = count.abs();
+            }
+            Ordering::Equal => count = -1,
+        }
+
+        let mut rem = 0;
+        let list_iter = list.clone();
+        let mut i = 0;
+        for val in list_iter.iter() {
+            if val == val_rem {
+                list.remove(i);
+                rem += 1;
+                if rem == count {
+                    break;
+                }
+            } else {
+                i += 1;
+            }
+        }
+        if count < 0 {
+            list.reverse()
+        };
+        let mut data = Data::new();
+        data.insert_values(list);
+        db_list.insert(String::from(key_list), data);
+
+        rem as u32
     }
 
     //TODO: ver impl con nros negativos!
@@ -123,6 +189,26 @@ impl DataBaseList<String> {
 
         self.insert_and_remove_value_in_pos(key, position as usize, value);
         Ok(SUCCESS.to_string())
+    }
+
+    //TODO: falta implementar bien el retorno del size de la lista un vez insertado los valores.
+    //TODO: OJO que no es completamente thread safety!
+    pub fn rpushx(&self, key_list: String, values: Vec<&str>) -> Result<u32, RunError> {
+        {
+            let db_list = self.db_list.lock().unwrap();
+            let list: Vec<String> = match db_list.get(&key_list) {
+                Some(l) => l.get_value(),
+                None => return Ok(0_u32),
+            };
+            let inserted = 0_u32;
+            if list.is_empty() {
+                return Ok(inserted);
+            }
+        }
+
+        self.rpush(key_list, values.clone())?;
+
+        Ok(values.len() as u32)
     }
 
     pub fn rpush(&self, key: String, values: Vec<&str>) -> Result<String, RunError> {
@@ -238,23 +324,23 @@ impl DataBaseList<String> {
         false
     }
 
-    fn insert(&self, key: String, value: Vec<String>) {
+    fn insert_values(&self, key: String, values: Vec<String>) {
         let mut db = self.db_list.lock().unwrap();
         let mut list = Data::new();
-        list.insert_values(value);
+        list.insert_values(values);
         db.insert(key, list);
     }
 
     fn insert_value_in_pos(&self, key: String, pos: usize, value: String) {
         let mut list = self.get_list(key.clone()).unwrap();
         list.insert(pos, value);
-        self.insert(key, list.to_vec());
+        self.insert_values(key, list.to_vec());
     }
 
     fn remove_value_in_pos(&self, key: String, pos: usize) {
         let mut list = self.get_list(key.clone()).unwrap();
         list.remove(pos);
-        self.insert(key, list.to_vec());
+        self.insert_values(key, list.to_vec());
     }
 
     fn insert_and_remove_value_in_pos(&self, key: String, pos: usize, value: String) {

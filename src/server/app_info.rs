@@ -5,6 +5,7 @@ use crate::data_base::db_string::DataBaseString;
 use crate::server::config_server::ConfigServer;
 use crate::server::logger::{Loggable, Logger};
 use crate::server::pubsub::Pubsub;
+use crate::server::ttl_scheduler::TtlScheduler;
 
 const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...\n";
@@ -28,6 +29,8 @@ pub struct AppInfo {
     logger: Logger<String>,
     db: DataBaseResolver,
     pubsub: Pubsub,
+    ttl_scheduler: TtlScheduler,
+    ids_clients: i32,
     private_pubsub: Pubsub,
 }
 
@@ -38,6 +41,7 @@ impl Clone for AppInfo {
         let args = self.args.clone();
         let db = self.db.clone();
         let pubsub = self.pubsub.clone();
+        let ttl_scheduler = self.ttl_scheduler.clone();
         let private_pubsub = self.private_pubsub.clone();
 
         Self {
@@ -46,6 +50,8 @@ impl Clone for AppInfo {
             logger,
             db,
             pubsub,
+            ttl_scheduler,
+            ids_clients: 0,
             private_pubsub,
         }
     }
@@ -91,6 +97,7 @@ impl AppInfo {
 
         let pubsub = Pubsub::new();
         let private_pubsub = create_private_pubsub();
+        let ttl_scheduler = TtlScheduler::new();
 
         Self {
             args,
@@ -98,6 +105,8 @@ impl AppInfo {
             logger,
             db,
             pubsub,
+            ttl_scheduler,
+            ids_clients: 0,
             private_pubsub,
         }
     }
@@ -120,6 +129,14 @@ impl AppInfo {
 
     pub fn get_private_pubsub(&self) -> Pubsub {
         self.private_pubsub.clone()
+    }
+
+    pub fn inc_ids(&mut self) {
+        self.ids_clients += 1;
+    }
+
+    pub fn get_ttl_scheduler(&self) -> TtlScheduler {
+        self.ttl_scheduler.clone()
     }
 
     pub fn load_config(&mut self, argv: Vec<String>) -> Result<(), std::io::Error> {
