@@ -1,3 +1,9 @@
+/** Data base types **/
+pub static TYPE_STRING: &str = "String";
+pub static TYPE_LIST: &str = "List";
+pub static TYPE_SET: &str = "Set";
+
+/** Command types **/
 pub static PING_COMMAND_STR: &str = "ping";
 pub static GET_COMMAND_STR: &str = "get";
 pub static SET_COMMAND_STR: &str = "set";
@@ -35,3 +41,6 @@ pub static EXPIREAT_COMMAND_STR: &str = "expireat";
 pub static EXPIRE_COMMAND_STR: &str = "expire";
 pub static TTL_COMMAND_STR: &str = "ttl";
 pub static PERSIST_COMMAND_STR: &str = "persist";
+pub static LPUSHX_COMMAND_STR: &str = "lpushx";
+pub static LREM_COMMAND_STR: &str = "lrem";
+pub static RPOP_COMMAND_STR: &str = "rpop";

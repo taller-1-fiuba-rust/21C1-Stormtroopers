@@ -1,8 +1,27 @@
 use crate::errors::parse_error::ParseError;
+use crate::errors::run_error::RunError;
 
 pub struct ParsedMessage {
     pub command: String,
     pub arguments: String,
+}
+
+impl ParsedMessage {
+    pub fn validate_args(
+        args: Vec<&str>,
+        min_num_args_valid: u32,
+        max_num_args_valid: u32,
+    ) -> Result<bool, RunError> {
+        let args_len = args.len() as u32;
+        if args_len >= min_num_args_valid && args_len <= max_num_args_valid {
+            return Ok(true);
+        }
+        let msg_err = "Numero de argumentos inválido para el comando".to_string();
+        Err(RunError {
+            message: "ERR.".to_string(),
+            cause: msg_err,
+        })
+    }
 }
 
 pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {

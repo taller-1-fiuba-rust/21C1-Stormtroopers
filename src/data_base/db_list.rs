@@ -3,6 +3,8 @@ use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
+use std::cmp::Ordering;
+
 const SUCCESS: &str = "OK";
 const EMPTY_LIST: usize = 0;
 
@@ -45,6 +47,70 @@ impl DataBaseList<String> {
             insertions += 1;
         }
         insertions
+    }
+
+    pub fn rpop(&self, key_list: String, count: u32) -> Vec<String> {
+        let mut db_list = self.db_list.lock().unwrap();
+        let mut list: Vec<String> = match db_list.get(&key_list) {
+            Some(l) => l.get_value(),
+            None => vec![],
+        };
+        let mut result = vec![];
+        for _i in 0..count {
+            if let Some(elem) = list.pop() {
+                result.push(elem)
+            }
+        }
+        let mut data = Data::new();
+        data.insert_values(list);
+        db_list.insert(key_list, data);
+
+        result
+    }
+
+    pub fn lrem(&self, args: Vec<&str>) -> u32 {
+        let key_list = args[0];
+        let mut count = args[1].parse::<i32>().unwrap();
+        let val_rem = args[2];
+
+        let mut db_list = self.db_list.lock().unwrap();
+
+        let mut list: Vec<String> = match db_list.get(key_list) {
+            Some(l) => l.get_value(),
+            None => vec![],
+        };
+
+        match count.cmp(&0) {
+            Ordering::Greater => {}
+            Ordering::Less => {
+                list.reverse();
+                count = count.abs();
+            }
+            Ordering::Equal => count = -1,
+        }
+
+        let mut rem = 0;
+        let list_iter = list.clone();
+        let mut i = 0;
+        for val in list_iter.iter() {
+            if val == val_rem {
+                list.remove(i);
+                rem += 1;
+                if rem == count {
+                    break;
+                }
+            } else {
+                i += 1;
+            }
+        }
+        if count < 0 {
+            list.reverse()
+        };
+        let mut data = Data::new();
+        data.insert_values(list);
+        db_list.insert(String::from(key_list), data);
+
+        rem as u32
     }
 
     //TODO: ver impl con nros negativos!

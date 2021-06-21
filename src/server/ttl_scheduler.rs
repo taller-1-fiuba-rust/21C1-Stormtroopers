@@ -12,14 +12,14 @@ const TTL_CHECK_RANGE: u64 = 5;
 const NOT_FOUND: &str = "Key not found.";
 const OK: &str = "Ok";
 
-pub struct TTLScheduler {
+pub struct TtlScheduler {
     pub ttl_map: Arc<Mutex<HashMap<u64, String>>>,
     pub key_map: Arc<Mutex<HashMap<String, u64>>>,
     sender: Arc<SyncSender<String>>,
     receiver: Arc<Mutex<Receiver<String>>>,
 }
 
-impl Loggable for TTLScheduler {
+impl Loggable for TtlScheduler {
     fn get_id_client(&self) -> &str {
         "TTLScheduler"
     }
@@ -28,8 +28,8 @@ impl Loggable for TTLScheduler {
     }
 }
 
-impl Clone for TTLScheduler {
-    fn clone(&self) -> TTLScheduler {
+impl Clone for TtlScheduler {
+    fn clone(&self) -> TtlScheduler {
         let sender = self.sender.clone();
         let receiver = self.receiver.clone();
         let ttl_map = self.ttl_map.clone();
@@ -43,20 +43,20 @@ impl Clone for TTLScheduler {
     }
 }
 
-impl Default for TTLScheduler {
+impl Default for TtlScheduler {
     fn default() -> Self {
-        TTLScheduler::new()
+        TtlScheduler::new()
     }
 }
 
-impl TTLScheduler {
-    pub fn new() -> TTLScheduler {
+impl TtlScheduler {
+    pub fn new() -> TtlScheduler {
         let ttl_map = Arc::new(Mutex::new(HashMap::new()));
         let key_map = Arc::new(Mutex::new(HashMap::new()));
         let (tx, rx) = sync_channel(1);
         let sender = Arc::new(tx);
         let receiver = Arc::new(Mutex::new(rx));
-        TTLScheduler {
+        TtlScheduler {
             ttl_map,
             key_map,
             sender,
@@ -108,12 +108,13 @@ impl TTLScheduler {
                 let mut ttl_scheduler = self.clone();
                 let mut ttl_map = self.ttl_map.clone();
 
-                return thread::spawn(move || {
+                let result = thread::spawn(move || {
                     ttl_scheduler.sender.send(key_val).unwrap();
                     ttl_scheduler.store(&mut ttl_map)
                 })
                 .join()
                 .unwrap();
+                Ok(result)
             }
             Err(e) => Err(e),
         }
@@ -126,12 +127,13 @@ impl TTLScheduler {
         let mut ttl_scheduler = self.clone();
         let mut key_map = self.key_map.clone();
 
-        return thread::spawn(move || {
+        let result = thread::spawn(move || {
             ttl_scheduler.sender.send(arg).unwrap();
             ttl_scheduler.store_key(&mut key_map)
         })
         .join()
         .unwrap();
+        Ok(result)
     }
 
     pub fn get_ttl_key(&self, arg: String) -> Result<String, RunError> {
@@ -169,7 +171,7 @@ impl TTLScheduler {
         .unwrap()
     }
 
-    fn store(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> Result<String, RunError> {
+    fn store(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> String {
         let key_val = self.receiver.lock().unwrap().recv().unwrap();
         let kv_splitted: Vec<&str> = key_val.split(':').collect();
 
@@ -178,13 +180,10 @@ impl TTLScheduler {
             kv_splitted[0].trim().parse::<u64>().unwrap(),
             String::from(kv_splitted[1].trim()),
         );
-        Ok(String::from(OK))
+        String::from(OK)
     }
 
-    fn store_key(
-        &mut self,
-        map: &mut Arc<Mutex<HashMap<String, u64>>>,
-    ) -> Result<String, RunError> {
+    fn store_key(&mut self, map: &mut Arc<Mutex<HashMap<String, u64>>>) -> String {
         let key_val = self.receiver.lock().unwrap().recv().unwrap();
         let kv_splitted: Vec<&str> = key_val.split(':').collect();
 
@@ -193,7 +192,7 @@ impl TTLScheduler {
             String::from(kv_splitted[0].trim()),
             kv_splitted[1].trim().parse::<u64>().unwrap(),
         );
-        Ok(String::from(OK))
+        String::from(OK)
     }
 
     fn retrieve_key(
