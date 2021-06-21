@@ -127,16 +127,20 @@ impl AppInfo {
         self.pubsub.clone()
     }
 
-    pub fn get_private_pubsub(&self) -> Pubsub {
-        self.private_pubsub.clone()
+    pub fn get_id_client(&self) -> i32 {
+        self.ids_clients
+    }
+
+    pub fn get_ttl_scheduler(&self) -> TtlScheduler {
+        self.ttl_scheduler.clone()
     }
 
     pub fn inc_ids(&mut self) {
         self.ids_clients += 1;
     }
 
-    pub fn get_ttl_scheduler(&self) -> TtlScheduler {
-        self.ttl_scheduler.clone()
+    pub fn get_private_pubsub(&self) -> Pubsub {
+        self.private_pubsub.clone()
     }
 
     pub fn load_config(&mut self, argv: Vec<String>) -> Result<(), std::io::Error> {
