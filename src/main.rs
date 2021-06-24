@@ -1,12 +1,15 @@
 use crate::command::command_builder::CommandBuilder;
 use crate::server::app_info::AppInfo;
 use crate::server::connection::Connection;
+use crate::server::connection_resolver::ConnectionResolver;
 use crate::server::threadpool::ThreadPool;
 use crate::server::utils::format_timestamp_now;
 use std::env::args;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
 use std::net::{Shutdown, TcpListener, TcpStream};
+use std::sync::mpsc::Receiver;
+use std::sync::{Arc, Mutex};
 
 mod command;
 mod data_base;
@@ -14,7 +17,7 @@ mod errors;
 mod server;
 
 static THREAD_POOL_COUNT: usize = 8;
-static END_FLAG: &str = "quit";
+static END_FLAG: &str = "exit";
 static MSG_OVER: &str = "MESSAGE: Connection over\n";
 static LINE_BREAK: char = '\n';
 #[allow(dead_code)]
@@ -46,94 +49,102 @@ fn main() -> Result<(), std::io::Error> {
 fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Error> {
     let threadpool = ThreadPool::new(THREAD_POOL_COUNT);
 
-    let pubsub = app_info.get_pubsub();
-    let mut priv_pubsub = app_info.get_private_pubsub();
     let timeout = app_info.get_timeout();
     println!("Timeout for connections: {:?} secs", timeout);
 
     app_info.get_ttl_scheduler().run(&app_info);
-
-    app_info.get_ttl_scheduler().run(&app_info);
-
     let listener = TcpListener::bind(&address)?;
 
-    for (ids_clients, stream) in listener.incoming().enumerate() {
-        let id_client = ids_clients;
-
-        let mut pubsub = pubsub.clone();
-        let connection_client = Connection::<String>::new(timeout);
-
-        let (tx_client, rx_client) = (
-            connection_client.get_sender(),
-            connection_client.get_receiver(),
-        );
-
-        let _ = priv_pubsub.add_client_with_recv(id_client, tx_client.clone(), rx_client.clone());
-        let _rx_client = pubsub.add_client_with_recv(id_client, tx_client, rx_client);
-
-        println!("Handler stream request ...");
+    for (id_client, stream) in listener.incoming().enumerate() {
         let app_info = app_info.clone();
         let stream = stream?;
-        let _id_global = 0;
-        let connection_clone = connection_client.clone();
-        let receiver = connection_client.get_receiver();
-        let stream_lectura = stream.try_clone().unwrap();
-        let ad = address.to_string();
-        let ad_clone = ad.clone();
 
-        let _thread_write = threadpool.execute(move || {
-            handle_connection(
-                connection_clone,
-                stream.try_clone().unwrap(),
-                &app_info,
-                _id_global,
-                id_client,
-                ad_clone,
-            );
-        });
+        let receiver = app_info.connect_client(id_client);
+
+        println!("Handler stream request ...");
+
+        threadpool_read(
+            &threadpool,
+            app_info.get_connection_resolver(),
+            stream.try_clone().expect("Clone failed"),
+            app_info,
+            0,
+            id_client,
+            address.to_string().clone(),
+        );
 
         let rx = receiver.clone();
-        let _thread_read = threadpool.execute(move || {
-            let r = rx.lock().unwrap();
-            for msg in r.iter() {
-                stream_lectura
-                    .try_clone()
-                    .unwrap()
-                    .write_all(msg.as_bytes())
-                    .unwrap_or(());
-
-                if msg == *MSG_OVER {
-                    stream_lectura
-                        .shutdown(Shutdown::Both)
-                        .expect("shutdown call failed");
-                } else {
-                    write_redis_msg(ad.clone(), stream_lectura.try_clone().unwrap());
-                }
-            }
-        });
-
-        //drop(thread_write);
-        //drop(thread_read);
+        threadpool_write(
+            &threadpool,
+            rx,
+            stream.try_clone().expect("Clone failed"),
+            address.to_string(),
+        );
     }
 
     Ok(())
 }
 
+fn threadpool_read(
+    threadpool: &ThreadPool,
+    connection_resolver: ConnectionResolver,
+    stream: TcpStream,
+    mut app_info: AppInfo,
+    id_global: u32,
+    id_client: usize,
+    address: String,
+) {
+    threadpool.execute(move || {
+        handle_connection(
+            connection_resolver,
+            stream,
+            &mut app_info,
+            id_global,
+            id_client,
+            address,
+        );
+    });
+}
+
+fn threadpool_write(
+    threadpool: &ThreadPool,
+    rx: Arc<Mutex<Receiver<String>>>,
+    stream: TcpStream,
+    address: String,
+) {
+    threadpool.execute(move || {
+        let r = rx.lock().unwrap();
+        for msg in r.iter() {
+            let mut stream = stream.try_clone().expect("Clone failed");
+            stream.write_all(msg.as_bytes()).unwrap_or(());
+
+            if msg == *MSG_OVER {
+                stream
+                    .shutdown(Shutdown::Both)
+                    .expect("Shutdown call failed");
+            } else {
+                write_redis_msg(address.clone(), stream);
+            }
+        }
+    });
+}
+
 fn write_redis_msg(address: String, mut stream: TcpStream) {
-    let msg = format!("{:?}> ", address);
+    let mut msg = address;
+    msg.push_str("> ");
     stream.write_all(msg.as_bytes()).unwrap();
 }
 
 fn handle_connection(
-    connection_client: Connection<String>,
+    connection_resolver: ConnectionResolver,
     mut stream: TcpStream,
-    app_info: &AppInfo,
+    app_info: &mut AppInfo,
     id: u32,
     id_client: usize,
     address: String,
 ) {
     handle_client(
-        connection_client,
+        connection_resolver,
         &mut stream,
         app_info,
         id,
@@ -143,16 +154,17 @@ fn handle_connection(
 }
 
 fn handle_client(
-    mut connection_client: Connection<String>,
+    connection_resolver: ConnectionResolver,
     stream: &mut TcpStream,
-    app_info: &AppInfo,
+    app_info: &mut AppInfo,
     id: u32,
     id_client: usize,
     address: String,
 ) {
+    let mut connection_client = connection_resolver.get_connection_client(id_client);
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
-    write_redis_msg(address, stream.try_clone().unwrap());
+    write_redis_msg(address.clone(), stream.try_clone().unwrap());
 
     let lines = reader.lines();
     println!("Reading stream conections, job {} ...", id);
@@ -160,17 +172,13 @@ fn handle_client(
     let mut request = "".to_string();
 
     for line in lines {
-        //hacer un poco más prolijo esto
         if request != *"monitor" {
             let app_info = app_info.clone();
             request = line.unwrap_or_else(|_| String::from(END_FLAG));
 
             if request == END_FLAG || connection_client.over() {
-                //printear en servidor que el cliente se desconectó
-                connection_client.send(MSG_OVER.to_string());
-                println!("Disconnecting client {:?}", id);
-                //drop(connection_client);
-                return; //tendríamos que cerrar al cliente (drop y demás)
+                run_exit_cmd(connection_client, &app_info, id, id_client);
+                return;
             }
 
             println!("Server job {}, receive: {:?}", id, request);
@@ -180,7 +188,6 @@ fn handle_client(
             connection_client.renew_connection();
         }
     }
-    println!("End handle client, job {}", id);
 }
 
 //TODO: ver porque si vienen mal los args explota
@@ -207,7 +214,7 @@ fn publish_monitor(app_info: AppInfo, args: Vec<&str>, id_client: usize) {
     let port = app_info.get_server_port();
 
     let mut msg = format!(
-        "{:?} [id: {:?} -- port: {:?}] ",
+        "+{:?} [id: {:?} -- port: {:?}] ",
         format_timestamp_now(),
         id_client,
         port
@@ -219,4 +226,14 @@ fn publish_monitor(app_info: AppInfo, args: Vec<&str>, id_client: usize) {
     }
 
     priv_pubsub.publish("MONITOR".to_string(), msg);
+}
+
+fn run_exit_cmd(
+    connect_client: Connection<String>,
+    app_info: &AppInfo,
+    id_job: u32,
+    id_client: usize,
+) {
+    let response = process_request(END_FLAG.to_string(), app_info, id_job, id_client);
+    connect_client.send(response);
 }

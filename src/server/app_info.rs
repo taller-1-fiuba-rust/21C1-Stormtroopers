@@ -6,6 +6,9 @@ use crate::server::config_server::ConfigServer;
 use crate::server::logger::{Loggable, Logger};
 use crate::server::pubsub::Pubsub;
 use crate::server::ttl_scheduler::TtlScheduler;
+use crate::ConnectionResolver;
+use std::sync::mpsc::Receiver;
+use std::sync::{Arc, Mutex};
 
 const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...\n";
@@ -32,6 +35,7 @@ pub struct AppInfo {
     ttl_scheduler: TtlScheduler,
     ids_clients: i32,
     private_pubsub: Pubsub,
+    connection_resolver: ConnectionResolver,
 }
 
 impl Clone for AppInfo {
@@ -43,6 +47,7 @@ impl Clone for AppInfo {
         let pubsub = self.pubsub.clone();
         let ttl_scheduler = self.ttl_scheduler.clone();
         let private_pubsub = self.private_pubsub.clone();
+        let connection_resolver = self.connection_resolver.clone();
 
         Self {
             args,
@@ -51,8 +56,9 @@ impl Clone for AppInfo {
             db,
             pubsub,
             ttl_scheduler,
-            ids_clients: 0,
+            ids_clients: self.ids_clients.clone(),
             private_pubsub,
+            connection_resolver,
         }
     }
 }
@@ -98,6 +104,7 @@ impl AppInfo {
         let pubsub = Pubsub::new();
         let private_pubsub = create_private_pubsub();
         let ttl_scheduler = TtlScheduler::new();
+        let connection_resolver = ConnectionResolver::new();
 
         Self {
             args,
@@ -108,6 +115,7 @@ impl AppInfo {
             ttl_scheduler,
             ids_clients: 0,
             private_pubsub,
+            connection_resolver,
         }
     }
 
@@ -127,16 +135,16 @@ impl AppInfo {
         self.pubsub.clone()
     }
 
-    pub fn get_id_client(&self) -> i32 {
-        self.ids_clients
-    }
-
     pub fn get_ttl_scheduler(&self) -> TtlScheduler {
         self.ttl_scheduler.clone()
     }
 
     pub fn inc_ids(&mut self) {
         self.ids_clients += 1;
+    }
+
+    pub fn dec_ids(&mut self) {
+        self.ids_clients -= 1;
     }
 
     pub fn get_private_pubsub(&self) -> Pubsub {
@@ -187,5 +195,25 @@ impl AppInfo {
 
     pub fn get_timeout(&self) -> u64 {
         self.config_server.get_timeout()
+    }
+
+    pub fn get_stats(&self) -> String {
+        format!("{:?}", self.ids_clients)
+    }
+
+    pub fn connect_client(&self, id_client: usize) -> Arc<Mutex<Receiver<String>>> {
+        let receiver = self.connection_resolver.connect_client_with_pubsub(
+            id_client,
+            self.get_timeout(),
+            self.get_pubsub(),
+        );
+        self.connection_resolver
+            .join_pubsub_receiver(id_client, self.get_private_pubsub());
+
+        receiver
+    }
+
+    pub fn get_connection_resolver(&self) -> ConnectionResolver {
+        self.connection_resolver.clone()
     }
 }

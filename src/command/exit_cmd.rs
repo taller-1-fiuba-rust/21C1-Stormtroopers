@@ -2,24 +2,23 @@ use crate::command::cmd_trait::Command;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
+use crate::MSG_OVER;
 
-use crate::LINE_BREAK;
+const INFO_COMMAND: &str = "Run command EXIT\n";
+const CLIENT_ID: &str = "ExitCommand";
 
-const INFO_COMMAND: &str = "Run command MONITOR\n";
-const CLIENT_ID: &str = "MonitorCommand";
-
-pub struct MonitorCommand {
+pub struct ExitCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl MonitorCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> MonitorCommand {
-        MonitorCommand { id_job, logger }
+impl ExitCommand {
+    pub fn new(id_job: u32, logger: Logger<String>) -> ExitCommand {
+        ExitCommand { id_job, logger }
     }
 }
 
-impl Loggable for MonitorCommand {
+impl Loggable for ExitCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -29,16 +28,16 @@ impl Loggable for MonitorCommand {
     }
 }
 
-impl Clone for MonitorCommand {
-    fn clone(&self) -> MonitorCommand {
-        MonitorCommand {
+impl Clone for ExitCommand {
+    fn clone(&self) -> ExitCommand {
+        ExitCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for MonitorCommand {
+impl Command for ExitCommand {
     fn run(
         &self,
         _args: Vec<&str>,
@@ -48,16 +47,11 @@ impl Command for MonitorCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let mut private_pubsub = app_info.get_private_pubsub();
-        private_pubsub.suscribe("MONITOR".to_string(), id_client);
-
         app_info
             .get_connection_resolver()
-            .activate_monitor(id_client);
-        //let mut response = "OK-m".to_string();
+            .disconnect_client(id_client);
+        println!("Disconnecting client {:?}", id_client);
 
-        let response = LINE_BREAK.to_string();
-
-        Ok(response)
+        Ok(MSG_OVER.to_string())
     }
 }
