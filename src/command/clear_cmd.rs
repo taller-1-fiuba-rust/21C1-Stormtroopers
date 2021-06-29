@@ -1,9 +1,9 @@
 use crate::command::cmd_trait::Command;
 use crate::server::app_info::AppInfo;
 
+use crate::command::command_parser::ParsedMessage;
 use crate::errors::run_error::RunError;
 use crate::server::logger::{Loggable, Logger};
-use crate::command::command_parser::ParsedMessage;
 
 const INFO_RUN_COMMAND: &str = "Run command CLEAR\n";
 const CLIENT_ID: &str = "ClearCommand";
@@ -56,7 +56,6 @@ impl Command for ClearCommand {
         ParsedMessage::validate_args(_args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
         let mut response = String::from("");
-
 
         for _i in 1..51 {
             response.push('\n');

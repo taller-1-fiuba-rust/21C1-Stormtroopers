@@ -2,9 +2,9 @@ use crate::command::cmd_trait::Command;
 use crate::server::app_info::AppInfo;
 use crate::LINE_BREAK;
 
+use crate::command::command_parser::ParsedMessage;
 use crate::errors::run_error::RunError;
 use crate::server::logger::{Loggable, Logger};
-use crate::command::command_parser::ParsedMessage;
 
 const INFO_RUN_COMMAND: &str = "Run command CONFIG\n";
 const CLIENT_ID: &str = "ConfigCommand";
@@ -58,7 +58,6 @@ impl Command for ConfigCommand {
         if let Ok(_r) = log_info_res {}
 
         ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
-
 
         let config_server = app_info.get_config_server();
         let cmd = args.remove(0);

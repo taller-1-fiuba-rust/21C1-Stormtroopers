@@ -635,7 +635,7 @@ mod tests {
     #[test]
     fn get_set_test() {
         let mut db_string = DataBaseString::new();
-        db_string.set_string("key0".to_string(),"val0".to_string());
+        db_string.set_string("key0".to_string(), "val0".to_string());
 
         let old_val = db_string.get_set("key0".to_string(), "val1".to_string());
 
@@ -648,7 +648,7 @@ mod tests {
     #[test]
     fn clear_key_test() {
         let db_string = DataBaseString::new();
-        db_string.set_string("key0".to_string(),"val0".to_string());
+        db_string.set_string("key0".to_string(), "val0".to_string());
         db_string.clear_key("key0".to_string());
         let val = db_string.get_string("key0".to_string());
 
@@ -659,17 +659,17 @@ mod tests {
     fn decrby_test() {
         let db_string = DataBaseString::new();
         let key = "key0".to_string();
-        db_string.set_string(key.clone(),"10".to_string());
-        let remaining = db_string.decrby(key.clone(),5.to_string());
+        db_string.set_string(key.clone(), "10".to_string());
+        let remaining = db_string.decrby(key.clone(), 5.to_string());
         assert_eq!(Ok(5), remaining);
 
-        let remaining2 = db_string.decrby(key.clone(),5.to_string());
+        let remaining2 = db_string.decrby(key.clone(), 5.to_string());
         assert_eq!(Ok(0), remaining2);
 
-        let remaining3 = db_string.decrby(key.clone(),2.to_string());
+        let remaining3 = db_string.decrby(key.clone(), 2.to_string());
         assert_eq!(Ok(-2), remaining3);
 
-        let remaining4 = db_string.decrby(key.clone(),(-3).to_string());
+        let remaining4 = db_string.decrby(key.clone(), (-3).to_string());
         assert_eq!(Ok(1), remaining4);
 
         let err = Err(RunError {
@@ -677,7 +677,7 @@ mod tests {
             cause: "The argument cannot be interpreted as an integer".to_string(),
         });
 
-        let rem_err = db_string.decrby(key,"error".to_string());
+        let rem_err = db_string.decrby(key, "error".to_string());
         assert_eq!(err, rem_err);
     }
 
@@ -685,17 +685,17 @@ mod tests {
     fn incrby_test() {
         let db_string = DataBaseString::new();
         let key = "key0".to_string();
-        db_string.set_string(key.clone(),"-10".to_string());
-        let remaining = db_string.incrby(key.clone(),5.to_string());
+        db_string.set_string(key.clone(), "-10".to_string());
+        let remaining = db_string.incrby(key.clone(), 5.to_string());
         assert_eq!(Ok(-5), remaining);
 
-        let remaining2 = db_string.incrby(key.clone(),5.to_string());
+        let remaining2 = db_string.incrby(key.clone(), 5.to_string());
         assert_eq!(Ok(0), remaining2);
 
-        let remaining3 = db_string.incrby(key.clone(),2.to_string());
+        let remaining3 = db_string.incrby(key.clone(), 2.to_string());
         assert_eq!(Ok(2), remaining3);
 
-        let remaining4 = db_string.incrby(key.clone(),(-3).to_string());
+        let remaining4 = db_string.incrby(key.clone(), (-3).to_string());
         assert_eq!(Ok(-1), remaining4);
 
         let err = Err(RunError {
@@ -703,7 +703,7 @@ mod tests {
             cause: "The argument cannot be interpreted as an integer\n".to_string(),
         });
 
-        let rem_err = db_string.incrby(key,"error".to_string());
+        let rem_err = db_string.incrby(key, "error".to_string());
         assert_eq!(err, rem_err);
     }
 

@@ -2,6 +2,7 @@
     This is to expose the commands submodule to main.rs
 */
 pub mod append_cmd;
+pub mod clear_cmd;
 pub mod cmd_trait;
 pub mod command_builder;
 pub mod command_parser;
@@ -48,4 +49,3 @@ pub mod strlen_cmd;
 pub mod touch_cmd;
 pub mod ttl_cmd;
 pub mod type_cmd;
-pub mod clear_cmd;
