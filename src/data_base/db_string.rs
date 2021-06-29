@@ -93,12 +93,6 @@ impl DataBaseString<String> {
         }
     }
 
-    fn get_value(&self, key: String) -> DataString<String> {
-        let db = self.db.lock().unwrap();
-
-        db.get(&key).unwrap().clone() //chequear que esté antes
-    }
-
     pub fn set_string(&self, key: String, value: String) {
         let mut key_val_sender = key;
         key_val_sender.push(':');
@@ -242,31 +236,10 @@ impl DataBaseString<String> {
         count
     }
 
+    //TODO: similar al exists. Ver de remover.
     pub fn contains(&self, key: String) -> bool {
         let db = self.db.lock().unwrap().clone();
         db.contains_key(&key)
-    }
-
-    fn key_incr(&self, key: String, incr: i32) -> Result<i32, RunError> {
-        if !self.contains(key.clone()) {
-            self.set_string(key.clone(), "0".to_string());
-        }
-
-        let mut value;
-        if let Ok(val) = self.get_string(key.clone()).parse::<i32>() {
-            value = val;
-        } else {
-            return Err(RunError {
-                message: "Error when increment/decrement a value".to_string(),
-                cause: "The value for that key cannot be interpreted as an integer".to_string(),
-            });
-        }
-
-        value += incr;
-
-        self.set_string(key, value.to_string());
-
-        Ok(value)
     }
 
     pub fn decrby(&self, key: String, decrement: String) -> Result<i32, RunError> {
@@ -329,6 +302,50 @@ impl DataBaseString<String> {
             return 0;
         }
         value.chars().count() as u32
+    }
+
+    pub fn touch_key(&self, key: String) -> usize {
+        if self.contains(key.clone()) {
+            self.get_value(key).update_touch();
+            return 1;
+        }
+        0
+    }
+
+    pub fn touch(&self, keys: Vec<String>) -> usize {
+        let mut cont = 0;
+        for key in keys {
+            cont += self.touch_key(key);
+        }
+        cont
+    }
+
+    fn get_value(&self, key: String) -> DataString<String> {
+        let db = self.db.lock().unwrap();
+
+        db.get(&key).unwrap().clone() //chequear que esté antes
+    }
+
+    fn key_incr(&self, key: String, incr: i32) -> Result<i32, RunError> {
+        if !self.contains(key.clone()) {
+            self.set_string(key.clone(), "0".to_string());
+        }
+
+        let mut value;
+        if let Ok(val) = self.get_string(key.clone()).parse::<i32>() {
+            value = val;
+        } else {
+            return Err(RunError {
+                message: "Error when increment/decrement a value".to_string(),
+                cause: "The value for that key cannot be interpreted as an integer".to_string(),
+            });
+        }
+
+        value += incr;
+
+        self.set_string(key, value.to_string());
+
+        Ok(value)
     }
 
     fn mget_string(&mut self) -> Vec<String> {
@@ -396,22 +413,6 @@ impl DataBaseString<String> {
         }
         str.pop();
         str
-    }
-
-    pub fn touch_key(&self, key: String) -> usize {
-        if self.contains(key.clone()) {
-            self.get_value(key).update_touch();
-            return 1;
-        }
-        0
-    }
-
-    pub fn touch(&self, keys: Vec<String>) -> usize {
-        let mut cont = 0;
-        for key in keys {
-            cont += self.touch_key(key);
-        }
-        cont
     }
 }
 
@@ -604,5 +605,128 @@ mod tests {
         let res2 = db_string.get_string("key2".to_string());
         assert_eq!(res1, String::from("val1"));
         assert_eq!(res2, String::from("val2"));
+    }
+
+    #[test]
+    fn get_del_test() {
+        let err = Err(RunError {
+            message: "Error getting the key".to_string(),
+            cause: "Key doesn't exist".to_string(),
+        });
+
+        let mut db_string = DataBaseString::new();
+        let val0 = db_string.get_del("a".to_string());
+        assert_eq!(val0, err);
+
+        db_string.set_string("a".to_string(), "1".to_string());
+        let val1 = db_string.get_string("a".to_string());
+        assert_eq!(val1, "1".to_string());
+
+        let val2 = db_string.get_del("a".to_string());
+        assert_eq!(val2, Ok("1".to_string()));
+
+        let val3 = db_string.get_string("a".to_string());
+        assert_eq!(val3, "(nil)".to_string());
+
+        let size0 = db_string.dbsize();
+        assert_eq!(0, size0);
+    }
+
+    #[test]
+    fn get_set_test() {
+        let mut db_string = DataBaseString::new();
+        db_string.set_string("key0".to_string(),"val0".to_string());
+
+        let old_val = db_string.get_set("key0".to_string(), "val1".to_string());
+
+        assert_eq!("val0".to_string(), old_val.unwrap());
+
+        let new_val = db_string.get_string("key0".to_string());
+        assert_eq!("val1".to_string(), new_val);
+    }
+
+    #[test]
+    fn clear_key_test() {
+        let db_string = DataBaseString::new();
+        db_string.set_string("key0".to_string(),"val0".to_string());
+        db_string.clear_key("key0".to_string());
+        let val = db_string.get_string("key0".to_string());
+
+        assert_eq!("val0".to_string(), val);
+    }
+
+    #[test]
+    fn decrby_test() {
+        let db_string = DataBaseString::new();
+        let key = "key0".to_string();
+        db_string.set_string(key.clone(),"10".to_string());
+        let remaining = db_string.decrby(key.clone(),5.to_string());
+        assert_eq!(Ok(5), remaining);
+
+        let remaining2 = db_string.decrby(key.clone(),5.to_string());
+        assert_eq!(Ok(0), remaining2);
+
+        let remaining3 = db_string.decrby(key.clone(),2.to_string());
+        assert_eq!(Ok(-2), remaining3);
+
+        let remaining4 = db_string.decrby(key.clone(),(-3).to_string());
+        assert_eq!(Ok(1), remaining4);
+
+        let err = Err(RunError {
+            message: "Error when increment/decrement a value".to_string(),
+            cause: "The argument cannot be interpreted as an integer".to_string(),
+        });
+
+        let rem_err = db_string.decrby(key,"error".to_string());
+        assert_eq!(err, rem_err);
+    }
+
+    #[test]
+    fn incrby_test() {
+        let db_string = DataBaseString::new();
+        let key = "key0".to_string();
+        db_string.set_string(key.clone(),"-10".to_string());
+        let remaining = db_string.incrby(key.clone(),5.to_string());
+        assert_eq!(Ok(-5), remaining);
+
+        let remaining2 = db_string.incrby(key.clone(),5.to_string());
+        assert_eq!(Ok(0), remaining2);
+
+        let remaining3 = db_string.incrby(key.clone(),2.to_string());
+        assert_eq!(Ok(2), remaining3);
+
+        let remaining4 = db_string.incrby(key.clone(),(-3).to_string());
+        assert_eq!(Ok(-1), remaining4);
+
+        let err = Err(RunError {
+            message: "Error when increment/decrement a value".to_string(),
+            cause: "The argument cannot be interpreted as an integer\n".to_string(),
+        });
+
+        let rem_err = db_string.incrby(key,"error".to_string());
+        assert_eq!(err, rem_err);
+    }
+
+    #[test]
+    fn touch_key_test() {
+        let db_string = DataBaseString::new();
+        let key0 = "key0".to_string();
+        let key1 = "key1".to_string();
+        let val0 = "val0".to_string();
+        let val1 = "val1".to_string();
+
+        db_string.set_string(key0.clone(), val0);
+        let r = db_string.touch_key(key0.clone());
+        assert_eq!(1, r);
+
+        let r0 = db_string.touch(vec![key0.clone()]);
+        assert_eq!(1, r0);
+
+        let r1 = db_string.touch(vec![key0.clone(), key1.clone()]);
+        assert_eq!(1, r1);
+
+        db_string.set_string(key1.clone(), val1);
+        let r1 = db_string.touch(vec![key0.clone(), key1.clone()]);
+        assert_eq!(2, r1);
     }
 }

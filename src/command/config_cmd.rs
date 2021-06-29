@@ -13,7 +13,7 @@ const SUB_CMD_GET: &str = "get";
 const SUB_CMD_SET: &str = "set";
 
 const MIN_VALID_ARGS: i32 = 2;
-const MAX_VALID_ARGS: i32 = 2;
+const MAX_VALID_ARGS: i32 = 3;
 
 pub struct ConfigCommand {
     id_job: u32,

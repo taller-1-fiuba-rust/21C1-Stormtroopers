@@ -48,3 +48,4 @@ pub mod strlen_cmd;
 pub mod touch_cmd;
 pub mod ttl_cmd;
 pub mod type_cmd;
+pub mod clear_cmd;
