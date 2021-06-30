@@ -47,3 +47,4 @@ pub static RPOP_COMMAND_STR: &str = "rpop";
 pub static RPUSHX_COMMAND_STR: &str = "rpushx";
 pub static CONFIG_COMMAND_STR: &str = "config";
 pub static DEL_COMMAND_STR: &str = "del";
+pub static CLEAR_COMMAND_STR: &str = "clear";

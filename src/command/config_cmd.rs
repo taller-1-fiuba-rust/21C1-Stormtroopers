@@ -1,12 +1,19 @@
 use crate::command::cmd_trait::Command;
 use crate::server::app_info::AppInfo;
 use crate::LINE_BREAK;
-//use crate::db_resolver::get_string;
+
+use crate::command::command_parser::ParsedMessage;
 use crate::errors::run_error::RunError;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_RUN_COMMAND: &str = "Run command CONFIG\n";
 const CLIENT_ID: &str = "ConfigCommand";
+
+const SUB_CMD_GET: &str = "get";
+const SUB_CMD_SET: &str = "set";
+
+const MIN_VALID_ARGS: i32 = 2;
+const MAX_VALID_ARGS: i32 = 3;
 
 pub struct ConfigCommand {
     id_job: u32,
@@ -50,14 +57,15 @@ impl Command for ConfigCommand {
             .info(self, INFO_RUN_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
+
         let config_server = app_info.get_config_server();
-        let cmd = args[0];
-        args.remove(0);
+        let cmd = args.remove(0);
 
         let mut response: String;
-        if cmd == "get" {
+        if cmd == SUB_CMD_GET {
             response = config_server.get();
-        } else if cmd == "set" {
+        } else if cmd == SUB_CMD_SET {
             response = config_server.set(args[0].to_string(), args[1].to_string())?;
         } else {
             return Err(RunError {
