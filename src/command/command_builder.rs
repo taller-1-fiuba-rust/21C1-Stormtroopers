@@ -1,61 +1,50 @@
-use crate::command::append_cmd::AppendCommmand;
 use crate::command::cmd_trait::Command;
 use crate::command::command_parser::obtain_str_command;
-use crate::command::config_cmd::ConfigCommand;
-use crate::command::constants::{
-    APPEND_COMMAND_STR, CONFIG_COMMAND_STR, COPY_COMMAND_STR, DBSIZE_COMMAND_STR,
-    DECRBY_COMMAND_STR, DEL_COMMAND_STR, EXISTS_COMMAND_STR, EXIT_COMMAND_STR,
-    EXPIREAT_COMMAND_STR, EXPIRE_COMMAND_STR, FLUSHDB_COMMAND_STR, GETDEL_COMMAND_STR,
-    GETSET_COMMAND_STR, GET_COMMAND_STR, INCRBY_COMMAND_STR, LINDEX_COMMAND_STR, LLEN_COMMAND_STR,
-    LPOP_COMMAND_STR, LPUSHX_COMMAND_STR, LPUSH_COMMAND_STR, LRANGE_COMMAND_STR, LREM_COMMAND_STR,
-    LSET_COMMAND_STR, MGET_COMMAND_STR, MONITOR_COMMAND_STR, MSET_COMMAND_STR, PERSIST_COMMAND_STR,
-    PING_COMMAND_STR, PUBSUB_COMMAND_STR, RENAME_COMMAND_STR, RPOP_COMMAND_STR, RPUSHX_COMMAND_STR,
-    RPUSH_COMMAND_STR, SADD_COMMAND_STR, SCARD_COMMAND_STR, SET_COMMAND_STR, SISMEMBER_COMMAND_STR,
-    SMEMBERS_COMMAND_STR, SORT_COMMAND_STR, SREM_COMMAND_STR, STRLEN_COMMAND_STR,
-    TOUCH_COMMAND_STR, TTL_COMMAND_STR, TYPE_COMMAND_STR,
-};
-use crate::command::copy_cmd::CopyCommand;
-use crate::command::dbsize_cmd::DbsizeCommand;
-use crate::command::decrby_cmd::DecrbyCommand;
-use crate::command::del_cmd::DelCommmand;
-use crate::command::exists_cmd::ExistsCommand;
-use crate::command::exit_cmd::ExitCommand;
-use crate::command::expire_cmd::ExpireCommand;
-use crate::command::expireat_cmd::ExpireAtCommand;
-use crate::command::flushdb_cmd::FlushdbCommand;
-use crate::command::get_cmd::GetCommand;
-use crate::command::getdel_cmd::GetDelCommand;
-use crate::command::getset_cmd::GetSetCommand;
-use crate::command::incrby_cmd::IncrbyCommand;
-use crate::command::lindex_cmd::LindexCommand;
-use crate::command::llen_cmd::LLenCommand;
-use crate::command::lpop_cmd::LpopCommand;
-use crate::command::lpush_cmd::LpushCommand;
-use crate::command::lpushx_cmd::LpushxCommand;
-use crate::command::lrange_cmd::LrangeCommmand;
-use crate::command::lrem_cmd::LremCommand;
-use crate::command::lset_cmd::LSetCommand;
-use crate::command::mget_cmd::MgetCommmand;
-use crate::command::monitor_cmd::MonitorCommand;
-use crate::command::mset_cmd::MsetCommmand;
-use crate::command::persist_cmd::PersistCommand;
+use crate::command::constants::*;
+use crate::command::db_list_cmd::lindex_cmd::LindexCommand;
+use crate::command::db_list_cmd::llen_cmd::LLenCommand;
+use crate::command::db_list_cmd::lpop_cmd::LpopCommand;
+use crate::command::db_list_cmd::lpush_cmd::LpushCommand;
+use crate::command::db_list_cmd::lpushx_cmd::LpushxCommand;
+use crate::command::db_list_cmd::lrange_cmd::LrangeCommmand;
+use crate::command::db_list_cmd::lrem_cmd::LremCommand;
+use crate::command::db_list_cmd::lset_cmd::LSetCommand;
+use crate::command::db_list_cmd::rpop_cmd::RpopCommand;
+use crate::command::db_list_cmd::rpush_cmd::RPushCommand;
+use crate::command::db_list_cmd::rpushx_cmd::RPushxCommmand;
+use crate::command::db_set_cmd::sadd_cmd::SAddCommand;
+use crate::command::db_set_cmd::scard_cmd::ScardCommmand;
+use crate::command::db_set_cmd::sismember_cmd::SismemberCommmand;
+use crate::command::db_set_cmd::smembers_cmd::SmembersCommand;
+use crate::command::db_set_cmd::srem_cmd::SremCommmand;
+use crate::command::db_string_cmd::append_cmd::AppendCommmand;
+use crate::command::db_string_cmd::decrby_cmd::DecrbyCommand;
+use crate::command::db_string_cmd::get_cmd::GetCommand;
+use crate::command::db_string_cmd::getdel_cmd::GetDelCommand;
+use crate::command::db_string_cmd::getset_cmd::GetSetCommand;
+use crate::command::db_string_cmd::incrby_cmd::IncrbyCommand;
+use crate::command::db_string_cmd::mget_cmd::MgetCommmand;
+use crate::command::db_string_cmd::mset_cmd::MsetCommmand;
+use crate::command::db_string_cmd::set_cmd::SetCommand;
+use crate::command::db_string_cmd::strlen_cmd::StrlenCommand;
+use crate::command::keys_cmd::copy_cmd::CopyCommand;
+use crate::command::keys_cmd::del_cmd::DelCommmand;
+use crate::command::keys_cmd::exists_cmd::ExistsCommand;
+use crate::command::keys_cmd::expire_cmd::ExpireCommand;
+use crate::command::keys_cmd::expireat_cmd::ExpireAtCommand;
+use crate::command::keys_cmd::persist_cmd::PersistCommand;
+use crate::command::keys_cmd::rename_cmd::RenameCommmand;
+use crate::command::keys_cmd::sort_cmd::SortCommand;
+use crate::command::keys_cmd::touch_cmd::TouchCommand;
+use crate::command::keys_cmd::ttl_cmd::TtlCommand;
+use crate::command::keys_cmd::type_cmd::TypeCommand;
 use crate::command::ping_cmd;
-use crate::command::pubsub_cmd::PubsubCommand;
-use crate::command::rename_cmd::RenameCommmand;
-use crate::command::rpop_cmd::RpopCommand;
-use crate::command::rpush_cmd::RPushCommand;
-use crate::command::rpushx_cmd::RPushxCommmand;
-use crate::command::sadd_cmd::SAddCommand;
-use crate::command::scard_cmd::ScardCommmand;
-use crate::command::set_cmd::SetCommand;
-use crate::command::sismember_cmd::SismemberCommmand;
-use crate::command::smembers_cmd::SmembersCommand;
-use crate::command::sort_cmd::SortCommand;
-use crate::command::srem_cmd::SremCommmand;
-use crate::command::strlen_cmd::StrlenCommand;
-use crate::command::touch_cmd::TouchCommand;
-use crate::command::ttl_cmd::TtlCommand;
-use crate::command::type_cmd::TypeCommand;
+use crate::command::pubsub_cmd::pubsub_cmd::PubsubCommand;
+use crate::command::server_cmd::config_cmd::ConfigCommand;
+use crate::command::server_cmd::dbsize_cmd::DbsizeCommand;
+use crate::command::server_cmd::exit_cmd::ExitCommand;
+use crate::command::server_cmd::flushdb_cmd::FlushdbCommand;
+use crate::command::server_cmd::monitor_cmd::MonitorCommand;
 use crate::errors::builder_error::BuilderError;
 use crate::server::logger::Logger;
 use std::collections::HashMap;
