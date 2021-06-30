@@ -54,9 +54,8 @@ impl Command for MonitorCommand {
         app_info
             .get_connection_resolver()
             .activate_monitor(id_client);
-        //let mut response = "OK-m".to_string();
-
-        let response = LINE_BREAK.to_string();
+        let mut response = "OK".to_string();
+        response.push(LINE_BREAK);
 
         Ok(response)
     }

@@ -57,6 +57,7 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
 
     for (id_client, stream) in listener.incoming().enumerate() {
         let app_info = app_info.clone();
+        let app_info2 = app_info.clone();
         let stream = stream?;
 
         let receiver = app_info.connect_client(id_client);
@@ -79,6 +80,8 @@ fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Err
             rx,
             stream.try_clone().expect("Clone failed"),
             address.to_string(),
+            app_info2.get_connection_resolver(),
+            id_client,
         );
     }
 
@@ -111,6 +114,8 @@ fn threadpool_write(
     rx: Arc<Mutex<Receiver<String>>>,
     stream: TcpStream,
     address: String,
+    connection_resolver: ConnectionResolver,
+    id_client: usize,
 ) {
     threadpool.execute(move || {
         let r = rx.lock().unwrap();
@@ -122,6 +127,8 @@ fn threadpool_write(
                 stream
                     .shutdown(Shutdown::Both)
                     .expect("Shutdown call failed");
+            } else if connection_resolver.monitor(id_client) {
+                continue;
             } else {
                 write_redis_msg(address.clone(), stream);
             }
