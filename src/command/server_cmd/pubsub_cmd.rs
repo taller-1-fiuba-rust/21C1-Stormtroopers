@@ -69,7 +69,7 @@ impl Command for PubsubCommand {
                 response = format!("{:?}\n", suscribers_vec);
             }
             "publish" => {
-                let val = pubsub.publish(args[1].to_string(), args[2].to_string());
+                let val = pubsub.publish(args[1].to_string(), args[2].to_string(), false);
                 response = "OK\n".to_string();
                 if val.is_none() {
                     return Err(RunError {

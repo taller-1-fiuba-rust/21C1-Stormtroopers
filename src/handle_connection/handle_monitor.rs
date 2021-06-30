@@ -17,5 +17,5 @@ pub fn publish_monitor(app_info: AppInfo, args: Vec<&str>, id_client: usize) {
         msg.push_str(&msg_aux);
     }
 
-    priv_pubsub.publish("MONITOR".to_string(), msg);
+    priv_pubsub.publish("MONITOR".to_string(), msg, true);
 }
