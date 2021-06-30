@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
 use crate::command::constants::TYPE_LIST;
 use crate::errors::run_error::RunError;
@@ -12,6 +13,7 @@ const ZERO_RESULT: &str = "0";
 
 const MIN_VALID_ARGS: i32 = 3;
 const MAX_VALID_ARGS: i32 = 3;
+const LREM_CMD: &str = "lrem";
 
 pub struct LremCommand {
     id_job: u32,
@@ -19,8 +21,10 @@ pub struct LremCommand {
 }
 
 impl LremCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> LremCommand {
-        LremCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(LREM_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

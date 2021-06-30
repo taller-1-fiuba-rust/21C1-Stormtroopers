@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -6,6 +7,7 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_RUN_COMMAND: &str = "Run command SET\n";
 const CLIENT_ID: &str = "SetCommand";
 const RESPONSE_COMMAND: &str = "OK\n";
+const CONST_CMD: &str = "set";
 
 pub struct SetCommand {
     id_job: u32,
@@ -13,8 +15,10 @@ pub struct SetCommand {
 }
 
 impl SetCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> SetCommand {
-        SetCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

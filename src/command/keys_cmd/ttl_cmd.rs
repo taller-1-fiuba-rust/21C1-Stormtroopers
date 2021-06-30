@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -10,6 +11,7 @@ const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
 const TTL_ZERO_OR_ABSENT: &str = "-2\n";
 const WHITESPACE: &str = " ";
 const NEW_LINE: &str = "\n";
+const CONST_CMD: &str = "ttl";
 
 pub struct TtlCommand {
     id_job: u32,
@@ -17,8 +19,10 @@ pub struct TtlCommand {
 }
 
 impl TtlCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> TtlCommand {
-        TtlCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

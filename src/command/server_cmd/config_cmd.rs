@@ -1,12 +1,13 @@
 use crate::command::cmd_trait::Command;
-use crate::server::app_info::AppInfo;
-use crate::LINE_BREAK;
-//use crate::db_resolver::get_string;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
+use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
+use crate::LINE_BREAK;
 
 const INFO_RUN_COMMAND: &str = "Run command CONFIG\n";
 const CLIENT_ID: &str = "ConfigCommand";
+const CONST_CMD: &str = "config";
 
 pub struct ConfigCommand {
     id_job: u32,
@@ -14,8 +15,10 @@ pub struct ConfigCommand {
 }
 
 impl ConfigCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> ConfigCommand {
-        ConfigCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

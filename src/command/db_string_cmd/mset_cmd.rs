@@ -1,24 +1,28 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command MSET\n";
-const CLIENT_ID: &str = "MsetCommmand";
+const CLIENT_ID: &str = "MsetCommand";
 const RESPONSE_COMMAND: &str = "OK\n";
+const CONST_CMD: &str = "mset";
 
-pub struct MsetCommmand {
+pub struct MsetCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl MsetCommmand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> MsetCommmand {
-        MsetCommmand { id_job, logger }
+impl MsetCommand {
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
-impl Loggable for MsetCommmand {
+impl Loggable for MsetCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -28,16 +32,16 @@ impl Loggable for MsetCommmand {
     }
 }
 
-impl Clone for MsetCommmand {
-    fn clone(&self) -> MsetCommmand {
-        MsetCommmand {
+impl Clone for MsetCommand {
+    fn clone(&self) -> MsetCommand {
+        MsetCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for MsetCommmand {
+impl Command for MsetCommand {
     fn run(
         &self,
         args: Vec<&str>,

@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -9,6 +10,7 @@ const CLIENT_ID: &str = "ExpireAtCommmand";
 const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
 const WRONG_TTL_TYPE: &str = "Can't parse to expire time.\n";
 const WHITESPACE: &str = " ";
+const CONST_CMD: &str = "expireat";
 
 pub struct ExpireAtCommand {
     id_job: u32,
@@ -16,8 +18,10 @@ pub struct ExpireAtCommand {
 }
 
 impl ExpireAtCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> ExpireAtCommand {
-        ExpireAtCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

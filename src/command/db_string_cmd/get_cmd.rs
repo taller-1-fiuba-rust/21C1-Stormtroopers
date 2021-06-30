@@ -1,11 +1,12 @@
 use crate::command::cmd_trait::Command;
-use crate::server::app_info::AppInfo;
-//use crate::db_resolver::get_string;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
+use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_RUN_COMMAND: &str = "Run command GET\n";
-const CLIENT_ID: &str = "SetCommand";
+const CLIENT_ID: &str = "GetCommand";
+const CONST_CMD: &str = "get";
 
 pub struct GetCommand {
     id_job: u32,
@@ -13,8 +14,10 @@ pub struct GetCommand {
 }
 
 impl GetCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> GetCommand {
-        GetCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -8,6 +9,7 @@ const CLIENT_ID: &str = "PersistCommmand";
 const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
 const WHITESPACE: &str = " ";
 const OK: &str = "OK.\n";
+const CONST_CMD: &str = "persist";
 
 pub struct PersistCommand {
     id_job: u32,
@@ -15,8 +17,10 @@ pub struct PersistCommand {
 }
 
 impl PersistCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> PersistCommand {
-        PersistCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

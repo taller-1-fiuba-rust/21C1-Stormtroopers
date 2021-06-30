@@ -1,3 +1,9 @@
+use crate::command::command_builder::CommandBuilder;
+use crate::command::db_list_cmd::db_list_generator;
+use crate::command::db_set_cmd::db_set_generator;
+use crate::command::db_string_cmd::db_string_generator;
+use crate::command::keys_cmd::keys_generator;
+use crate::command::server_cmd::server_generator;
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_resolver::*;
 use crate::data_base::db_set::DataBaseSet;
@@ -36,6 +42,7 @@ pub struct AppInfo {
     ids_clients: i32,
     private_pubsub: Pubsub,
     connection_resolver: ConnectionResolver,
+    command_builder: CommandBuilder,
 }
 
 impl Clone for AppInfo {
@@ -48,6 +55,7 @@ impl Clone for AppInfo {
         let ttl_scheduler = self.ttl_scheduler.clone();
         let private_pubsub = self.private_pubsub.clone();
         let connection_resolver = self.connection_resolver.clone();
+        let command_builder = self.command_builder.clone();
 
         Self {
             args,
@@ -59,6 +67,7 @@ impl Clone for AppInfo {
             ids_clients: self.ids_clients,
             private_pubsub,
             connection_resolver,
+            command_builder,
         }
     }
 }
@@ -94,6 +103,18 @@ fn create_private_pubsub() -> Pubsub {
     pubsub
 }
 
+fn command_builder_generator(logger: Logger<String>) -> CommandBuilder {
+    let command_builder = CommandBuilder::new(0);
+
+    db_list_generator::insert_commands(command_builder.clone(), logger.clone());
+    db_string_generator::insert_commands(command_builder.clone(), logger.clone());
+    db_set_generator::insert_commands(command_builder.clone(), logger.clone());
+    keys_generator::insert_commands(command_builder.clone(), logger.clone());
+    server_generator::insert_commands(command_builder.clone(), logger);
+
+    command_builder
+}
+
 impl AppInfo {
     pub fn new(args: Vec<String>) -> Self {
         let config_server = ConfigServer::new();
@@ -105,6 +126,7 @@ impl AppInfo {
         let private_pubsub = create_private_pubsub();
         let ttl_scheduler = TtlScheduler::new();
         let connection_resolver = ConnectionResolver::new();
+        let command_builder = command_builder_generator(logger.clone());
 
         Self {
             args,
@@ -116,6 +138,7 @@ impl AppInfo {
             ids_clients: 0,
             private_pubsub,
             connection_resolver,
+            command_builder,
         }
     }
 
@@ -215,5 +238,9 @@ impl AppInfo {
 
     pub fn get_connection_resolver(&self) -> ConnectionResolver {
         self.connection_resolver.clone()
+    }
+
+    pub fn get_command_builder(&self) -> CommandBuilder {
+        self.command_builder.clone()
     }
 }

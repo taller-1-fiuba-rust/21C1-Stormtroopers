@@ -1,27 +1,31 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command RPUSHX\n";
-const CLIENT_ID: &str = "RPushxCommmand";
+const CLIENT_ID: &str = "RpushxCommand";
 
 const MIN_VALID_ARGS: i32 = 2;
 const MAX_VALID_ARGS: i32 = -1;
+const RPUSHX_CMD: &str = "rpushx";
 
-pub struct RPushxCommmand {
+pub struct RpushxCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl RPushxCommmand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> RPushxCommmand {
-        RPushxCommmand { id_job, logger }
+impl RpushxCommand {
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(RPUSHX_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
-impl Loggable for RPushxCommmand {
+impl Loggable for RpushxCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -31,16 +35,16 @@ impl Loggable for RPushxCommmand {
     }
 }
 
-impl Clone for RPushxCommmand {
-    fn clone(&self) -> RPushxCommmand {
-        RPushxCommmand {
+impl Clone for RpushxCommand {
+    fn clone(&self) -> RpushxCommand {
+        RpushxCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for RPushxCommmand {
+impl Command for RpushxCommand {
     fn run(
         &self,
         mut args: Vec<&str>,

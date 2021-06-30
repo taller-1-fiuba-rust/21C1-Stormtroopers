@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -6,6 +7,7 @@ use crate::RESP_SIMPLE_STRING;
 
 const INFO_FLUSHDB_COMMAND: &str = "Run command FLUSHDB\n";
 const CLIENT_ID: &str = "FlushdbCommand";
+const CONST_CMD: &str = "flushdb";
 
 pub struct FlushdbCommand {
     id_job: u32,
@@ -13,8 +15,10 @@ pub struct FlushdbCommand {
 }
 
 impl FlushdbCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> FlushdbCommand {
-        FlushdbCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

@@ -1,23 +1,27 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command SREM\n";
-const CLIENT_ID: &str = "SremCommmand";
+const CLIENT_ID: &str = "SremCommand";
+const CONST_CMD: &str = "srem";
 
-pub struct SremCommmand {
+pub struct SremCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl SremCommmand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> SremCommmand {
-        SremCommmand { id_job, logger }
+impl SremCommand {
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
-impl Loggable for SremCommmand {
+impl Loggable for SremCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -27,16 +31,16 @@ impl Loggable for SremCommmand {
     }
 }
 
-impl Clone for SremCommmand {
-    fn clone(&self) -> SremCommmand {
-        SremCommmand {
+impl Clone for SremCommand {
+    fn clone(&self) -> SremCommand {
+        SremCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for SremCommmand {
+impl Command for SremCommand {
     fn run(
         &self,
         args: Vec<&str>,

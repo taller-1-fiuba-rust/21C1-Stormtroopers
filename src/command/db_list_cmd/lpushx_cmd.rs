@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::command::constants::TYPE_LIST;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
@@ -6,6 +7,7 @@ use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command LPUSHX\n";
 const CLIENT_ID: &str = "LpushxCommand";
+const LPUSHX_CMD: &str = "lpushx";
 
 const ZERO_RESULT: &str = "0";
 
@@ -15,8 +17,10 @@ pub struct LpushxCommand {
 }
 
 impl LpushxCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> LpushxCommand {
-        LpushxCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(LPUSHX_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

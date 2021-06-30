@@ -1,11 +1,13 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 use crate::LINE_BREAK;
 
-const INFO_DBSIZE_COMMAND: &str = "Run command DECRBY\n";
+const INFO_DBSIZE_COMMAND: &str = "Run command INCRBY\n";
 const CLIENT_ID: &str = "DecrbyCommmand";
+const CONST_CMD: &str = "incrby";
 
 pub struct IncrbyCommand {
     id_job: u32,
@@ -13,8 +15,10 @@ pub struct IncrbyCommand {
 }
 
 impl IncrbyCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> IncrbyCommand {
-        IncrbyCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

@@ -1,10 +1,11 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
-//use crate::LINE_BREAK;
-
 const INFO_RUN_COMMAND: &str = "Run command PUBSUB\n";
+
+const CONST_CMD: &str = "pubsub";
 
 pub struct PubsubCommand {
     id_job: u32,
@@ -12,8 +13,10 @@ pub struct PubsubCommand {
 }
 
 impl PubsubCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> PubsubCommand {
-        PubsubCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
@@ -53,19 +56,26 @@ impl Command for PubsubCommand {
         let mut pubsub = app_info.get_pubsub();
 
         match arg {
-            "suscribe" => pubsub.suscribe(args[1].to_string(), id_client),
+            "suscribe" => {
+                pubsub.suscribe(args[1].to_string(), id_client);
+                response = "OK\n".to_string();
+            }
             "len_channel" => {
                 let len: usize = pubsub.len_channel(args[1].to_string());
-                response = format!("{:?}", len);
+                response = format!("{:?}\n", len);
             }
             "suscribers_for_channel" => {
                 let suscribers_vec = pubsub.get_suscribers(args[1].to_string());
-                response = format!("{:?}", suscribers_vec);
+                response = format!("{:?}\n", suscribers_vec);
             }
             "publish" => {
                 let val = pubsub.publish(args[1].to_string(), args[2].to_string());
+                response = "OK\n".to_string();
                 if val.is_none() {
-                    response = "NO EXISTE CHANNEL\n".to_string();
+                    return Err(RunError {
+                        message: "Error Command pubsub".to_string(),
+                        cause: "Channel does not exist".to_string(),
+                    });
                 }
             }
             "unsuscribe" => pubsub.unsuscribe(args[1].to_string(), id_client),
@@ -80,13 +90,13 @@ impl Command for PubsubCommand {
             }
             "NUMSUB" => {
                 let vec = pubsub.numsub();
-                response = format!("{:?}", vec);
+                response = format!("{:?}\n", vec);
             }
             _ => {
                 return Err(RunError {
                     message: "Error Command pubsub".to_string(),
-                    cause: " ".to_string(),
-                })
+                    cause: format!("{:?} is not a pubsub command", arg),
+                });
             }
         }
 

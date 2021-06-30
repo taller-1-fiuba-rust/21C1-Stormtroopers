@@ -1,24 +1,28 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 use crate::LINE_BREAK;
 
 const INFO_DBSIZE_COMMAND: &str = "Run command DBSIZE\n";
-const CLIENT_ID: &str = "DbSizeCommmand";
+const CLIENT_ID: &str = "DbSizeCommand";
+const CONST_CMD: &str = "dbsize";
 
-pub struct DbsizeCommand {
+pub struct DbSizeCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl DbsizeCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> DbsizeCommand {
-        DbsizeCommand { id_job, logger }
+impl DbSizeCommand {
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
-impl Loggable for DbsizeCommand {
+impl Loggable for DbSizeCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -28,16 +32,16 @@ impl Loggable for DbsizeCommand {
     }
 }
 
-impl Clone for DbsizeCommand {
-    fn clone(&self) -> DbsizeCommand {
-        DbsizeCommand {
+impl Clone for DbSizeCommand {
+    fn clone(&self) -> DbSizeCommand {
+        DbSizeCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for DbsizeCommand {
+impl Command for DbSizeCommand {
     fn run(
         &self,
         _args: Vec<&str>,

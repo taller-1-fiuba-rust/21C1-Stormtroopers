@@ -1,10 +1,12 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command EXISTS\n";
 const CLIENT_ID: &str = "ExistsCommmand";
+const CONST_CMD: &str = "exists";
 
 pub struct ExistsCommand {
     id_job: u32,
@@ -12,8 +14,10 @@ pub struct ExistsCommand {
 }
 
 impl ExistsCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> ExistsCommand {
-        ExistsCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

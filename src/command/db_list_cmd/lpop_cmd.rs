@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -6,6 +7,7 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command LPOP\n";
 const CLIENT_ID: &str = "LpopCommand";
 const RESPONSE_EMPTY: &str = "(nil)\n";
+const LPOP_CMD: &str = "lpop";
 
 pub struct LpopCommand {
     id_job: u32,
@@ -13,8 +15,10 @@ pub struct LpopCommand {
 }
 
 impl LpopCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> LpopCommand {
-        LpopCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(LPOP_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

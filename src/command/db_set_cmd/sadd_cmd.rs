@@ -1,23 +1,27 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command SADD\n";
 const CLIENT_ID: &str = "SAddCommmand";
+const CONST_CMD: &str = "sadd";
 
-pub struct SAddCommand {
+pub struct SaddCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl SAddCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> SAddCommand {
-        SAddCommand { id_job, logger }
+impl SaddCommand {
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
-impl Loggable for SAddCommand {
+impl Loggable for SaddCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -27,16 +31,16 @@ impl Loggable for SAddCommand {
     }
 }
 
-impl Clone for SAddCommand {
-    fn clone(&self) -> SAddCommand {
-        SAddCommand {
+impl Clone for SaddCommand {
+    fn clone(&self) -> SaddCommand {
+        SaddCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for SAddCommand {
+impl Command for SaddCommand {
     fn run(
         &self,
         args: Vec<&str>,

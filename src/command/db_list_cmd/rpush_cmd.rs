@@ -1,23 +1,27 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command RPUSH\n";
-const CLIENT_ID: &str = "RPushCommmand";
+const CLIENT_ID: &str = "RpushCommand";
+const RPUSH_CMD: &str = "rpush";
 
-pub struct RPushCommand {
+pub struct RpushCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl RPushCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> RPushCommand {
-        RPushCommand { id_job, logger }
+impl RpushCommand {
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(RPUSH_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
-impl Loggable for RPushCommand {
+impl Loggable for RpushCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -27,16 +31,16 @@ impl Loggable for RPushCommand {
     }
 }
 
-impl Clone for RPushCommand {
-    fn clone(&self) -> RPushCommand {
-        RPushCommand {
+impl Clone for RpushCommand {
+    fn clone(&self) -> RpushCommand {
+        RpushCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for RPushCommand {
+impl Command for RpushCommand {
     fn run(
         &self,
         mut args: Vec<&str>,

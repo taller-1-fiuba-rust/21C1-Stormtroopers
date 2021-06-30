@@ -1,27 +1,31 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command DEL\n";
-const CLIENT_ID: &str = "DelCommmand";
+const CLIENT_ID: &str = "DelCommand";
+const CONST_CMD: &str = "del";
 
 const MIN_VALID_ARGS: i32 = 1;
 const MAX_VALID_ARGS: i32 = -1;
 
-pub struct DelCommmand {
+pub struct DelCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl DelCommmand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> DelCommmand {
-        DelCommmand { id_job, logger }
+impl DelCommand {
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
-impl Loggable for DelCommmand {
+impl Loggable for DelCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -31,16 +35,16 @@ impl Loggable for DelCommmand {
     }
 }
 
-impl Clone for DelCommmand {
-    fn clone(&self) -> DelCommmand {
-        DelCommmand {
+impl Clone for DelCommand {
+    fn clone(&self) -> DelCommand {
+        DelCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for DelCommmand {
+impl Command for DelCommand {
     fn run(
         &self,
         args: Vec<&str>,

@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
 use crate::command::constants::TYPE_LIST;
 use crate::errors::run_error::RunError;
@@ -12,6 +13,7 @@ const NIL_RESULT: &str = "(nil)\n";
 
 const MIN_VALID_ARGS: i32 = 1;
 const MAX_VALID_ARGS: i32 = 2;
+const RPOP_CMD: &str = "rpop";
 
 pub struct RpopCommand {
     id_job: u32,
@@ -19,8 +21,10 @@ pub struct RpopCommand {
 }
 
 impl RpopCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> RpopCommand {
-        RpopCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(RPOP_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

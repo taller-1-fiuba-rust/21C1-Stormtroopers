@@ -48,6 +48,7 @@ pub fn threadpool_write(
                 stream
                     .shutdown(Shutdown::Both)
                     .expect("Shutdown call failed");
+            //no usar connection_client acá porque el resolver es el que actualiza el monitor
             } else if connection_resolver.monitor(id_client) {
                 continue;
             } else {

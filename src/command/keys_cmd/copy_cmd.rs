@@ -1,10 +1,12 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command COPY\n";
 const CLIENT_ID: &str = "CopyCommmand";
+const CONST_CMD: &str = "copy";
 
 pub struct CopyCommand {
     id_job: u32,
@@ -12,8 +14,10 @@ pub struct CopyCommand {
 }
 
 impl CopyCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> CopyCommand {
-        CopyCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

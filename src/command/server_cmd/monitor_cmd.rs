@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -7,6 +8,7 @@ use crate::LINE_BREAK;
 
 const INFO_COMMAND: &str = "Run command MONITOR\n";
 const CLIENT_ID: &str = "MonitorCommand";
+const CONST_CMD: &str = "monitor";
 
 pub struct MonitorCommand {
     id_job: u32,
@@ -14,8 +16,10 @@ pub struct MonitorCommand {
 }
 
 impl MonitorCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> MonitorCommand {
-        MonitorCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 

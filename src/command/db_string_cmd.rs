@@ -1,4 +1,5 @@
 pub mod append_cmd;
+pub mod db_string_generator;
 pub mod decrby_cmd;
 pub mod get_cmd;
 pub mod getdel_cmd;

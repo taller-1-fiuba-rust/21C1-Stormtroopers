@@ -1,24 +1,28 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command RENAME\n";
-const CLIENT_ID: &str = "RenameCommmand";
+const CLIENT_ID: &str = "RenameCommand";
 const RESPONSE_COMMAND: &str = "OK\n";
+const CONST_CMD: &str = "rename";
 
-pub struct RenameCommmand {
+pub struct RenameCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl RenameCommmand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> RenameCommmand {
-        RenameCommmand { id_job, logger }
+impl RenameCommand {
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
-impl Loggable for RenameCommmand {
+impl Loggable for RenameCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -28,16 +32,16 @@ impl Loggable for RenameCommmand {
     }
 }
 
-impl Clone for RenameCommmand {
-    fn clone(&self) -> RenameCommmand {
-        RenameCommmand {
+impl Clone for RenameCommand {
+    fn clone(&self) -> RenameCommand {
+        RenameCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for RenameCommmand {
+impl Command for RenameCommand {
     fn run(
         &self,
         args: Vec<&str>,

@@ -77,8 +77,14 @@ impl DataBaseResolver {
         let data_base = self.data_base.lock().unwrap();
         for (_key, val) in data_base.iter() {
             match val {
-                DataBase::DataBaseString(a) => {
-                    response &= a.clean_all_data();
+                DataBase::DataBaseString(string) => {
+                    response &= string.clean_all_data();
+                }
+                DataBase::DataBaseSet(set) => {
+                    response &= set.clean_all_data();
+                }
+                DataBase::DataBaseList(list) => {
+                    response &= list.clean_all_data();
                 }
                 #[allow(unreachable_patterns)]
                 _ => {

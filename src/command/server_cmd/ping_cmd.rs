@@ -1,14 +1,13 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
-//use crate::structure_string::StructureString;
-
-//use std::sync::Arc;
 
 const INFO_PING_COMMAND: &str = "Run command PING\n";
 const RESPONSE_PING_COMMAND: &str = "PONG\n";
 const CLIENT_ID: &str = "PingCommand";
+const CONST_CMD: &str = "ping";
 
 pub struct PingCommand {
     id_job: u32,
@@ -16,8 +15,10 @@ pub struct PingCommand {
 }
 
 impl PingCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> PingCommand {
-        PingCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
@@ -54,16 +55,3 @@ impl Loggable for PingCommand {
         self.id_job
     }
 }
-
-/*#[cfg(test)]
-#[test]
-fn test_ping_command_return() {
-    let log = Logger::new(String::from("log"), "./".to_string()).unwrap();
-    let arc_structure = Arc::new(StructureString::new());
-
-    let ping = PingCommand::new(0, log);
-    assert_eq!(
-        Command::run(&ping, vec!(""), arc_structure),
-        Ok(String::from(RESPONSE_PING_COMMAND))
-    );
-}*/

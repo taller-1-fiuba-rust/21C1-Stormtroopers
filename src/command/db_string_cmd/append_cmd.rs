@@ -1,23 +1,27 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command APPEND\n";
-const CLIENT_ID: &str = "AppendCommmand";
+const CLIENT_ID: &str = "AppendCommand";
+const CONST_CMD: &str = "append";
 
-pub struct AppendCommmand {
+pub struct AppendCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl AppendCommmand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> AppendCommmand {
-        AppendCommmand { id_job, logger }
+impl AppendCommand {
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
-impl Loggable for AppendCommmand {
+impl Loggable for AppendCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -27,16 +31,16 @@ impl Loggable for AppendCommmand {
     }
 }
 
-impl Clone for AppendCommmand {
-    fn clone(&self) -> AppendCommmand {
-        AppendCommmand {
+impl Clone for AppendCommand {
+    fn clone(&self) -> AppendCommand {
+        AppendCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for AppendCommmand {
+impl Command for AppendCommand {
     fn run(
         &self,
         args: Vec<&str>,

@@ -4,6 +4,8 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::sync::Mutex;
 
+const PUBLISH_CONSTANT: &str = "Reading pubsub messages...";
+
 pub struct Client {
     sender: Arc<Mutex<Sender<String>>>, //puedo agregarle después a cuántos canales se suscribió
     receiver: Arc<Mutex<Receiver<String>>>,
@@ -31,8 +33,9 @@ impl Client {
 
     pub fn publish(&self, msg: String) {
         let sender = self.sender.lock().unwrap();
-        sender.send(msg).unwrap();
-        sender.send("\n".to_string()).unwrap();
+
+        let response = format!("\n{}\n{}\n", PUBLISH_CONSTANT, msg);
+        sender.send(response).unwrap();
     }
 }
 

@@ -1,10 +1,12 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command LLEN\n";
 const CLIENT_ID: &str = "LLenCommmand";
+const LLEN_CMD: &str = "llen";
 
 pub struct LLenCommand {
     id_job: u32,
@@ -12,8 +14,10 @@ pub struct LLenCommand {
 }
 
 impl LLenCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> LLenCommand {
-        LLenCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(LLEN_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
