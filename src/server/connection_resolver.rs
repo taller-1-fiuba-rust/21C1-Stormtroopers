@@ -8,6 +8,12 @@ pub struct ConnectionResolver {
     connections: Arc<Mutex<HashMap<usize, Connection<String>>>>,
 }
 
+impl Default for ConnectionResolver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ConnectionResolver {
     pub fn new() -> Self {
         Self {

@@ -56,7 +56,7 @@ impl Clone for AppInfo {
             db,
             pubsub,
             ttl_scheduler,
-            ids_clients: self.ids_clients.clone(),
+            ids_clients: self.ids_clients,
             private_pubsub,
             connection_resolver,
         }
