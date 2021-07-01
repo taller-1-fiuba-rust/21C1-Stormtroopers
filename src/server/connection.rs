@@ -7,6 +7,7 @@ pub struct Connection<String> {
     receiver: Arc<Mutex<Receiver<String>>>,
     timeout: Duration,
     system_time: SystemTime,
+    monitor: bool,
 }
 
 impl<String> Drop for Connection<String> {
@@ -16,20 +17,6 @@ impl<String> Drop for Connection<String> {
     }
 }
 
-/*
-impl<T> Drop for Sender<T> {
-    fn drop(&mut self) {
-        let mut inner = self.shared.inner.lock().unwrap();
-        inner.senders -= 1;
-        let was_last = inner.senders == 0;
-        drop(inner);
-        if was_last {
-            self.shared.available.notify_one();
-        }
-    }
-}
-*/
-
 impl<String> Connection<String> {
     pub fn new(timeout: u64) -> Self {
         let (tx, rx) = channel();
@@ -38,6 +25,7 @@ impl<String> Connection<String> {
             receiver: Arc::new(Mutex::new(rx)),
             timeout: Duration::new(timeout, 0),
             system_time: SystemTime::now(),
+            monitor: false,
         }
     }
 
@@ -65,6 +53,18 @@ impl<String> Connection<String> {
     pub fn get_receiver(&self) -> Arc<Mutex<Receiver<String>>> {
         self.receiver.clone()
     }
+
+    pub fn activate_monitor(&mut self) {
+        self.monitor = true;
+    }
+
+    pub fn deactivate_monitor(&mut self) {
+        self.monitor = false;
+    }
+
+    pub fn monitor(&self) -> bool {
+        self.monitor
+    }
 }
 
 impl<String> Clone for Connection<String> {
@@ -78,6 +78,7 @@ impl<String> Clone for Connection<String> {
             receiver,
             timeout,
             system_time,
+            monitor: self.monitor,
         }
     }
 }

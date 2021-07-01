@@ -1,8 +1,11 @@
+use crate::constants::LINE_BREAK;
 use regex::Regex;
 use std::collections::{BTreeSet, HashMap};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::sync::Mutex;
+
+const PUBLISH_CONSTANT: &str = "Reading pubsub messages...";
 
 pub struct Client {
     sender: Arc<Mutex<Sender<String>>>, //puedo agregarle después a cuántos canales se suscribió
@@ -31,8 +34,16 @@ impl Client {
 
     pub fn publish(&self, msg: String) {
         let sender = self.sender.lock().unwrap();
+
+        let response = format!("\n{}\n{}\n", PUBLISH_CONSTANT, msg);
+        sender.send(response).unwrap();
+    }
+
+    pub fn private_publish(&self, mut msg: String) {
+        let sender = self.sender.lock().unwrap();
+
+        msg.push(LINE_BREAK);
         sender.send(msg).unwrap();
-        sender.send("\n".to_string()).unwrap();
     }
 }
 
@@ -120,16 +131,18 @@ impl Pubsub {
         suscribers_vec
     }
 
-    pub fn publish(&self, name_channel: String, msg: String) -> Option<()> {
+    pub fn publish(&self, name_channel: String, msg: String, private: bool) -> Option<()> {
         let channels = self.channels.lock().unwrap();
         let suscribers = self.suscribers.lock().unwrap();
-
-        //let channel = channels.get(&name_channel).unwrap();
 
         if let Some(channel) = channels.get(&name_channel) {
             for suscriber in channel.iter() {
                 let client = suscribers.get(&suscriber).unwrap();
-                client.publish(msg.clone());
+                if !private {
+                    client.publish(msg.clone());
+                } else {
+                    client.private_publish(msg.clone());
+                }
             }
         } else {
             return None;
