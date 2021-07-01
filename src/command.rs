@@ -4,7 +4,6 @@
 pub mod cmd_trait;
 pub mod command_builder;
 pub mod command_parser;
-pub mod constants;
 pub mod db_list_cmd;
 pub mod db_set_cmd;
 pub mod db_string_cmd;

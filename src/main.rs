@@ -5,23 +5,11 @@ use crate::server::connection_resolver::ConnectionResolver;
 use std::env::args;
 
 mod command;
+mod constants;
 mod data_base;
 mod errors;
 mod handle_connection;
 mod server;
-
-static THREAD_POOL_COUNT: usize = 8;
-static END_FLAG: &str = "exit";
-static MSG_OVER: &str = "MESSAGE: Connection over\n";
-static LINE_BREAK: char = '\n';
-#[allow(dead_code)]
-static RESP_SIMPLE_STRING: &str = "OK\r\n";
-#[allow(dead_code)]
-const LOG_NAME: &str = "log";
-#[allow(dead_code)]
-const LOG_PATH: &str = "./";
-#[allow(dead_code)]
-const ERROR_LOG_CREATE: &str = "Error creating Logger";
 
 fn main() -> Result<(), std::io::Error> {
     let argv = args().collect::<Vec<String>>();

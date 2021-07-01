@@ -1,10 +1,9 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
-
-use crate::LINE_BREAK;
 
 const INFO_COMMAND: &str = "Run command MONITOR\n";
 const CLIENT_ID: &str = "MonitorCommand";

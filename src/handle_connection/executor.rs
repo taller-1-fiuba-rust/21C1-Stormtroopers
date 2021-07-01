@@ -1,7 +1,7 @@
+use crate::constants::THREAD_POOL_COUNT;
 use crate::handle_connection::handle_threadpool::{threadpool_read, threadpool_write};
 use crate::server::app_info::AppInfo;
 use crate::server::threadpool::ThreadPool;
-use crate::THREAD_POOL_COUNT;
 use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 

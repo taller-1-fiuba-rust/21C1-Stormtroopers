@@ -1,4 +1,4 @@
-use crate::LINE_BREAK;
+use crate::constants::LINE_BREAK;
 use regex::Regex;
 use std::collections::{BTreeSet, HashMap};
 use std::sync::mpsc::{channel, Receiver, Sender};

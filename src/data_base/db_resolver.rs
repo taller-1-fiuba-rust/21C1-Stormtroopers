@@ -1,4 +1,4 @@
-use crate::command::constants::{TYPE_LIST, TYPE_SET, TYPE_STRING};
+use crate::constants::{TYPE_LIST, TYPE_SET, TYPE_STRING};
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_set::DataBaseSet;
 use crate::data_base::db_string::DataBaseString;
@@ -6,11 +6,8 @@ use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-const DB_STRING: &str = "String";
-const DB_LIST: &str = "List";
-const DB_SET: &str = "Set";
-
 const ERROR_MSG_GET_DB: &str = "Error al recuperar el tipo de la db";
+
 #[derive(Clone)]
 pub enum DataBase {
     DataBaseString(DataBaseString<String>),
@@ -128,7 +125,7 @@ impl DataBaseResolver {
             .data_base
             .lock()
             .unwrap()
-            .get(DB_STRING)
+            .get(TYPE_STRING)
             .unwrap()
             .clone();
         match db_gral {
@@ -138,7 +135,13 @@ impl DataBaseResolver {
     }
 
     pub fn get_list_db(&self) -> DataBaseList<String> {
-        let db_gral = self.data_base.lock().unwrap().get(DB_LIST).unwrap().clone();
+        let db_gral = self
+            .data_base
+            .lock()
+            .unwrap()
+            .get(TYPE_LIST)
+            .unwrap()
+            .clone();
         match db_gral {
             DataBase::DataBaseList(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
@@ -146,7 +149,13 @@ impl DataBaseResolver {
     }
 
     pub fn get_set_db(&self) -> DataBaseSet<String> {
-        let db_gral = self.data_base.lock().unwrap().get(DB_SET).unwrap().clone();
+        let db_gral = self
+            .data_base
+            .lock()
+            .unwrap()
+            .get(TYPE_SET)
+            .unwrap()
+            .clone();
         match db_gral {
             DataBase::DataBaseSet(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),

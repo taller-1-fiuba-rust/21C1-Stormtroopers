@@ -1,4 +1,4 @@
-use crate::data_base::data_db::Data;
+use crate::data_base::data_db::data_list::DataList;
 use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -9,7 +9,7 @@ const SUCCESS: &str = "OK";
 const EMPTY_LIST: usize = 0;
 
 pub struct DataBaseList<String> {
-    db_list: Arc<Mutex<HashMap<String, Data<String>>>>,
+    db_list: Arc<Mutex<HashMap<String, DataList<String>>>>,
 }
 
 impl Default for DataBaseList<String> {
@@ -31,7 +31,7 @@ impl DataBaseList<String> {
         Self { db_list }
     }
 
-    fn get_value(&self, key: String) -> Data<String> {
+    fn get_value(&self, key: String) -> DataList<String> {
         let db = self.db_list.lock().unwrap();
         db.get(&key).unwrap().clone() //chequear que esté
     }
@@ -51,7 +51,9 @@ impl DataBaseList<String> {
         let mut db_list = self.db_list.lock().unwrap();
         let key = args.remove(0);
         args.reverse();
-        let vec_values = db_list.entry(String::from(key)).or_insert_with(Data::new);
+        let vec_values = db_list
+            .entry(String::from(key))
+            .or_insert_with(DataList::new);
         let mut insertions = 0_u32;
         for val in args.iter() {
             vec_values.insert_value(String::from(*val));
@@ -72,7 +74,7 @@ impl DataBaseList<String> {
                 result.push(elem)
             }
         }
-        let mut data = Data::new();
+        let mut data = DataList::new();
         data.insert_values(list);
         db_list.insert(key_list, data);
 
@@ -117,7 +119,7 @@ impl DataBaseList<String> {
         if count < 0 {
             list.reverse()
         };
-        let mut data = Data::new();
+        let mut data = DataList::new();
         data.insert_values(list);
         db_list.insert(String::from(key_list), data);
 
@@ -163,7 +165,7 @@ impl DataBaseList<String> {
 
         let item = list.remove(0);
 
-        let mut data = Data::new();
+        let mut data = DataList::new();
         data.insert_values(list);
 
         db_list.insert(String::from(key), data);
@@ -331,13 +333,13 @@ impl DataBaseList<String> {
             return true;
         }
 
-        db.insert(key, Data::new());
+        db.insert(key, DataList::new());
         false
     }
 
     fn insert_values(&self, key: String, values: Vec<String>) {
         let mut db = self.db_list.lock().unwrap();
-        let mut list = Data::new();
+        let mut list = DataList::new();
         list.insert_values(values);
         db.insert(key, list);
     }

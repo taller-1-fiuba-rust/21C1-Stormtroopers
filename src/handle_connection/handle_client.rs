@@ -1,9 +1,8 @@
+use crate::constants::END_FLAG;
 use crate::handle_connection::executor::write_redis_msg;
 use crate::handle_connection::process_request::{process_request, run_exit_cmd};
 use crate::server::app_info::AppInfo;
 use crate::server::connection_resolver::ConnectionResolver;
-
-use crate::END_FLAG;
 use std::io::{BufRead, BufReader};
 use std::net::TcpStream;
 
