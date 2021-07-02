@@ -1,4 +1,5 @@
 use crate::command::command_builder::CommandBuilder;
+use crate::command::server_cmd::clear_cmd::ClearCommand;
 use crate::command::server_cmd::config_cmd::ConfigCommand;
 use crate::command::server_cmd::dbsize_cmd::DbSizeCommand;
 use crate::command::server_cmd::exit_cmd::ExitCommand;
@@ -15,5 +16,6 @@ pub fn insert_commands(command_builder: CommandBuilder, logger: Logger<String>) 
     ExitCommand::new(38, logger.clone(), command_builder.clone());
     FlushdbCommand::new(39, logger.clone(), command_builder.clone());
     MonitorCommand::new(40, logger.clone(), command_builder.clone());
-    PingCommand::new(41, logger, command_builder);
+    PingCommand::new(41, logger.clone(), command_builder.clone());
+    ClearCommand::new(42, logger, command_builder);
 }

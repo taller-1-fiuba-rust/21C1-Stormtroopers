@@ -1,4 +1,5 @@
 use crate::command::cmd_trait::Command;
+use crate::command::command_builder::CommandBuilder;
 use crate::server::app_info::AppInfo;
 
 use crate::command::command_parser::ParsedMessage;
@@ -7,6 +8,7 @@ use crate::server::logger::{Loggable, Logger};
 
 const INFO_RUN_COMMAND: &str = "Run command CLEAR\n";
 const CLIENT_ID: &str = "ClearCommand";
+const CONST_CMD: &str = "clear";
 
 const MIN_VALID_ARGS: i32 = 0;
 const MAX_VALID_ARGS: i32 = 0;
@@ -17,8 +19,10 @@ pub struct ClearCommand {
 }
 
 impl ClearCommand {
-    pub fn new(id_job: u32, logger: Logger<String>) -> ClearCommand {
-        ClearCommand { id_job, logger }
+    pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
+        let cmd = Self { id_job, logger };
+        command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
+        cmd
     }
 }
 
