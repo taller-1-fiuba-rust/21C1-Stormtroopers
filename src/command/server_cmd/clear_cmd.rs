@@ -59,12 +59,7 @@ impl Command for ClearCommand {
 
         ParsedMessage::validate_args(_args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let mut response = String::from("");
-
-        for _i in 1..51 {
-            response.push('\n');
-            response.push('\r');
-        }
+        let response = "\x1B[2J\x1B[1;1H".to_string();
 
         Ok(response)
     }
