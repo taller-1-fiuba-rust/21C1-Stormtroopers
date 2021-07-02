@@ -49,24 +49,3 @@ impl Clone for CommandBuilder {
         }
     }
 }
-
-/*#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::data_base::db_string::DataBaseString;
-    use std::sync::Arc;
-
-    #[test]
-    fn return_ping_command() {
-        let log = Logger::new("log".to_string(), "/tmp".to_string()).unwrap();
-
-        let _arc_structure = Arc::new(DataBaseString::new());
-
-        let command_builder = CommandBuilder::new(0);
-        let result = command_builder.get_command("ping");
-
-        assert_eq!(result.is_ok(), true);
-        let _command = result.unwrap();
-        //assert_eq!(command.run(vec!(""), & stt), Ok(String::from("PONG")));
-    }
-}*/

@@ -11,8 +11,8 @@ Taller 1 - Proyecto para armar un servidor Redis en Rust
 
 ## Stack tecnológico 
 Los frameworks y librerías que utilizaremos son:
- - Rust[v???]
- - cargo 1.51.0
+ - Rustc >= rustc 1.52.0
+ - Cargo >= 1.52.0
  - git
 
 ## Instalación 
