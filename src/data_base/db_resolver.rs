@@ -99,7 +99,7 @@ impl DataBaseResolver {
             if let DataBase::DataBaseString(mut db_string) = db.clone() {
                 clear_count = db_string.delete(keys.clone());
             } else if let DataBase::DataBaseList(mut db_list) = db.clone() {
-                clear_count = db_list.delete(keys.clone());
+                clear_count = db_list.delete_keys(keys.clone());
             } else if let DataBase::DataBaseSet(mut db_set) = db.clone() {
                 clear_count = db_set.delete(keys.clone());
             }
@@ -180,22 +180,6 @@ impl DataBaseResolver {
         })
     }
 
-    //TODO: Es thread safety esto?
-    pub fn check_db_string(&self, key: String) -> bool {
-        let db_string = self.get_string_db();
-        db_string.contains(key)
-    }
-
-    pub fn check_db_list(&self, key: String) -> bool {
-        let db_list = self.get_list_db();
-        db_list.contains(key)
-    }
-
-    pub fn check_db_set(&self, key: String) -> bool {
-        let db_set = self.get_set_db();
-        db_set.contains(key)
-    }
-
     pub fn type_key(&self, key: String) -> Result<String, RunError> {
         if self.check_db_string(key.clone()) {
             return Ok(TYPE_STRING.to_string());
@@ -210,6 +194,17 @@ impl DataBaseResolver {
             cause: "First, insert the key in the db".to_string(),
         })
     }
+    //TODO: operacion no thread safe!
+    pub fn validate_key_contain_db(&self, key: String) -> Result<bool, RunError> {
+        match self.type_key(key) {
+            Ok(_typee) => Err(RunError {
+                message: "(error) Ya se esta usando esta clave para otro tipo de operación."
+                    .to_string(),
+                cause: "".to_string(),
+            }),
+            Err(_e) => Ok(true),
+        }
+    }
 
     pub fn touch(&self, keys: Vec<String>) -> usize {
         let db_string = self.get_string_db();
@@ -221,5 +216,21 @@ impl DataBaseResolver {
         cont += db_set.touch(keys);
 
         cont
+    }
+
+    //TODO: Es thread safety esto?
+    fn check_db_string(&self, key: String) -> bool {
+        let db_string = self.get_string_db();
+        db_string.contains(key)
+    }
+
+    fn check_db_list(&self, key: String) -> bool {
+        let db_list = self.get_list_db();
+        db_list.contains(key)
+    }
+
+    fn check_db_set(&self, key: String) -> bool {
+        let db_set = self.get_set_db();
+        db_set.contains(key)
     }
 }
