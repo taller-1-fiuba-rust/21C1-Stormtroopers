@@ -1,5 +1,6 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -7,6 +8,9 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command APPEND\n";
 const CLIENT_ID: &str = "AppendCommand";
 const CONST_CMD: &str = "append";
+
+const MIN_VALID_ARGS: i32 = 2;
+const MAX_VALID_ARGS: i32 = 2;
 
 pub struct AppendCommand {
     id_job: u32,
@@ -50,11 +54,12 @@ impl Command for AppendCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let db = app_info.get_string_db();
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let mut len_val_str = db
-            .append(String::from(args[0]), String::from(args[1]))
-            .to_string();
+        let key = args[0];
+        let db = app_info.get_string_db_sharding(key);
+
+        let mut len_val_str = db.append(key.to_string(), args[1].to_string()).to_string();
         len_val_str.push('\n');
 
         Ok(len_val_str)

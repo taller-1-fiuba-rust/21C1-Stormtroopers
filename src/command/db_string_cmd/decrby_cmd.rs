@@ -1,5 +1,6 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
 use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
@@ -8,6 +9,9 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_DBSIZE_COMMAND: &str = "Run command DECRBY\n";
 const CLIENT_ID: &str = "DecrbyCommmand";
 const CONST_CMD: &str = "decrby";
+
+const MIN_VALID_ARGS: i32 = 1;
+const MAX_VALID_ARGS: i32 = 2;
 
 pub struct DecrbyCommand {
     id_job: u32,
@@ -53,9 +57,12 @@ impl Command for DecrbyCommand {
             .info(self, INFO_DBSIZE_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let db = app_info.get_string_db();
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let rsp = db.decrby(args[0].to_string(), args[1].to_string())?;
+        let key = args[0];
+        let db = app_info.get_string_db_sharding(key);
+
+        let rsp = db.decrby(key.to_string(), args[1].to_string())?;
         let mut response = rsp.to_string();
         response.push(LINE_BREAK);
         Ok(response)

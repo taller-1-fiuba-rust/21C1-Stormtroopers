@@ -10,3 +10,7 @@ pub static MSG_OVER: &str = "MESSAGE: Connection over\n";
 pub static LINE_BREAK: char = '\n';
 pub static RESP_SIMPLE_STRING: &str = "OK\r\n";
 pub const ERROR_LOG_CREATE: &str = "Error creating Logger";
+pub const MARK_BULLET: &str = ") ";
+
+/** Default values **/
+pub static SHARING_COUNT_DEFAULT: u32 = 4;

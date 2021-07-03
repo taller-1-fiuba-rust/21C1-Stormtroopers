@@ -50,7 +50,7 @@ impl Command for ExistsCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let db = app_info.get_string_db();
+        let db = app_info.get_string_db_sharding(args[0]);
 
         let mut result_del = db.exists(args).to_string();
         result_del.push('\n');

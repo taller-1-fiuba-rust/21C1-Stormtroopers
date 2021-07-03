@@ -51,7 +51,7 @@ impl Command for RenameCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let mut db = app_info.get_string_db();
+        let mut db = app_info.get_string_db_sharding(args[0]);
 
         match db.rename(String::from(args[0]), String::from(args[1])) {
             Ok(()) => Ok(String::from(RESPONSE_COMMAND)),

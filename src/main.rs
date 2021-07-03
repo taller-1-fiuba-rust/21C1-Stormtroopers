@@ -13,9 +13,14 @@ mod server;
 
 fn main() -> Result<(), std::io::Error> {
     let argv = args().collect::<Vec<String>>();
-    let mut server = AppInfo::new(argv.clone());
 
-    server.load_config(argv)?;
+    let mut server = match AppInfo::new(argv) {
+        Ok(s) => s,
+        Err(e) => panic!("{}", e.message),
+    };
+
+    //deprecated
+    //server.load_config(argv)?;
 
     println!("Server {} is up!", server.server_name());
 

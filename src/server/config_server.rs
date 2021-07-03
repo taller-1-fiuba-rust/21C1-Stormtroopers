@@ -7,6 +7,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+use crate::constants::SHARING_COUNT_DEFAULT;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_LOAD_FILE_CONFIG: &str = "Init load file config ...\n";
@@ -62,10 +63,12 @@ impl ConfigServer {
     ) -> Result<(), std::io::Error> {
         logger.info(self, INFO_LOAD_FILE_CONFIG, false)?;
         let mut props = self.props.lock().unwrap();
+        println!("load file {}", path_file);
         if let Ok(lines) = read_lines(path_file) {
             for line in lines.into_iter().flatten() {
                 //let mut props = props.clone();
                 let prop_slited: Vec<&str> = line.split('=').collect();
+                println!("load prop {} -> {}", prop_slited[0], prop_slited[1]);
                 props.insert(String::from(prop_slited[0]), String::from(prop_slited[1]));
             }
             return logger.info(self, INFO_LOAD_FILE_CONFIG_OK, false);
@@ -112,6 +115,21 @@ impl ConfigServer {
         let props = self.props.lock().unwrap();
         let timeout = props.get("timeout").unwrap(); //hacerlo bien
         parse_value(timeout.to_string(), 0)
+    }
+
+    pub fn get_count_sharing_db(&self) -> Result<u32, RunError> {
+        let props = self.props.lock().unwrap();
+        let count = match props.get("sharing_count") {
+            Some(sc) => parse_value(sc.to_string(), 1),
+            None => SHARING_COUNT_DEFAULT,
+        };
+        if count < 1 {
+            return Err(RunError {
+                message: "La propiedad 'sharing_count' debe ser mayor a 0".to_string(),
+                cause: "Propiedad invalida\n".to_string(),
+            });
+        }
+        Ok(count)
     }
 
     pub fn set(&self, key: String, value: String) -> Result<String, RunError> {

@@ -1,5 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
+use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -7,6 +9,9 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command GETSET\n";
 const CLIENT_ID: &str = "GetsetCommmand";
 const CONST_CMD: &str = "getset";
+
+const MIN_VALID_ARGS: i32 = 2;
+const MAX_VALID_ARGS: i32 = 2;
 
 pub struct GetSetCommand {
     id_job: u32,
@@ -50,10 +55,13 @@ impl Command for GetSetCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let mut db = app_info.get_string_db();
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let mut result = db.get_set(args[0].to_string(), args[1].to_string())?;
-        result.push('\n');
+        let key = args[0];
+        let mut db = app_info.get_string_db_sharding(key);
+
+        let mut result = db.get_set(key.to_string(), args[1].to_string())?;
+        result.push(LINE_BREAK);
 
         Ok(result)
     }
