@@ -44,6 +44,7 @@ impl Clone for CopyCommand {
     }
 }
 
+//TODO: ver thread safety impl
 impl Command for CopyCommand {
     fn run(
         &self,
