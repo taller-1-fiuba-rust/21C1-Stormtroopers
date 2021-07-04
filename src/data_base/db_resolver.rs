@@ -1,4 +1,4 @@
-use crate::command::constants::{TYPE_LIST, TYPE_SET, TYPE_STRING};
+use crate::constants::{TYPE_LIST, TYPE_SET, TYPE_STRING};
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_set::DataBaseSet;
 use crate::data_base::db_string::DataBaseString;
@@ -6,11 +6,8 @@ use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-const DB_STRING: &str = "String";
-const DB_LIST: &str = "List";
-const DB_SET: &str = "Set";
-
 const ERROR_MSG_GET_DB: &str = "Error al recuperar el tipo de la db";
+
 #[derive(Clone)]
 pub enum DataBase {
     DataBaseString(DataBaseString<String>),
@@ -77,8 +74,14 @@ impl DataBaseResolver {
         let data_base = self.data_base.lock().unwrap();
         for (_key, val) in data_base.iter() {
             match val {
-                DataBase::DataBaseString(a) => {
-                    response &= a.clean_all_data();
+                DataBase::DataBaseString(string) => {
+                    response &= string.clean_all_data();
+                }
+                DataBase::DataBaseSet(set) => {
+                    response &= set.clean_all_data();
+                }
+                DataBase::DataBaseList(list) => {
+                    response &= list.clean_all_data();
                 }
                 #[allow(unreachable_patterns)]
                 _ => {
@@ -96,7 +99,7 @@ impl DataBaseResolver {
             if let DataBase::DataBaseString(mut db_string) = db.clone() {
                 clear_count = db_string.delete(keys.clone());
             } else if let DataBase::DataBaseList(mut db_list) = db.clone() {
-                clear_count = db_list.delete(keys.clone());
+                clear_count = db_list.delete_keys(keys.clone());
             } else if let DataBase::DataBaseSet(mut db_set) = db.clone() {
                 clear_count = db_set.delete(keys.clone());
             }
@@ -122,7 +125,7 @@ impl DataBaseResolver {
             .data_base
             .lock()
             .unwrap()
-            .get(DB_STRING)
+            .get(TYPE_STRING)
             .unwrap()
             .clone();
         match db_gral {
@@ -132,7 +135,13 @@ impl DataBaseResolver {
     }
 
     pub fn get_list_db(&self) -> DataBaseList<String> {
-        let db_gral = self.data_base.lock().unwrap().get(DB_LIST).unwrap().clone();
+        let db_gral = self
+            .data_base
+            .lock()
+            .unwrap()
+            .get(TYPE_LIST)
+            .unwrap()
+            .clone();
         match db_gral {
             DataBase::DataBaseList(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
@@ -140,7 +149,13 @@ impl DataBaseResolver {
     }
 
     pub fn get_set_db(&self) -> DataBaseSet<String> {
-        let db_gral = self.data_base.lock().unwrap().get(DB_SET).unwrap().clone();
+        let db_gral = self
+            .data_base
+            .lock()
+            .unwrap()
+            .get(TYPE_SET)
+            .unwrap()
+            .clone();
         match db_gral {
             DataBase::DataBaseSet(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
@@ -165,22 +180,6 @@ impl DataBaseResolver {
         })
     }
 
-    //TODO: Es thread safety esto?
-    pub fn check_db_string(&self, key: String) -> bool {
-        let db_string = self.get_string_db();
-        db_string.contains(key)
-    }
-
-    pub fn check_db_list(&self, key: String) -> bool {
-        let db_list = self.get_list_db();
-        db_list.contains(key)
-    }
-
-    pub fn check_db_set(&self, key: String) -> bool {
-        let db_set = self.get_set_db();
-        db_set.contains(key)
-    }
-
     pub fn type_key(&self, key: String) -> Result<String, RunError> {
         if self.check_db_string(key.clone()) {
             return Ok(TYPE_STRING.to_string());
@@ -195,6 +194,17 @@ impl DataBaseResolver {
             cause: "First, insert the key in the db".to_string(),
         })
     }
+    //TODO: operacion no thread safe!
+    pub fn validate_key_contain_db(&self, key: String) -> Result<bool, RunError> {
+        match self.type_key(key) {
+            Ok(_typee) => Err(RunError {
+                message: "(error) Ya se esta usando esta clave para otro tipo de operación."
+                    .to_string(),
+                cause: "".to_string(),
+            }),
+            Err(_e) => Ok(true),
+        }
+    }
 
     pub fn touch(&self, keys: Vec<String>) -> usize {
         let db_string = self.get_string_db();
@@ -206,5 +216,21 @@ impl DataBaseResolver {
         cont += db_set.touch(keys);
 
         cont
+    }
+
+    //TODO: Es thread safety esto?
+    fn check_db_string(&self, key: String) -> bool {
+        let db_string = self.get_string_db();
+        db_string.contains(key)
+    }
+
+    fn check_db_list(&self, key: String) -> bool {
+        let db_list = self.get_list_db();
+        db_list.contains(key)
+    }
+
+    fn check_db_set(&self, key: String) -> bool {
+        let db_set = self.get_set_db();
+        db_set.contains(key)
     }
 }

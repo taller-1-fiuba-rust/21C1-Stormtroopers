@@ -11,17 +11,7 @@ use crate::server::logger::{Loggable, Logger};
 
 const INFO_LOAD_FILE_CONFIG: &str = "Init load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_OK: &str = "Load file config OK\n";
-//const ERROR_GETTING_PROP: &str = "Error getting property\n";
-//const ERROR_GETTING_PROP_DEFAULT: &str = "Error getting property default\n";
 const PATH_FILE_CONFIG_DEFAULT: &str = "./redis.config";
-/*
- * Min redis.config props
- *  verbose: "false",
- *  port: "8080",
- *  timeout: "60",
- *  dbfilename: "dump.rdb",
- *  logfile: "redislog.log",
- */
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where

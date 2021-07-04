@@ -1,3 +1,4 @@
+use crate::constants::ERROR_LOG_CREATE;
 use crate::server::utils::format_timestamp_now;
 use std::fs::File;
 use std::io::prelude::*;
@@ -6,8 +7,6 @@ use std::io::SeekFrom;
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::sync::{Arc, Mutex};
 use std::thread;
-
-const ERROR_LOG_CREATE_FILE: &str = "Error creating file";
 
 //TODO: ver de cambiar el id_client por un String que indique el nombre del servicio
 //TODO: por ahi el timestamp puede ser calculado por el Logger directamente
@@ -27,7 +26,7 @@ impl Clone for Logger<String> {
     fn clone(&self) -> Self {
         let sender = self.sender.clone();
         let receiver = self.receiver.clone();
-        let file = self.file.try_clone().expect(ERROR_LOG_CREATE_FILE);
+        let file = self.file.try_clone().expect(ERROR_LOG_CREATE);
         Self {
             file,
             sender,

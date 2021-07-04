@@ -1,3 +1,9 @@
+use crate::command::command_builder::CommandBuilder;
+use crate::command::db_list_cmd::db_list_generator;
+use crate::command::db_set_cmd::db_set_generator;
+use crate::command::db_string_cmd::db_string_generator;
+use crate::command::keys_cmd::keys_generator;
+use crate::command::server_cmd::server_generator;
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_resolver::*;
 use crate::data_base::db_set::DataBaseSet;
@@ -6,6 +12,9 @@ use crate::server::config_server::ConfigServer;
 use crate::server::logger::{Loggable, Logger};
 use crate::server::pubsub::Pubsub;
 use crate::server::ttl_scheduler::TtlScheduler;
+use crate::ConnectionResolver;
+use std::sync::mpsc::Receiver;
+use std::sync::{Arc, Mutex};
 
 const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...\n";
@@ -32,6 +41,8 @@ pub struct AppInfo {
     ttl_scheduler: TtlScheduler,
     ids_clients: i32,
     private_pubsub: Pubsub,
+    connection_resolver: ConnectionResolver,
+    command_builder: CommandBuilder,
 }
 
 impl Clone for AppInfo {
@@ -43,6 +54,8 @@ impl Clone for AppInfo {
         let pubsub = self.pubsub.clone();
         let ttl_scheduler = self.ttl_scheduler.clone();
         let private_pubsub = self.private_pubsub.clone();
+        let connection_resolver = self.connection_resolver.clone();
+        let command_builder = self.command_builder.clone();
 
         Self {
             args,
@@ -51,8 +64,10 @@ impl Clone for AppInfo {
             db,
             pubsub,
             ttl_scheduler,
-            ids_clients: 0,
+            ids_clients: self.ids_clients,
             private_pubsub,
+            connection_resolver,
+            command_builder,
         }
     }
 }
@@ -88,6 +103,18 @@ fn create_private_pubsub() -> Pubsub {
     pubsub
 }
 
+fn command_builder_generator(logger: Logger<String>) -> CommandBuilder {
+    let command_builder = CommandBuilder::new(0);
+
+    db_list_generator::insert_commands(command_builder.clone(), logger.clone());
+    db_string_generator::insert_commands(command_builder.clone(), logger.clone());
+    db_set_generator::insert_commands(command_builder.clone(), logger.clone());
+    keys_generator::insert_commands(command_builder.clone(), logger.clone());
+    server_generator::insert_commands(command_builder.clone(), logger);
+
+    command_builder
+}
+
 impl AppInfo {
     pub fn new(args: Vec<String>) -> Self {
         let config_server = ConfigServer::new();
@@ -98,6 +125,8 @@ impl AppInfo {
         let pubsub = Pubsub::new();
         let private_pubsub = create_private_pubsub();
         let ttl_scheduler = TtlScheduler::new();
+        let connection_resolver = ConnectionResolver::new();
+        let command_builder = command_builder_generator(logger.clone());
 
         Self {
             args,
@@ -108,6 +137,8 @@ impl AppInfo {
             ttl_scheduler,
             ids_clients: 0,
             private_pubsub,
+            connection_resolver,
+            command_builder,
         }
     }
 
@@ -127,16 +158,16 @@ impl AppInfo {
         self.pubsub.clone()
     }
 
-    pub fn get_id_client(&self) -> i32 {
-        self.ids_clients
-    }
-
     pub fn get_ttl_scheduler(&self) -> TtlScheduler {
         self.ttl_scheduler.clone()
     }
 
     pub fn inc_ids(&mut self) {
         self.ids_clients += 1;
+    }
+
+    pub fn dec_ids(&mut self) {
+        self.ids_clients -= 1;
     }
 
     pub fn get_private_pubsub(&self) -> Pubsub {
@@ -187,5 +218,29 @@ impl AppInfo {
 
     pub fn get_timeout(&self) -> u64 {
         self.config_server.get_timeout()
+    }
+
+    pub fn get_stats(&self) -> String {
+        format!("{:?}", self.ids_clients)
+    }
+
+    pub fn connect_client(&self, id_client: usize) -> Arc<Mutex<Receiver<String>>> {
+        let receiver = self.connection_resolver.connect_client_with_pubsub(
+            id_client,
+            self.get_timeout(),
+            self.get_pubsub(),
+        );
+        self.connection_resolver
+            .join_pubsub_receiver(id_client, self.get_private_pubsub());
+
+        receiver
+    }
+
+    pub fn get_connection_resolver(&self) -> ConnectionResolver {
+        self.connection_resolver.clone()
+    }
+
+    pub fn get_command_builder(&self) -> CommandBuilder {
+        self.command_builder.clone()
     }
 }

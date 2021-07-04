@@ -99,28 +99,25 @@ impl TtlScheduler {
     }
 
     pub fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
-        match self.set_key_ttl(ttl, arg.clone()) {
-            Ok(_) => {
-                let mut key_val = ttl.to_string();
-                key_val.push(':');
-                key_val.push_str(&arg);
+        self.set_key_ttl(ttl, arg.clone());
 
-                let mut ttl_scheduler = self.clone();
-                let mut ttl_map = self.ttl_map.clone();
+        let mut key_val = ttl.to_string();
+        key_val.push(':');
+        key_val.push_str(&arg);
 
-                let result = thread::spawn(move || {
-                    ttl_scheduler.sender.send(key_val).unwrap();
-                    ttl_scheduler.store(&mut ttl_map)
-                })
-                .join()
-                .unwrap();
-                Ok(result)
-            }
-            Err(e) => Err(e),
-        }
+        let mut ttl_scheduler = self.clone();
+        let mut ttl_map = self.ttl_map.clone();
+
+        let result = thread::spawn(move || {
+            ttl_scheduler.sender.send(key_val).unwrap();
+            ttl_scheduler.store(&mut ttl_map)
+        })
+        .join()
+        .unwrap();
+        Ok(result)
     }
 
-    fn set_key_ttl(&self, ttl: u64, mut arg: String) -> Result<String, RunError> {
+    fn set_key_ttl(&self, ttl: u64, mut arg: String) -> String {
         arg.push(':');
         arg.push_str(ttl.to_string().as_str());
 
@@ -133,7 +130,7 @@ impl TtlScheduler {
         })
         .join()
         .unwrap();
-        Ok(result)
+        result
     }
 
     pub fn get_ttl_key(&self, arg: String) -> Result<String, RunError> {
