@@ -114,6 +114,12 @@ impl ConfigServer {
         parse_value(timeout.to_string(), 0)
     }
 
+    pub fn get_dumpfile(&self) -> String {
+        let props = self.props.lock().unwrap();
+        let dumpfile = props.get("dbfilename").unwrap(); //hacerlo bien
+        dumpfile.to_string()
+    }
+
     pub fn set(&self, key: String, value: String) -> Result<String, RunError> {
         let mut map = self.props.lock().unwrap();
         if !map.contains_key(&key) | key_not_allowed(key.clone()) {

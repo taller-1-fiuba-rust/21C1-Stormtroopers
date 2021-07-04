@@ -222,4 +222,8 @@ impl DataBaseResolver {
 
         cont
     }
+
+    pub fn get_snapshot(&self) -> String {
+        String::from("This is the data!")
+    }
 }
