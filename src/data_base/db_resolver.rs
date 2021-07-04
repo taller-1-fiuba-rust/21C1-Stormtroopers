@@ -158,6 +158,21 @@ impl DataBaseResolver {
         }
     }
 
+    pub fn get_set_db_sharding(&self, key: &str) -> DataBaseSet<String> {
+        let dbs = self
+            .data_bases
+            .lock()
+            .unwrap()
+            .get(TYPE_SET)
+            .unwrap()
+            .clone();
+        let index_sharing = self.retrieve_index(key);
+        match dbs[index_sharing].clone() {
+            DataBase::DataBaseSet(s) => s,
+            _ => panic!("{}", ERROR_MSG_GET_DB),
+        }
+    }
+
     /*
         #[deprecated]
     pub fn get_string_db(&self) -> DataBaseString<String> {
