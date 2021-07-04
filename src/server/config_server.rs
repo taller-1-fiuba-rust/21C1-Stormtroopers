@@ -122,7 +122,7 @@ impl ConfigServer {
         let dumpfile = props.get("dbfilename").unwrap(); //hacerlo bien
         dumpfile.to_string()
     }
-    
+
     pub fn get_count_sharing_db(&self) -> Result<u32, RunError> {
         let props = self.props.lock().unwrap();
         let count = match props.get("sharing_count") {
