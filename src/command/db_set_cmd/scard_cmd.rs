@@ -1,5 +1,6 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -7,6 +8,9 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command SCARD\n";
 const CLIENT_ID: &str = "ScardCommand";
 const CONST_CMD: &str = "scard";
+
+const MIN_VALID_ARGS: i32 = 1;
+const MAX_VALID_ARGS: i32 = 1;
 
 pub struct ScardCommand {
     id_job: u32,
@@ -50,7 +54,9 @@ impl Command for ScardCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let db = app_info.get_set_db();
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
+
+        let db = app_info.get_set_db_sharding(args[0]);
 
         let mut res = db.scard(args).to_string();
         res.push('\n');

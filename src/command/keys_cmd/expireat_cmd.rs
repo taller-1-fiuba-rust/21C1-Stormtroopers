@@ -1,5 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
+use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -7,10 +9,12 @@ use crate::server::utils::timestamp_now;
 
 const INFO_EXPIREAT_COMMAND: &str = "Run command EXPIRE_AT\n";
 const CLIENT_ID: &str = "ExpireAtCommmand";
-const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
 const WRONG_TTL_TYPE: &str = "Can't parse to expire time.\n";
 const WHITESPACE: &str = " ";
 const CONST_CMD: &str = "expireat";
+
+const MIN_VALID_ARGS: i32 = 2;
+const MAX_VALID_ARGS: i32 = 2;
 
 pub struct ExpireAtCommand {
     id_job: u32,
@@ -55,12 +59,7 @@ impl Command for ExpireAtCommand {
             .logger
             .info(self, INFO_EXPIREAT_COMMAND, app_info.get_verbose());
 
-        if args.len() != 2 {
-            return Err(RunError {
-                message: args.join(WHITESPACE),
-                cause: String::from(WRONG_NUMBER_ARGUMENTS),
-            });
-        }
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
         let key_str = args[0]; // The key for the DB
         let ttl_str = args[1]; // The ttl
@@ -79,7 +78,7 @@ impl Command for ExpireAtCommand {
                         }
                         let mut return_value =
                             ttl_scheduler.set_ttl(ttl, String::from(key_str)).unwrap();
-                        return_value.push('\n');
+                        return_value.push(LINE_BREAK);
                         Ok(return_value)
                     }
                     Err(_) => Err(RunError {

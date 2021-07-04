@@ -4,10 +4,12 @@ use crate::command::db_set_cmd::db_set_generator;
 use crate::command::db_string_cmd::db_string_generator;
 use crate::command::keys_cmd::keys_generator;
 use crate::command::server_cmd::server_generator;
+use crate::constants::{TYPE_LIST, TYPE_SET, TYPE_STRING};
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_resolver::*;
 use crate::data_base::db_set::DataBaseSet;
 use crate::data_base::db_string::DataBaseString;
+use crate::errors::run_error::RunError;
 use crate::server::config_server::ConfigServer;
 use crate::server::logger::{Loggable, Logger};
 use crate::server::pubsub::Pubsub;
@@ -36,7 +38,7 @@ pub struct AppInfo {
     args: Vec<String>,
     config_server: ConfigServer,
     logger: Logger<String>,
-    db: DataBaseResolver,
+    db_resolver: DataBaseResolver,
     pubsub: Pubsub,
     ttl_scheduler: TtlScheduler,
     ids_clients: i32,
@@ -50,7 +52,7 @@ impl Clone for AppInfo {
         let config_server = self.config_server.clone();
         let logger = self.logger.clone();
         let args = self.args.clone();
-        let db = self.db.clone();
+        let db = self.db_resolver.clone();
         let pubsub = self.pubsub.clone();
         let ttl_scheduler = self.ttl_scheduler.clone();
         let private_pubsub = self.private_pubsub.clone();
@@ -61,7 +63,7 @@ impl Clone for AppInfo {
             args,
             config_server,
             logger,
-            db,
+            db_resolver: db,
             pubsub,
             ttl_scheduler,
             ids_clients: self.ids_clients,
@@ -72,26 +74,42 @@ impl Clone for AppInfo {
     }
 }
 
-fn add_string(db_resolver: &DataBaseResolver) {
-    let db_string = DataBase::DataBaseString(DataBaseString::new());
-    db_resolver.add_data_base("String".to_string(), db_string);
+fn add_string_db(db_resolver: &DataBaseResolver, count_db: u32) {
+    let mut dbs: Vec<DataBase> = vec![];
+    for _i in 0..count_db {
+        dbs.push(DataBase::DataBaseString(DataBaseString::new()));
+        println!("create db string {}", _i);
+    }
+    db_resolver.add_data_base(TYPE_STRING.to_string(), dbs);
 }
 
-fn add_list(db_resolver: &DataBaseResolver) {
-    let db_list = DataBase::DataBaseList(DataBaseList::new());
-    db_resolver.add_data_base("List".to_string(), db_list);
+fn add_list_db(db_resolver: &DataBaseResolver, count_db: u32) {
+    //let db_list = DataBase::DataBaseList(DataBaseList::new());
+    //db_resolver.add_data_base("List".to_string(), db_list);
+    let mut dbs: Vec<DataBase> = vec![];
+    for _i in 0..count_db {
+        dbs.push(DataBase::DataBaseList(DataBaseList::new()));
+        println!("create db list {}", _i);
+    }
+    db_resolver.add_data_base(TYPE_LIST.to_string(), dbs);
 }
 
-fn add_set(db_resolver: &DataBaseResolver) {
-    let db_set = DataBase::DataBaseSet(DataBaseSet::new());
-    db_resolver.add_data_base("Set".to_string(), db_set);
+fn add_set_db(db_resolver: &DataBaseResolver, count_db: u32) {
+    //let db_set = DataBase::DataBaseSet(DataBaseSet::new());
+    //db_resolver.add_data_base("Set".to_string(), db_set);
+    let mut dbs: Vec<DataBase> = vec![];
+    for _i in 0..count_db {
+        dbs.push(DataBase::DataBaseSet(DataBaseSet::new()));
+        println!("create db set {}", _i);
+    }
+    db_resolver.add_data_base(TYPE_SET.to_string(), dbs);
 }
 
-fn create_structure() -> DataBaseResolver {
-    let db_resolver = DataBaseResolver::new();
-    add_string(&db_resolver);
-    add_list(&db_resolver);
-    add_set(&db_resolver);
+fn create_databases(count_dbs: u32) -> DataBaseResolver {
+    let db_resolver = DataBaseResolver::new(count_dbs);
+    add_string_db(&db_resolver, count_dbs);
+    add_list_db(&db_resolver, count_dbs);
+    add_set_db(&db_resolver, count_dbs);
 
     db_resolver
 }
@@ -116,11 +134,10 @@ fn command_builder_generator(logger: Logger<String>) -> CommandBuilder {
 }
 
 impl AppInfo {
-    pub fn new(args: Vec<String>) -> Self {
+    pub fn new(args: Vec<String>) -> Result<AppInfo, RunError> {
         let config_server = ConfigServer::new();
         let logger =
             Logger::new(LOG_NAME.to_string(), LOG_PATH.to_string()).expect(ERROR_LOG_CREATE);
-        let db = create_structure();
 
         let pubsub = Pubsub::new();
         let private_pubsub = create_private_pubsub();
@@ -128,18 +145,24 @@ impl AppInfo {
         let connection_resolver = ConnectionResolver::new();
         let command_builder = command_builder_generator(logger.clone());
 
-        Self {
+        /* Need to load config db first */
+        if let Ok(_r) = load_config(args.clone(), logger.clone(), config_server.clone()) {};
+
+        let count_sharding_db = config_server.get_count_sharing_db()?;
+        let db = create_databases(count_sharding_db);
+
+        Ok(Self {
             args,
             config_server,
             logger,
-            db,
+            db_resolver: db,
             pubsub,
             ttl_scheduler,
             ids_clients: 0,
             private_pubsub,
             connection_resolver,
             command_builder,
-        }
+        })
     }
 
     pub fn get_logger(&self) -> Logger<String> {
@@ -151,7 +174,7 @@ impl AppInfo {
     }
 
     pub fn get_db_resolver(&self) -> DataBaseResolver {
-        self.db.clone()
+        self.db_resolver.clone()
     }
 
     pub fn get_pubsub(&self) -> Pubsub {
@@ -196,16 +219,25 @@ impl AppInfo {
         self.args[0].to_owned()
     }
 
-    pub fn get_string_db(&self) -> DataBaseString<String> {
-        self.db.get_string_db()
+    /* Impl of sharing db */
+    pub fn get_string_db_sharding(&self, key: &str) -> DataBaseString<String> {
+        self.db_resolver.get_string_db_sharding(key)
     }
+
+    /*
+    #[deprecated]
+    pub fn get_string_db(&self) -> DataBaseString<String> {
+        self.db_resolver.get_string_db()
+    }
+     */
 
     pub fn get_list_db(&self) -> DataBaseList<String> {
-        self.db.get_list_db()
+        self.db_resolver.get_list_db()
     }
 
-    pub fn get_set_db(&self) -> DataBaseSet<String> {
-        self.db.get_set_db()
+    pub fn get_set_db_sharding(&self, key: &str) -> DataBaseSet<String> {
+        self.db_resolver.get_set_db_sharding(key)
+        //self.db_resolver.get_set_db()
     }
 
     pub fn get_server_port(&self) -> String {
@@ -242,5 +274,23 @@ impl AppInfo {
 
     pub fn get_command_builder(&self) -> CommandBuilder {
         self.command_builder.clone()
+    }
+}
+
+pub fn load_config(
+    argv: Vec<String>,
+    logger: Logger<String>,
+    mut config_server: ConfigServer,
+) -> Result<(), std::io::Error> {
+    match argv.len() {
+        2 => {
+            config_server.load_config_server_with_path(argv[1].as_str(), logger)?;
+            Ok(())
+        }
+        1 => {
+            config_server.load_config_server(logger)?;
+            Ok(())
+        }
+        _ => panic!("ERROR Load file config"),
     }
 }

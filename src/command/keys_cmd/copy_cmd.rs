@@ -1,5 +1,6 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -7,6 +8,9 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command COPY\n";
 const CLIENT_ID: &str = "CopyCommmand";
 const CONST_CMD: &str = "copy";
+
+const MIN_VALID_ARGS: i32 = 2;
+const MAX_VALID_ARGS: i32 = 2;
 
 pub struct CopyCommand {
     id_job: u32,
@@ -40,6 +44,7 @@ impl Clone for CopyCommand {
     }
 }
 
+//TODO: ver thread safety impl
 impl Command for CopyCommand {
     fn run(
         &self,
@@ -50,11 +55,23 @@ impl Command for CopyCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let mut db = app_info.get_string_db();
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let resp = db.copy(String::from(args[0]), String::from(args[1]));
-        let mut resp_str = resp.to_string();
-        resp_str.push('\n');
-        Ok(resp_str)
+        let src_key = args[0];
+        let target_key = args[1];
+
+        let db_target = app_info.get_string_db_sharding(target_key);
+
+        if db_target.contains(target_key.to_string()) {
+            return Ok("0\n".to_string());
+        }
+
+        let val_to_copy = app_info
+            .get_string_db_sharding(src_key)
+            .get_string(src_key.to_string());
+
+        db_target.set_string(target_key.to_string(), val_to_copy);
+
+        Ok("1\n".to_string())
     }
 }

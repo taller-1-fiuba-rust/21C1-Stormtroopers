@@ -80,7 +80,9 @@ impl TtlScheduler {
                         if let Ok(val) = db.type_key(key.clone()) {
                             match val.as_str() {
                                 "String" => {
-                                    db.get_string_db().delete(vec![key.as_str()]);
+                                    //db.get_string_db().delete(vec![key.as_str()]);
+                                    db.get_string_db_sharding(key.as_str())
+                                        .delete(vec![key.as_str()]);
                                 }
                                 "List" => {
                                     db.get_list_db().clear_key(key);
