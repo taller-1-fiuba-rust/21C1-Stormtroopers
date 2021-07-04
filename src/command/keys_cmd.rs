@@ -4,6 +4,7 @@ pub mod exists_cmd;
 pub mod expire_cmd;
 pub mod expireat_cmd;
 pub mod keys_generator;
+pub mod keys_pattern_cmd;
 pub mod persist_cmd;
 pub mod rename_cmd;
 pub mod sort_cmd;

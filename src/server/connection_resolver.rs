@@ -73,6 +73,10 @@ impl ConnectionResolver {
         let connection = self.get_connection_client(id_client);
         connection.monitor()
     }
+
+    pub fn size(&self) -> usize {
+        self.connections.lock().unwrap().clone().len()
+    }
 }
 
 impl Clone for ConnectionResolver {

@@ -11,17 +11,18 @@ use crate::command::db_list_cmd::rpop_cmd::RpopCommand;
 use crate::command::db_list_cmd::rpush_cmd::RpushCommand;
 use crate::command::db_list_cmd::rpushx_cmd::RpushxCommand;
 use crate::server::logger::Logger;
+use std::process;
 
 pub fn insert_commands(command_builder: CommandBuilder, logger: Logger<String>) {
-    LLenCommand::new(0, logger.clone(), command_builder.clone());
-    LindexCommand::new(1, logger.clone(), command_builder.clone());
-    LpopCommand::new(2, logger.clone(), command_builder.clone());
-    LpushCommand::new(3, logger.clone(), command_builder.clone());
-    LpushxCommand::new(4, logger.clone(), command_builder.clone());
-    LrangeCommand::new(5, logger.clone(), command_builder.clone());
-    LremCommand::new(6, logger.clone(), command_builder.clone());
-    LsetCommand::new(7, logger.clone(), command_builder.clone());
-    RpopCommand::new(8, logger.clone(), command_builder.clone());
-    RpushCommand::new(9, logger.clone(), command_builder.clone());
-    RpushxCommand::new(10, logger, command_builder);
+    LLenCommand::new(process::id(), logger.clone(), command_builder.clone());
+    LindexCommand::new(process::id(), logger.clone(), command_builder.clone());
+    LpopCommand::new(process::id(), logger.clone(), command_builder.clone());
+    LpushCommand::new(process::id(), logger.clone(), command_builder.clone());
+    LpushxCommand::new(process::id(), logger.clone(), command_builder.clone());
+    LrangeCommand::new(process::id(), logger.clone(), command_builder.clone());
+    LremCommand::new(process::id(), logger.clone(), command_builder.clone());
+    LsetCommand::new(process::id(), logger.clone(), command_builder.clone());
+    RpopCommand::new(process::id(), logger.clone(), command_builder.clone());
+    RpushCommand::new(process::id(), logger.clone(), command_builder.clone());
+    RpushxCommand::new(process::id(), logger, command_builder);
 }

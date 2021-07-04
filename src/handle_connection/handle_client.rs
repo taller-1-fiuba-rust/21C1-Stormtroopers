@@ -26,11 +26,11 @@ pub fn handle_client(
 
     for line in lines {
         if request != *"monitor" {
-            let app_info = app_info.clone();
+            let mut app_info = app_info.clone();
             request = line.unwrap_or_else(|_| String::from(END_FLAG));
 
             if request == END_FLAG || connection_client.over() {
-                run_exit_cmd(connection_client, &app_info, id, id_client);
+                run_exit_cmd(connection_client, &mut app_info, id, id_client);
                 return;
             }
 

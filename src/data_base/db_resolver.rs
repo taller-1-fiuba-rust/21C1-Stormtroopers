@@ -162,8 +162,6 @@ impl DataBaseResolver {
         }
     }
 
-    //1. chequeo si existe en list o set -> si no existe, error (aunque exista en strings)
-    //2. si existe, le dejo a esa db que la ordene
     pub fn sort(&self, key: String) -> Result<Vec<String>, RunError> {
         let db_list = self.get_list_db();
         let db_set = self.get_set_db();
@@ -194,6 +192,7 @@ impl DataBaseResolver {
             cause: "First, insert the key in the db".to_string(),
         })
     }
+
     //TODO: operacion no thread safe!
     pub fn validate_key_contain_db(&self, key: String) -> Result<bool, RunError> {
         match self.type_key(key) {
@@ -232,5 +231,14 @@ impl DataBaseResolver {
     fn check_db_set(&self, key: String) -> bool {
         let db_set = self.get_set_db();
         db_set.contains(key)
+    }
+
+    pub fn keys(&self, pattern: &str) -> Vec<String> {
+        let mut keys_vec = Vec::<String>::new();
+        keys_vec.extend(self.get_string_db().keys(pattern));
+        keys_vec.extend(self.get_list_db().keys(pattern));
+        keys_vec.extend(self.get_set_db().keys(pattern));
+
+        keys_vec
     }
 }

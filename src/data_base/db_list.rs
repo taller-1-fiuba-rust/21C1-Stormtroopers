@@ -1,5 +1,6 @@
 use crate::data_base::data_db::data_list::DataList;
 use crate::errors::run_error::RunError;
+use regex::Regex;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -367,6 +368,20 @@ impl DataBaseList<String> {
         let mut list = db.get(&key).unwrap().clone(); //sé que existe, porque la validé o inserté antes
         list.insert_value(value);
         db.insert(key, list);
+    }
+
+    pub fn keys(&self, pattern: &str) -> Vec<String> {
+        let mut keys_vec = Vec::<String>::new();
+        let db = self.db_list.lock().unwrap();
+        let re = Regex::new(pattern).unwrap();
+
+        for key in db.keys() {
+            if re.is_match(&key) {
+                keys_vec.push((*(key.clone())).to_string());
+            }
+        }
+
+        keys_vec
     }
 }
 
