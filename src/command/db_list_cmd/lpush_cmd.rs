@@ -1,5 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
+use crate::constants::{LINE_BREAK, TYPE_LIST};
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -7,6 +9,9 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command LPUSH\n";
 const CLIENT_ID: &str = "LpushCommand";
 const LPUSH_CMD: &str = "lpush";
+
+const MIN_VALID_ARGS: i32 = 2;
+const MAX_VALID_ARGS: i32 = -1;
 
 pub struct LpushCommand {
     id_job: u32,
@@ -50,11 +55,15 @@ impl Command for LpushCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let db = app_info.get_list_db();
-        //TODO: chequear el caso de que la clave sea de otro tipo
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
+
+        let key = args[0];
+        app_info.get_db_resolver().valid_key_type(key, TYPE_LIST)?;
+
+        let db = app_info.get_list_db_sharding(key);
 
         let mut result = db.lpush(args).to_string();
-        result.push('\n');
+        result.push(LINE_BREAK);
 
         Ok(result)
     }
