@@ -59,7 +59,7 @@ impl Command for InfoCommand {
 
         ParsedMessage::validate_args(_args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let response = app_info.system_info(process::id as usize);
+        let response = app_info.system_info(process::id() as usize);
 
         Ok(response)
     }
