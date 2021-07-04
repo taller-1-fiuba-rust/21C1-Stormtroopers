@@ -189,4 +189,23 @@ impl DataBaseSet<String> {
         }
         cont
     }
+
+    fn parse_data(&self, set: BTreeSet<String>) -> String {
+        let mut parsed_data = String::from("");
+        for item in set.iter() {
+            parsed_data.push_str(&(format!("{}\t", item)));
+        }
+        parsed_data
+    }
+
+    pub fn get_all_data(&self) -> String {
+        let db = self.db_set.lock().unwrap().clone();
+        let mut data = String::from("");
+        for (key, value) in &db {
+            let set = value.get_value();
+            let aux = format!("Set\t{}\t{}\n", key, self.parse_data(set.clone()));
+            data.push_str(aux.as_str());
+        }
+        data
+    }
 }

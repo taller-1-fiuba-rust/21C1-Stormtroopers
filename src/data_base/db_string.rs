@@ -373,6 +373,16 @@ impl DataBaseString<String> {
         str.pop();
         str
     }
+
+    pub fn get_all_data(&self) -> String {
+        let db = self.db.lock().unwrap().clone();
+        let mut data = String::from("");
+        for (key, value) in &db {
+            let aux = format!("String\t{}\t{}\n", key, value.get_value());
+            data.push_str(aux.as_str());
+        }
+        data
+    }
 }
 
 #[cfg(test)]

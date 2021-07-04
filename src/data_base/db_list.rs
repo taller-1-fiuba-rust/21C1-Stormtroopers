@@ -368,4 +368,23 @@ impl DataBaseList<String> {
         list.insert_value(value);
         db.insert(key, list);
     }
+
+    fn parse_data(&self, list: Vec<String>) -> String {
+        let mut parsed_data = String::from("");
+        for item in list.iter() {
+            parsed_data.push_str(&(format!("{}\t", item)));
+        }
+        parsed_data
+    }
+
+    pub fn get_all_data(&self) -> String {
+        let db = self.db_list.lock().unwrap().clone();
+        let mut data = String::from("");
+        for (key, value) in &db {
+            let list = value.get_value();
+            let aux = format!("List\t{}\t{}\n", key, self.parse_data(list.clone()));
+            data.push_str(&aux);
+        }
+        data
+    }
 }
