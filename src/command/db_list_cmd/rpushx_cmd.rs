@@ -1,16 +1,17 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
+use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command RPUSHX\n";
 const CLIENT_ID: &str = "RpushxCommand";
+const RPUSHX_CMD: &str = "rpushx";
 
 const MIN_VALID_ARGS: i32 = 2;
 const MAX_VALID_ARGS: i32 = -1;
-const RPUSHX_CMD: &str = "rpushx";
 
 pub struct RpushxCommand {
     id_job: u32,
@@ -56,15 +57,13 @@ impl Command for RpushxCommand {
 
         ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let db = app_info.get_list_db();
+        let key = args.remove(0);
+        let db = app_info.get_list_db_sharding(key);
 
-        let key = args[0].to_string();
-        args.remove(0);
-
-        let res = db.rpushx(key, args)?;
+        let res = db.rpushx(key.to_string(), args)?;
 
         let mut result = res.to_string();
-        result.push('\n');
+        result.push(LINE_BREAK);
 
         Ok(result)
     }

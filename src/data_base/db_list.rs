@@ -47,19 +47,24 @@ impl DataBaseList<String> {
         count
     }
 
-    pub fn lpush(&self, mut args: Vec<&str>) -> u32 {
-        let mut db_list = self.db_list.lock().unwrap();
-        let key = args.remove(0);
-        args.reverse();
-        let vec_values = db_list
-            .entry(String::from(key))
-            .or_insert_with(DataList::new);
-        let mut insertions = 0_u32;
-        for val in args.iter() {
-            vec_values.insert_value(String::from(*val));
-            insertions += 1;
-        }
-        insertions
+    /*
+       fn common_push(&self,  mut values: Vec<&str>) -> u32 {
+           values.reverse();
+           let mut insertions = 0_u32;
+           for value in values {
+               vec_values.insert_value(String::from(*value));
+               insertions += 1;
+           }
+           insertions
+       }
+    */
+
+    pub fn lpush(&self, args: Vec<&str>) -> u32 {
+        self.lpush_common(false, args)
+    }
+
+    pub fn lpushx(&self, args: Vec<&str>) -> u32 {
+        self.lpush_common(true, args)
     }
 
     pub fn rpop(&self, key_list: String, count: u32) -> Vec<String> {
@@ -285,6 +290,24 @@ impl DataBaseList<String> {
         db_list.len()
     }
 
+    fn lpush_common(&self, use_x: bool, mut args: Vec<&str>) -> u32 {
+        let mut db_list = self.db_list.lock().unwrap();
+
+        let key = args.remove(0);
+        if use_x && !db_list.contains_key(&String::from(key)) {
+            return 0;
+        }
+        let vec_values = db_list
+            .entry(String::from(key))
+            .or_insert_with(DataList::new);
+        let mut insertions = 0_u32;
+        for val in args.iter() {
+            vec_values.insert_value(String::from(*val));
+            insertions += 1;
+        }
+        insertions
+    }
+
     fn get_list(&self, key: String) -> Result<Vec<String>, RunError> {
         self.validate_or_insert_key(key.clone());
 
@@ -310,7 +333,7 @@ impl DataBaseList<String> {
         } else {
             Err(RunError {
                 message: "Position is not an integer".to_string(),
-                cause: "The argument cannot be interpreted as an integer\n".to_string(),
+                cause: "The argument cannot be interpreted as an integer".to_string(),
             })
         }
     }
@@ -320,7 +343,7 @@ impl DataBaseList<String> {
         if (*position as usize) >= list.len() {
             return Err(RunError {
                 message: "Position is bigger than the len of the list".to_string(),
-                cause: "The argument exceeds the limits of the list\n".to_string(),
+                cause: "The argument exceeds the limits of the list".to_string(),
             });
         }
         Ok(())

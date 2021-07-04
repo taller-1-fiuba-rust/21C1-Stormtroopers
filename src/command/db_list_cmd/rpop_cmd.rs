@@ -1,19 +1,17 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
-use crate::constants::TYPE_LIST;
+use crate::constants::{LINE_BREAK, NIL_RESPONSE, TYPE_LIST};
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command RPOP\n";
 const CLIENT_ID: &str = "RpopCommand";
-
-const NIL_RESULT: &str = "(nil)\n";
+const RPOP_CMD: &str = "rpop";
 
 const MIN_VALID_ARGS: i32 = 1;
 const MAX_VALID_ARGS: i32 = 2;
-const RPOP_CMD: &str = "rpop";
 
 pub struct RpopCommand {
     id_job: u32,
@@ -59,10 +57,10 @@ impl Command for RpopCommand {
 
         ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let mut result = String::from("");
-        let db_resolver = app_info.get_db_resolver();
-        /* The key for the DB */
-        let key_str = args[0].to_string();
+        let key = args[0];
+        app_info.get_db_resolver().valid_key_type(key, TYPE_LIST)?;
+
+        //TODO: sacar esta logica a fn en comun
         let mut count = 1_u32;
         if args.len() == 2 {
             count = match args[1].parse::<u32>() {
@@ -76,31 +74,21 @@ impl Command for RpopCommand {
             }
         };
 
-        match db_resolver.type_key(key_str.clone()) {
-            Ok(typee) => {
-                if typee == *TYPE_LIST.to_string() {
-                    let db = app_info.get_list_db();
-                    let items = db.rpop(key_str, count);
-                    if items.is_empty() {
-                        result = String::from(NIL_RESULT);
-                    } else {
-                        for (i, it) in items.iter().enumerate() {
-                            result.push_str((i + 1).to_string().as_str());
-                            result.push_str(") ");
-                            let mut item = it.clone();
-                            item.push('\n');
-                            result.push_str(&item);
-                        }
-                    }
-                } else {
-                    return Err(RunError {
-                        message: "ERR WRONGTYPE.".to_string(),
-                        cause: "Operación incorrecta para el tipo de valor asociado a la clave."
-                            .to_string(),
-                    });
-                }
+        let db = app_info.get_list_db_sharding(key);
+        let items = db.rpop(key.to_string(), count);
+
+        //TODO: sacar esta logica a fn en comun
+        let mut result = "".to_string();
+        if items.is_empty() {
+            result = NIL_RESPONSE.to_string();
+        } else {
+            for (i, it) in items.iter().enumerate() {
+                result.push_str((i + 1).to_string().as_str());
+                result.push_str(") ");
+                let mut item = it.clone();
+                item.push(LINE_BREAK);
+                result.push_str(&item);
             }
-            Err(_e) => result = String::from(NIL_RESULT),
         }
 
         Ok(result)

@@ -173,6 +173,21 @@ impl DataBaseResolver {
         }
     }
 
+    pub fn get_list_db_sharding(&self, key: &str) -> DataBaseList<String> {
+        let dbs = self
+            .data_bases
+            .lock()
+            .unwrap()
+            .get(TYPE_LIST)
+            .unwrap()
+            .clone();
+        let index_sharing = self.retrieve_index(key);
+        match dbs[index_sharing].clone() {
+            DataBase::DataBaseList(s) => s,
+            _ => panic!("{}", ERROR_MSG_GET_DB),
+        }
+    }
+
     /*
         #[deprecated]
     pub fn get_string_db(&self) -> DataBaseString<String> {
@@ -235,6 +250,31 @@ impl DataBaseResolver {
             cause: "The key may be a string or may not be in the db\n".to_string(),
         })
     }
+    pub fn valid_key_type(&self, key: &str, key_type: &str) -> Result<bool, RunError> {
+        let key_type_db = key_type.to_string();
+        //println!("type: {}",key_type_db);
+        match self.type_key(key.to_string()) {
+            Ok(db_type) => {
+                //println!("type2: {}",db_type);
+                if db_type == key_type_db {
+                    //println!("true valid, {}, {}", &typee,&key_type);
+                    Ok(true)
+                } else {
+                    println!("ERROR valid");
+                    Err(RunError {
+                        message: "ERR WRONGTYPE.".to_string(),
+                        cause:
+                            "Operación contra una clave que contiene el tipo de valor incorrecto"
+                                .to_string(),
+                    })
+                }
+            }
+            Err(_e) => {
+                //println!("false valid");
+                Ok(false)
+            }
+        }
+    }
 
     //TODO: threadsafety?
     pub fn check_db_string(&self, key: String) -> bool {
@@ -244,12 +284,12 @@ impl DataBaseResolver {
     }
 
     pub fn check_db_list(&self, key: String) -> bool {
-        let db_list = self.get_list_db();
+        let db_list = self.get_list_db_sharding(key.as_str());
         db_list.contains(key)
     }
 
     pub fn check_db_set(&self, key: String) -> bool {
-        let db_set = self.get_set_db();
+        let db_set = self.get_set_db_sharding(key.as_str());
         db_set.contains(key)
     }
 

@@ -14,7 +14,7 @@ pub const ERROR_DBFILE_CREATE: &str = "Error creating database dump file";
 pub const DBDUMP_INTERVAL_SECS: u64 = 10;
 pub const DBDUMP_PATH: &str = "./";
 pub const MARK_BULLET: &str = ") ";
-//pub const NIL_RESPONSE: &str = "(nil)";
+pub const NIL_RESPONSE: &str = "(nil)\n";
 
 /** Default values **/
 pub static SHARING_COUNT_DEFAULT: u32 = 4;
