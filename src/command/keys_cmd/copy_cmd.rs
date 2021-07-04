@@ -5,7 +5,7 @@ use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command COPY\n";
-const CLIENT_ID: &str = "CopyCommmand";
+const CLIENT_ID: &str = "CopyCommand";
 const CONST_CMD: &str = "copy";
 
 pub struct CopyCommand {

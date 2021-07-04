@@ -7,7 +7,7 @@ pub mod connection;
 pub mod connection_resolver;
 pub mod logger;
 pub mod pubsub;
-pub mod stats;
+pub mod system_info;
 pub mod threadpool;
 pub mod ttl_scheduler;
 pub mod utils;

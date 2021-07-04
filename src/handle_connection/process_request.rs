@@ -29,10 +29,11 @@ pub fn process_request(
 
 pub fn run_exit_cmd(
     connect_client: Connection<String>,
-    app_info: &AppInfo,
+    app_info: &mut AppInfo,
     id_job: u32,
     id_client: usize,
 ) {
     let response = process_request(END_FLAG.to_string(), app_info, id_job, id_client);
     connect_client.send(response);
+    app_info.deactivate_thread(2);
 }

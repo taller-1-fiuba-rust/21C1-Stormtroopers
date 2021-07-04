@@ -1,5 +1,6 @@
 use crate::data_base::data_db::data_set::DataSet;
 use crate::errors::run_error::RunError;
+use regex::Regex;
 use std::collections::{BTreeSet, HashMap};
 use std::sync::{Arc, Mutex};
 
@@ -188,5 +189,19 @@ impl DataBaseSet<String> {
             cont += self.touch_key(key);
         }
         cont
+    }
+
+    pub fn keys(&self, pattern: &str) -> Vec<String> {
+        let mut keys_vec = Vec::<String>::new();
+        let db = self.db_set.lock().unwrap();
+        let re = Regex::new(pattern).unwrap();
+
+        for key in db.keys() {
+            if re.is_match(&key) {
+                keys_vec.push((*(key.clone())).to_string());
+            }
+        }
+
+        keys_vec
     }
 }
