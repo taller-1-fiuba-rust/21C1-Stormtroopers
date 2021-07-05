@@ -119,7 +119,6 @@ impl DataBaseString<String> {
         to_return
     }
 
-    #[allow(dead_code)]
     pub fn clean_all_data(&self) -> bool {
         let mut db_string = self.clone();
         let mut data = self.db.clone();
@@ -132,7 +131,6 @@ impl DataBaseString<String> {
         self.db.lock().unwrap().is_empty()
     }
 
-    #[allow(dead_code)]
     //TODO: ver esta impl
     pub fn dbsize(&self) -> usize {
         self.db.lock().unwrap().len()
@@ -230,7 +228,6 @@ impl DataBaseString<String> {
         self.key_incr(key, inc)
     }
 
-    #[allow(dead_code)]
     pub fn append(&self, key: String, value_append: String) -> u32 {
         let mut value = self.get_string(key.clone());
         if value == *RESPONSE_NIL {
@@ -357,7 +354,6 @@ impl DataBaseString<String> {
         }
     }
 
-    #[allow(dead_code)]
     fn clean(&mut self, data: &mut Arc<Mutex<HashMap<String, DataString<String>>>>) -> bool {
         self.receiver.lock().unwrap().recv().unwrap();
         let mut db = data.lock().unwrap();

@@ -10,7 +10,7 @@ use std::time::Duration;
 
 const TTL_CHECK_RANGE: u64 = 5;
 const NOT_FOUND: &str = "Key not found.";
-const OK: &str = "Ok";
+const OK: &str = "OK";
 
 pub struct TtlScheduler {
     pub ttl_map: Arc<Mutex<HashMap<u64, String>>>,
