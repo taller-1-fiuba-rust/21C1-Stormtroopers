@@ -481,15 +481,10 @@ mod tests {
     #[test]
     fn lrem_test() {
         let db = DataBaseList::new();
-        let mut res;
-        res = db
-            .lrem("key0".to_string(), "0".to_string(), "val0".to_string())
-            .unwrap();
-        assert!(res == 0);
 
         db.lpush(vec!["key0", "val", "val2", "val", "val0", "val"]);
-        res = db
-            .lrem("key0".to_string(), "-2".to_string(), "val".to_string())
+        let res = db
+            .lrem("key0".to_string(), "val".to_string(), "-2".to_string())
             .unwrap();
         assert!(res == 2);
     }
