@@ -79,7 +79,7 @@ impl Command for PubsubCommand {
                 }
             }
             "unsuscribe" => pubsub.unsuscribe(args[1].to_string(), id_client),
-            "CHANNELS" => {
+            "CHANNELS" | "channels" => {
                 if args.len() == 1 {
                     let channels_vec = pubsub.available_channels();
                     response = format!("{:?}\n", channels_vec);
@@ -88,7 +88,7 @@ impl Command for PubsubCommand {
                     response = format!("{:?}\n", channels_vec);
                 }
             }
-            "NUMSUB" => {
+            "NUMSUB" | "numsub" => {
                 let vec = pubsub.numsub();
                 response = format!("{:?}\n", vec);
             }
