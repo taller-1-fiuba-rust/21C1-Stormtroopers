@@ -101,7 +101,12 @@ impl TtlScheduler {
     }
 
     pub fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
-        self.set_key_ttl(ttl, arg.clone());
+        match (self.set_key_ttl(ttl, arg.clone())).as_str() {
+            "" => (),
+            old_ttl => {
+                let _ = self.delete_ttl(String::from(old_ttl));
+            }
+        };
 
         let mut key_val = ttl.to_string();
         key_val.push(':');
@@ -187,11 +192,13 @@ impl TtlScheduler {
         let kv_splitted: Vec<&str> = key_val.split(':').collect();
 
         let mut map = map.lock().unwrap();
-        map.insert(
+        match map.insert(
             String::from(kv_splitted[0].trim()),
             kv_splitted[1].trim().parse::<u64>().unwrap(),
-        );
-        String::from(OK)
+        ) {
+            Some(value) => value.to_string(),
+            None => String::from(""),
+        }
     }
 
     fn retrieve_key(
