@@ -51,14 +51,6 @@ impl DataBaseResolver {
         }
     }
 
-    /*
-       pub fn get(&self, name_type: String) -> DataBase {
-           let data_bases = self.data_bases.lock().unwrap();
-           //data_base.get(&name_type).unwrap().clone()
-           data_bases.get(&name_type).unwrap()[0].clone()
-       }
-    */
-
     pub fn add_data_base(&self, key_db: String, values: Vec<DataBase>) {
         let mut data_base_general = self.data_bases.lock().unwrap();
 
@@ -272,7 +264,6 @@ impl DataBaseResolver {
 
     //TODO: threadsafety?
     pub fn check_db_string(&self, key: String) -> bool {
-        //let db_string = self.get_string_db();
         let db_string = self.get_string_db_sharding(key.as_str());
         db_string.contains(key)
     }
@@ -331,32 +322,11 @@ impl DataBaseResolver {
         let mut hasher = DefaultHasher::new();
         hasher.write(key.to_string().as_bytes());
         let nh = hasher.finish() as u32;
-        println!("Hash retrieve: {}", nh);
 
         let idx = nh % self.sharing_count_db;
 
-        println!("Hash index: {}", idx);
-
         idx as usize
     }
-
-    /*
-       //TODO: Es thread safety esto?
-       fn check_db_string(&self, key: String) -> bool {
-           let db_string = self.get_string_db();
-           db_string.contains(key)
-       }
-
-       fn check_db_list(&self, key: String) -> bool {
-           let db_list = self.get_list_db();
-           db_list.contains(key)
-       }
-
-       fn check_db_set(&self, key: String) -> bool {
-           let db_set = self.get_set_db();
-           db_set.contains(key)
-       }
-    */
 
     pub fn keys(&self, pattern: &str) -> Vec<String> {
         let mut keys_vec = Vec::<String>::new();

@@ -63,12 +63,12 @@ impl ConfigServer {
     ) -> Result<(), std::io::Error> {
         logger.info(self, INFO_LOAD_FILE_CONFIG, false)?;
         let mut props = self.props.lock().unwrap();
-        println!("load file {}", path_file);
+        println!("Load file config {}", path_file);
         if let Ok(lines) = read_lines(path_file) {
             for line in lines.into_iter().flatten() {
                 //let mut props = props.clone();
                 let prop_slited: Vec<&str> = line.split('=').collect();
-                println!("load prop {} -> {}", prop_slited[0], prop_slited[1]);
+                println!("Load prop config '{}' -> {}", prop_slited[0], prop_slited[1]);
                 props.insert(String::from(prop_slited[0]), String::from(prop_slited[1]));
             }
             return logger.info(self, INFO_LOAD_FILE_CONFIG_OK, false);

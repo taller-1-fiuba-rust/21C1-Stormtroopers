@@ -83,38 +83,35 @@ fn add_string_db(db_resolver: &DataBaseResolver, count_db: u32) {
     let mut dbs: Vec<DataBase> = vec![];
     for _i in 0..count_db {
         dbs.push(DataBase::DataBaseString(DataBaseString::new()));
-        println!("create db string {}", _i);
     }
     db_resolver.add_data_base(TYPE_STRING.to_string(), dbs);
 }
 
 fn add_list_db(db_resolver: &DataBaseResolver, count_db: u32) {
-    //let db_list = DataBase::DataBaseList(DataBaseList::new());
-    //db_resolver.add_data_base("List".to_string(), db_list);
     let mut dbs: Vec<DataBase> = vec![];
     for _i in 0..count_db {
         dbs.push(DataBase::DataBaseList(DataBaseList::new()));
-        println!("create db list {}", _i);
     }
     db_resolver.add_data_base(TYPE_LIST.to_string(), dbs);
 }
 
 fn add_set_db(db_resolver: &DataBaseResolver, count_db: u32) {
-    //let db_set = DataBase::DataBaseSet(DataBaseSet::new());
-    //db_resolver.add_data_base("Set".to_string(), db_set);
     let mut dbs: Vec<DataBase> = vec![];
     for _i in 0..count_db {
         dbs.push(DataBase::DataBaseSet(DataBaseSet::new()));
-        println!("create db set {}", _i);
     }
     db_resolver.add_data_base(TYPE_SET.to_string(), dbs);
 }
 
 fn create_databases(count_dbs: u32) -> DataBaseResolver {
     let db_resolver = DataBaseResolver::new(count_dbs);
+
     add_string_db(&db_resolver, count_dbs);
+    println!("Create db STRING, numbers {}", count_dbs);
     add_list_db(&db_resolver, count_dbs);
+    println!("Create db LIST, numbers {}", count_dbs);
     add_set_db(&db_resolver, count_dbs);
+    println!("Create db SET, numbers {}", count_dbs);
 
     db_resolver
 }
