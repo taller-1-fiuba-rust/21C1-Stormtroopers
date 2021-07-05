@@ -43,18 +43,6 @@ impl DataBaseList<String> {
         count
     }
 
-    /*
-       fn common_push(&self,  mut values: Vec<&str>) -> u32 {
-           values.reverse();
-           let mut insertions = 0_u32;
-           for value in values {
-               vec_values.insert_value(String::from(*value));
-               insertions += 1;
-           }
-           insertions
-       }
-    */
-
     pub fn lpush(&self, args: Vec<&str>) -> u32 {
         self.lpush_common(false, args)
     }

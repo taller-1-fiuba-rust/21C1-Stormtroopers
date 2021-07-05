@@ -14,6 +14,8 @@ mod server;
 fn main() -> Result<(), std::io::Error> {
     let argv = args().collect::<Vec<String>>();
 
+    println!("Init Server ...");
+
     let mut server = match AppInfo::new(argv) {
         Ok(s) => s,
         Err(e) => panic!("{}", e.message),
