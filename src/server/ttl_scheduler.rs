@@ -103,7 +103,9 @@ impl TtlScheduler {
     pub fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
         match (self.set_key_ttl(ttl, arg.clone())).as_str() {
             "" => (),
-            old_ttl => {self.delete_ttl(String::from(old_ttl));}
+            old_ttl => {
+                let _ = self.delete_ttl(String::from(old_ttl));
+            }
         };
 
         let mut key_val = ttl.to_string();
@@ -195,7 +197,7 @@ impl TtlScheduler {
             kv_splitted[1].trim().parse::<u64>().unwrap(),
         ) {
             Some(value) => value.to_string(),
-            None => String::from("")
+            None => String::from(""),
         }
     }
 
