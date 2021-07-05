@@ -14,7 +14,7 @@ pub fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io:
 
     app_info.get_ttl_scheduler().run(&app_info);
 
-    load_filedump(&app_info);
+    println!("{}", load_filedump(&app_info));
 
     start_filedump(&app_info);
 
