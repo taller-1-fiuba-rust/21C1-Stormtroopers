@@ -60,6 +60,12 @@ impl Command for LpushCommand {
         let key = args[0];
         app_info.get_db_resolver().valid_key_type(key, TYPE_LIST)?;
 
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
+
+        app_info
+            .get_db_resolver()
+            .validate_key_contain_db(key.to_string())?;
+
         let db = app_info.get_list_db_sharding(key);
 
         let mut result = db.lpush(args).to_string();

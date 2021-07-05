@@ -15,13 +15,14 @@ pub fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io:
     let listener = TcpListener::bind(&address)?;
 
     for (id_client, stream) in listener.incoming().enumerate() {
-        let app_info = app_info.clone();
+        let mut app_info = app_info.clone();
         let app_info2 = app_info.clone();
         let stream = stream?;
 
         let receiver = app_info.connect_client(id_client);
 
         println!("Handler stream request ...");
+        app_info.activate_threads(2);
 
         threadpool_read(
             &threadpool,

@@ -85,10 +85,10 @@ impl TtlScheduler {
                                         .delete(vec![key.as_str()]);
                                 }
                                 "List" => {
-                                    db.get_list_db().clear_key(key);
+                                    db.get_list_db_sharding(key.as_str()).clear_key(key);
                                 }
                                 "Set" => {
-                                    db.get_set_db().clear_key(key);
+                                    db.get_set_db_sharding(key.as_str()).clear_key(key);
                                 }
                                 _ => (),
                             }
