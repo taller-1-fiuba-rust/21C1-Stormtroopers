@@ -10,16 +10,17 @@ use crate::command::db_string_cmd::mset_cmd::MsetCommand;
 use crate::command::db_string_cmd::set_cmd::SetCommand;
 use crate::command::db_string_cmd::strlen_cmd::StrlenCommand;
 use crate::server::logger::Logger;
+use std::process;
 
 pub fn insert_commands(command_builder: CommandBuilder, logger: Logger<String>) {
-    AppendCommand::new(11, logger.clone(), command_builder.clone());
-    DecrbyCommand::new(12, logger.clone(), command_builder.clone());
-    GetCommand::new(13, logger.clone(), command_builder.clone());
-    GetDelCommand::new(14, logger.clone(), command_builder.clone());
-    GetSetCommand::new(15, logger.clone(), command_builder.clone());
-    IncrbyCommand::new(16, logger.clone(), command_builder.clone());
-    MgetCommand::new(17, logger.clone(), command_builder.clone());
-    MsetCommand::new(18, logger.clone(), command_builder.clone());
-    SetCommand::new(19, logger.clone(), command_builder.clone());
-    StrlenCommand::new(20, logger, command_builder);
+    AppendCommand::new(process::id(), logger.clone(), command_builder.clone());
+    DecrbyCommand::new(process::id(), logger.clone(), command_builder.clone());
+    GetCommand::new(process::id(), logger.clone(), command_builder.clone());
+    GetDelCommand::new(process::id(), logger.clone(), command_builder.clone());
+    GetSetCommand::new(process::id(), logger.clone(), command_builder.clone());
+    IncrbyCommand::new(process::id(), logger.clone(), command_builder.clone());
+    MgetCommand::new(process::id(), logger.clone(), command_builder.clone());
+    MsetCommand::new(process::id(), logger.clone(), command_builder.clone());
+    SetCommand::new(process::id(), logger.clone(), command_builder.clone());
+    StrlenCommand::new(process::id(), logger, command_builder);
 }

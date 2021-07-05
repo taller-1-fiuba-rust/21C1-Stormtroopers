@@ -51,19 +51,12 @@ impl DataBaseResolver {
         }
     }
 
-    /*
-       pub fn get(&self, name_type: String) -> DataBase {
-           let data_bases = self.data_bases.lock().unwrap();
-           //data_base.get(&name_type).unwrap().clone()
-           data_bases.get(&name_type).unwrap()[0].clone()
-       }
-    */
-
     pub fn add_data_base(&self, key_db: String, values: Vec<DataBase>) {
         let mut data_base_general = self.data_bases.lock().unwrap();
 
-        data_base_general.insert(key_db, values); //no usar unwrap acá porque devuelve None
-                                                  //la primera vez que se inserta algo en una key, entonces pincha todo
+        //no usar unwrap acá porque devuelve None
+        //la primera vez que se inserta algo en una key, entonces pincha todo
+        data_base_general.insert(key_db, values);
     }
 
     pub fn dbsize(&self) -> usize {
@@ -127,6 +120,7 @@ impl DataBaseResolver {
         clear_count
     }
 
+    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn clear_key(&self, key: String) {
         let databases = self.data_bases.lock().unwrap();
         for dbs in databases.values() {
@@ -141,6 +135,49 @@ impl DataBaseResolver {
         }
     }
 
+    fn get_string_db(&self, idx: usize) -> DataBaseString<String> {
+        let dbs = self
+            .data_bases
+            .lock()
+            .unwrap()
+            .get(TYPE_STRING)
+            .unwrap()
+            .clone();
+        match dbs[idx].clone() {
+            DataBase::DataBaseString(s) => s,
+            _ => panic!("{}", ERROR_MSG_GET_DB),
+        }
+    }
+
+    fn get_list_db(&self, idx: usize) -> DataBaseList<String> {
+        let dbs = self
+            .data_bases
+            .lock()
+            .unwrap()
+            .get(TYPE_SET)
+            .unwrap()
+            .clone();
+        match dbs[idx].clone() {
+            DataBase::DataBaseList(s) => s,
+            _ => panic!("{}", ERROR_MSG_GET_DB),
+        }
+    }
+
+    fn get_set_db(&self, idx: usize) -> DataBaseSet<String> {
+        let dbs = self
+            .data_bases
+            .lock()
+            .unwrap()
+            .get(TYPE_SET)
+            .unwrap()
+            .clone();
+        match dbs[idx].clone() {
+            DataBase::DataBaseSet(s) => s,
+            _ => panic!("{}", ERROR_MSG_GET_DB),
+        }
+    }
+
+    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn get_string_db_sharding(&self, key: &str) -> DataBaseString<String> {
         let dbs = self
             .data_bases
@@ -158,6 +195,7 @@ impl DataBaseResolver {
         }
     }
 
+    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn get_set_db_sharding(&self, key: &str) -> DataBaseSet<String> {
         let dbs = self
             .data_bases
@@ -173,6 +211,7 @@ impl DataBaseResolver {
         }
     }
 
+    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn get_list_db_sharding(&self, key: &str) -> DataBaseList<String> {
         let dbs = self
             .data_bases
@@ -188,56 +227,9 @@ impl DataBaseResolver {
         }
     }
 
-    /*
-        #[deprecated]
-    pub fn get_string_db(&self) -> DataBaseString<String> {
-        let db_gral = self
-            .data_bases
-            .lock()
-            .unwrap()
-            .get(TYPE_STRING)
-            .unwrap()
-            .clone();
-        match db_gral {
-            DataBase::DataBaseString(s) => s,
-            _ => panic!("{}", ERROR_MSG_GET_DB),
-        }
-    }
-     */
-
-    pub fn get_list_db(&self) -> DataBaseList<String> {
-        let db_gral = self
-            .data_bases2
-            .lock()
-            .unwrap()
-            .get(TYPE_LIST)
-            .unwrap()
-            .clone();
-        match db_gral {
-            DataBase::DataBaseList(s) => s,
-            _ => panic!("{}", ERROR_MSG_GET_DB),
-        }
-    }
-
-    pub fn get_set_db(&self) -> DataBaseSet<String> {
-        let db_gral = self
-            .data_bases2
-            .lock()
-            .unwrap()
-            .get(TYPE_SET)
-            .unwrap()
-            .clone();
-        match db_gral {
-            DataBase::DataBaseSet(s) => s,
-            _ => panic!("{}", ERROR_MSG_GET_DB),
-        }
-    }
-
-    //1. chequeo si existe en list o set -> si no existe, error (aunque exista en strings)
-    //2. si existe, le dejo a esa db que la ordene
     pub fn sort(&self, key: String) -> Result<Vec<String>, RunError> {
-        let db_list = self.get_list_db();
-        let db_set = self.get_set_db();
+        let db_list = self.get_list_db_sharding(key.as_str());
+        let db_set = self.get_set_db_sharding(key.as_str());
 
         if db_list.contains(key.clone()) {
             return db_list.sort(key);
@@ -252,12 +244,9 @@ impl DataBaseResolver {
     }
     pub fn valid_key_type(&self, key: &str, key_type: &str) -> Result<bool, RunError> {
         let key_type_db = key_type.to_string();
-        //println!("type: {}",key_type_db);
         match self.type_key(key.to_string()) {
             Ok(db_type) => {
-                //println!("type2: {}",db_type);
                 if db_type == key_type_db {
-                    //println!("true valid, {}, {}", &typee,&key_type);
                     Ok(true)
                 } else {
                     println!("ERROR valid");
@@ -269,16 +258,12 @@ impl DataBaseResolver {
                     })
                 }
             }
-            Err(_e) => {
-                //println!("false valid");
-                Ok(false)
-            }
+            Err(_e) => Ok(false),
         }
     }
 
     //TODO: threadsafety?
     pub fn check_db_string(&self, key: String) -> bool {
-        //let db_string = self.get_string_db();
         let db_string = self.get_string_db_sharding(key.as_str());
         db_string.contains(key)
     }
@@ -308,20 +293,28 @@ impl DataBaseResolver {
         })
     }
 
-    pub fn touch(&self, keys: Vec<String>) -> usize {
-        //let db_string = self.get_string_db();
-        let db_list = self.get_list_db();
-        let db_set = self.get_set_db();
+    //TODO: operacion no thread safe!
+    pub fn validate_key_contain_db(&self, key: String) -> Result<bool, RunError> {
+        match self.type_key(key) {
+            Ok(_typee) => Err(RunError {
+                message: "(error) Ya se esta usando esta clave para otro tipo de operación."
+                    .to_string(),
+                cause: "".to_string(),
+            }),
+            Err(_e) => Ok(true),
+        }
+    }
 
+    pub fn touch(&self, keys: Vec<String>) -> usize {
         let mut count = 0;
         for key in keys.clone() {
             let db_string = self.get_string_db_sharding(key.as_str());
-            count = db_string.touch_key(key.clone());
+            count += db_string.touch_key(key.clone());
+            let db_list = self.get_list_db_sharding(key.as_str());
+            count += db_list.touch_key(key.clone());
+            let db_set = self.get_set_db_sharding(key.as_str());
+            count += db_set.touch_key(key.clone());
         }
-
-        count += db_list.touch(keys.clone());
-        count += db_set.touch(keys);
-
         count
     }
 
@@ -329,11 +322,8 @@ impl DataBaseResolver {
         let mut hasher = DefaultHasher::new();
         hasher.write(key.to_string().as_bytes());
         let nh = hasher.finish() as u32;
-        println!("Hash retrieve: {}", nh);
 
         let idx = nh % self.sharing_count_db;
-
-        println!("Hash index: {}", idx);
 
         idx as usize
     }
@@ -359,5 +349,15 @@ impl DataBaseResolver {
             data.push_str(&aux);
         }
         data
+    }
+  
+    pub fn keys(&self, pattern: &str) -> Vec<String> {
+        let mut keys_vec = Vec::<String>::new();
+        for i in 0..self.sharing_count_db {
+            keys_vec.extend(self.get_string_db(i as usize).keys(pattern));
+            keys_vec.extend(self.get_list_db(i as usize).keys(pattern));
+            keys_vec.extend(self.get_set_db(i as usize).keys(pattern));
+        }
+        keys_vec
     }
 }

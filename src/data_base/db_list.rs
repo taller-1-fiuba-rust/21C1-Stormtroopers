@@ -1,5 +1,6 @@
 use crate::data_base::data_db::data_list::DataList;
 use crate::errors::run_error::RunError;
+use regex::Regex;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -31,33 +32,16 @@ impl DataBaseList<String> {
         Self { db_list }
     }
 
-    fn get_value(&self, key: String) -> DataList<String> {
-        let db = self.db_list.lock().unwrap();
-        db.get(&key).unwrap().clone() //chequear que esté
-    }
-
-    pub fn delete(&mut self, args: Vec<&str>) -> u32 {
+    pub fn delete(&mut self, keys: Vec<&str>) -> u32 {
         let mut count = 0_u32;
         let mut db = self.db_list.lock().unwrap();
-        for key in args.iter() {
+        for key in keys.iter() {
             if let Some(_v) = db.remove(*key) {
                 count += 1
             }
         }
         count
     }
-
-    /*
-       fn common_push(&self,  mut values: Vec<&str>) -> u32 {
-           values.reverse();
-           let mut insertions = 0_u32;
-           for value in values {
-               vec_values.insert_value(String::from(*value));
-               insertions += 1;
-           }
-           insertions
-       }
-    */
 
     pub fn lpush(&self, args: Vec<&str>) -> u32 {
         self.lpush_common(false, args)
@@ -79,6 +63,7 @@ impl DataBaseList<String> {
                 result.push(elem)
             }
         }
+        //        result.reverse();
         let mut data = DataList::new();
         data.insert_values(list);
         db_list.insert(key_list, data);
@@ -131,7 +116,7 @@ impl DataBaseList<String> {
         rem as u32
     }
 
-    //TODO: ver impl con nros negativos!
+    //TODO: ver impl con nros negativos! ???
     pub fn lrange(&self, args: Vec<&str>) -> Vec<String> {
         let key = args[0];
         let db_list = self.db_list.lock().unwrap();
@@ -297,6 +282,7 @@ impl DataBaseList<String> {
         if use_x && !db_list.contains_key(&String::from(key)) {
             return 0;
         }
+        args.reverse();
         let vec_values = db_list
             .entry(String::from(key))
             .or_insert_with(DataList::new);
@@ -306,6 +292,11 @@ impl DataBaseList<String> {
             insertions += 1;
         }
         insertions
+    }
+
+    fn get_value(&self, key: String) -> DataList<String> {
+        let db = self.db_list.lock().unwrap();
+        db.get(&key).unwrap().clone() //chequear que este OK
     }
 
     fn get_list(&self, key: String) -> Result<Vec<String>, RunError> {
@@ -409,5 +400,91 @@ impl DataBaseList<String> {
             data.push_str(&aux);
         }
         data
+    }
+  
+    pub fn keys(&self, pattern: &str) -> Vec<String> {
+        let mut keys_vec = Vec::<String>::new();
+        let db = self.db_list.lock().unwrap();
+        let re = Regex::new(pattern).unwrap();
+
+        for key in db.keys() {
+            if re.is_match(&key) {
+                keys_vec.push((*(key.clone())).to_string());
+            }
+        }
+
+        keys_vec
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lpush_test() {
+        let db = DataBaseList::new();
+        let mut count;
+        count = db.lpush(vec!["key0", "val0", "val1"]);
+
+        assert!(count == 2);
+
+        count = db.lpush(vec!["key1", "val0"]);
+        assert!(count == 1);
+
+        count = db.lpush(vec!["key1"]);
+        assert!(count == 0);
+    }
+
+    #[test]
+    fn delete_test() {
+        let mut db = DataBaseList::new();
+
+        let mut count;
+        let mut cpush;
+        count = db.delete(vec!["key0"]);
+        assert!(count == 0);
+
+        cpush = db.lpush(vec!["key0", "val0"]);
+        assert!(cpush == 1);
+        count = db.delete(vec!["key0"]);
+        assert!(count == 1);
+        let crange = db.lrange(vec!["key0", "0", "-1"]);
+        assert!(crange.len() == 0);
+
+        cpush = db.lpush(vec!["key0", "val0", "val1"]);
+        assert!(cpush == 2);
+        cpush = db.lpush(vec!["key1", "val0", "val1"]);
+        assert!(cpush == 2);
+        count = db.delete(vec!["key0", "key1"]);
+        assert!(count == 2);
+    }
+
+    #[test]
+    fn rpop_test() {
+        let db = DataBaseList::new();
+        let mut vec;
+        vec = db.rpop("empty".to_string(), 0);
+        assert!(vec.len() == 0);
+
+        db.lpush(vec!["key0", "val2", "val1", "val0"]);
+        vec = db.rpop("key0".to_string(), 2);
+        assert!(vec.len() == 2);
+        println!("{}", vec[0]);
+        println!("{}", vec[1]);
+        assert!(vec[0].eq("val2"));
+        assert!(vec[1].eq(&"val1"));
+    }
+
+    #[test]
+    fn lrem_test() {
+        let db = DataBaseList::new();
+        let mut res;
+        res = db.lrem(vec!["key0", "0", "val0"]);
+        assert!(res == 0);
+
+        db.lpush(vec!["key0", "val", "val2", "val", "val0", "val"]);
+        res = db.lrem(vec!["key0", "-2", "val"]);
+        assert!(res == 2);
     }
 }

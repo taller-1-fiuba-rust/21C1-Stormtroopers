@@ -4,6 +4,7 @@ use crate::command::db_set_cmd::db_set_generator;
 use crate::command::db_string_cmd::db_string_generator;
 use crate::command::keys_cmd::keys_generator;
 use crate::command::server_cmd::server_generator;
+use crate::constants::THREAD_POOL_COUNT;
 use crate::constants::{TYPE_LIST, TYPE_SET, TYPE_STRING};
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_resolver::*;
@@ -13,6 +14,7 @@ use crate::errors::run_error::RunError;
 use crate::server::config_server::ConfigServer;
 use crate::server::logger::{Loggable, Logger};
 use crate::server::pubsub::Pubsub;
+use crate::server::system_info::SystemInfo;
 use crate::server::ttl_scheduler::TtlScheduler;
 use crate::ConnectionResolver;
 use std::sync::mpsc::Receiver;
@@ -45,6 +47,7 @@ pub struct AppInfo {
     private_pubsub: Pubsub,
     connection_resolver: ConnectionResolver,
     command_builder: CommandBuilder,
+    system_info: SystemInfo,
 }
 
 impl Clone for AppInfo {
@@ -58,6 +61,7 @@ impl Clone for AppInfo {
         let private_pubsub = self.private_pubsub.clone();
         let connection_resolver = self.connection_resolver.clone();
         let command_builder = self.command_builder.clone();
+        let system_info = self.system_info.clone();
 
         Self {
             args,
@@ -70,6 +74,7 @@ impl Clone for AppInfo {
             private_pubsub,
             connection_resolver,
             command_builder,
+            system_info,
         }
     }
 }
@@ -78,38 +83,35 @@ fn add_string_db(db_resolver: &DataBaseResolver, count_db: u32) {
     let mut dbs: Vec<DataBase> = vec![];
     for _i in 0..count_db {
         dbs.push(DataBase::DataBaseString(DataBaseString::new()));
-        println!("create db string {}", _i);
     }
     db_resolver.add_data_base(TYPE_STRING.to_string(), dbs);
 }
 
 fn add_list_db(db_resolver: &DataBaseResolver, count_db: u32) {
-    //let db_list = DataBase::DataBaseList(DataBaseList::new());
-    //db_resolver.add_data_base("List".to_string(), db_list);
     let mut dbs: Vec<DataBase> = vec![];
     for _i in 0..count_db {
         dbs.push(DataBase::DataBaseList(DataBaseList::new()));
-        println!("create db list {}", _i);
     }
     db_resolver.add_data_base(TYPE_LIST.to_string(), dbs);
 }
 
 fn add_set_db(db_resolver: &DataBaseResolver, count_db: u32) {
-    //let db_set = DataBase::DataBaseSet(DataBaseSet::new());
-    //db_resolver.add_data_base("Set".to_string(), db_set);
     let mut dbs: Vec<DataBase> = vec![];
     for _i in 0..count_db {
         dbs.push(DataBase::DataBaseSet(DataBaseSet::new()));
-        println!("create db set {}", _i);
     }
     db_resolver.add_data_base(TYPE_SET.to_string(), dbs);
 }
 
 fn create_databases(count_dbs: u32) -> DataBaseResolver {
     let db_resolver = DataBaseResolver::new(count_dbs);
+
     add_string_db(&db_resolver, count_dbs);
+    println!("Create db STRING, numbers {}", count_dbs);
     add_list_db(&db_resolver, count_dbs);
+    println!("Create db LIST, numbers {}", count_dbs);
     add_set_db(&db_resolver, count_dbs);
+    println!("Create db SET, numbers {}", count_dbs);
 
     db_resolver
 }
@@ -144,6 +146,7 @@ impl AppInfo {
         let ttl_scheduler = TtlScheduler::new();
         let connection_resolver = ConnectionResolver::new();
         let command_builder = command_builder_generator(logger.clone());
+        let system_info = SystemInfo::new(THREAD_POOL_COUNT / 2);
 
         /* Need to load config db first */
         if let Ok(_r) = load_config(args.clone(), logger.clone(), config_server.clone()) {};
@@ -162,6 +165,7 @@ impl AppInfo {
             private_pubsub,
             connection_resolver,
             command_builder,
+            system_info,
         })
     }
 
@@ -225,15 +229,15 @@ impl AppInfo {
     }
 
     /*
-    pub fn get_string_db(&self) -> DataBaseString<String> {
-        self.db_resolver.get_string_db()
-    }
-     */
+       pub fn get_string_db(&self) -> DataBaseString<String> {
+           self.db_resolver.get_string_db()
+       }
 
-    pub fn get_list_db(&self) -> DataBaseList<String> {
-        self.db_resolver.get_list_db()
-    }
 
+       pub fn get_list_db(&self) -> DataBaseList<String> {
+           self.db_resolver.get_list_db()
+       }
+    */
     pub fn get_list_db_sharding(&self, key: &str) -> DataBaseList<String> {
         self.db_resolver.get_list_db_sharding(key)
     }
@@ -277,6 +281,30 @@ impl AppInfo {
 
     pub fn get_command_builder(&self) -> CommandBuilder {
         self.command_builder.clone()
+    }
+
+    pub fn system_info(&self, process_id: usize) -> String {
+        self.system_info.info(self.clone(), process_id)
+    }
+
+    pub fn get_connected_clients(&self) -> usize {
+        self.connection_resolver.size()
+    }
+
+    pub fn activate_threads(&mut self, size: usize) {
+        for _ in 0..size {
+            self.system_info.activate_thread();
+        }
+    }
+
+    pub fn deactivate_thread(&mut self, size: usize) {
+        for _ in 0..size {
+            self.system_info.deactivate_thread();
+        }
+    }
+
+    pub fn get_actives_threads(&self) -> usize {
+        self.system_info.get_actives_threads()
     }
 }
 
