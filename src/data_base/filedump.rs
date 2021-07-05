@@ -4,7 +4,7 @@ use crate::server::utils::timestamp_now;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::Error;
-use std::io::{SeekFrom, BufReader};
+use std::io::{BufReader, SeekFrom};
 
 fn generate_path(fname: String) -> String {
     let mut pname = String::from(DBDUMP_PATH);
@@ -33,7 +33,7 @@ pub fn start_filedump(app_info: &AppInfo) {
 
 fn parse_line(line: String) -> Vec<String> {
     let mut vec: Vec<String> = vec![];
-    for item in line.split("\t") {
+    for item in line.split('\t') {
         vec.push(item.to_string());
     }
     vec
@@ -51,21 +51,22 @@ pub fn load_filedump(app_info: &AppInfo) -> String {
         match dbname.as_str() {
             "String" => {
                 let value = &parsed[2];
-                db.get_string_db_sharding(key.as_str()).set_string(key.clone(), value.clone());
-            },
+                db.get_string_db_sharding(key.as_str())
+                    .set_string(key.clone(), value.clone());
+            }
             "List" => {
                 let mut args: Vec<&str> = parsed.iter().map(|s| s as &str).collect();
                 args.remove(0);
                 db.get_list_db_sharding(key.as_str()).lpush(args);
-            },
+            }
             "Set" => {
                 let mut args: Vec<&str> = parsed.iter().map(|s| s as &str).collect();
                 args.remove(0);
                 db.get_set_db_sharding(key.as_str()).sadd(args);
-            },
+            }
             _ => {
                 continue;
-            },
+            }
         }
     }
     String::from("Data loaded!")

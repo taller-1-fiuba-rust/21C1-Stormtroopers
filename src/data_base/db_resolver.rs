@@ -345,9 +345,15 @@ impl DataBaseResolver {
             let mut aux = String::from("");
             for db in value.iter() {
                 match db {
-                    DataBase::DataBaseString(str_db) => {aux.push_str(&str_db.get_all_data());},
-                    DataBase::DataBaseSet(set_db) => {aux.push_str(&set_db.get_all_data());},
-                    DataBase::DataBaseList(list_db) => {aux.push_str(&list_db.get_all_data());},
+                    DataBase::DataBaseString(str_db) => {
+                        aux.push_str(&str_db.get_all_data());
+                    }
+                    DataBase::DataBaseSet(set_db) => {
+                        aux.push_str(&set_db.get_all_data());
+                    }
+                    DataBase::DataBaseList(list_db) => {
+                        aux.push_str(&list_db.get_all_data());
+                    }
                 }
             }
             data.push_str(&aux);
