@@ -1,19 +1,17 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
-use crate::constants::TYPE_LIST;
+use crate::constants::{LINE_BREAK, TYPE_LIST};
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_COMMAND: &str = "Run command LREM\n";
 const CLIENT_ID: &str = "LremCommand";
-
-const ZERO_RESULT: &str = "0";
+const LREM_CMD: &str = "lrem";
 
 const MIN_VALID_ARGS: i32 = 3;
 const MAX_VALID_ARGS: i32 = 3;
-const LREM_CMD: &str = "lrem";
 
 pub struct LremCommand {
     id_job: u32,
@@ -59,9 +57,13 @@ impl Command for LremCommand {
 
         ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let mut result;
-        let db_resolver = app_info.get_db_resolver();
-        /* The key for the DB */
+        let key = args[0];
+        app_info.get_db_resolver().valid_key_type(key, TYPE_LIST)?;
+
+        let db = app_info.get_list_db_sharding(key);
+        let mut result = db.lrem(args).to_string();
+
+        /*
         let key_str = args[0];
         match db_resolver.type_key(String::from(key_str)) {
             Ok(typee) => {
@@ -78,8 +80,9 @@ impl Command for LremCommand {
             }
             Err(_e) => result = String::from(ZERO_RESULT),
         }
+         */
 
-        result.push('\n');
+        result.push(LINE_BREAK);
 
         Ok(result)
     }

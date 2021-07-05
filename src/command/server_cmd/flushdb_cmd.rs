@@ -1,6 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
-use crate::constants::RESP_SIMPLE_STRING;
+use crate::command::command_parser::ParsedMessage;
+use crate::constants::RESPONSE_SIMPLE_STRING;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -8,6 +9,9 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_FLUSHDB_COMMAND: &str = "Run command FLUSHDB\n";
 const CLIENT_ID: &str = "FlushdbCommand";
 const CONST_CMD: &str = "flushdb";
+
+const MIN_VALID_ARGS: i32 = 0;
+const MAX_VALID_ARGS: i32 = 0;
 
 pub struct FlushdbCommand {
     id_job: u32,
@@ -53,10 +57,12 @@ impl Command for FlushdbCommand {
             .info(self, INFO_FLUSHDB_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
+        ParsedMessage::validate_args(_args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
+
         let db = app_info.get_db_resolver();
         let res = match db.clean_all_data() {
-            true => String::from(RESP_SIMPLE_STRING),
-            false => panic!("Esto no deberia pasar!"),
+            true => String::from(RESPONSE_SIMPLE_STRING),
+            false => panic!("Error borrando información de toda la base de datos"),
         };
 
         Ok(res)

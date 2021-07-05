@@ -30,14 +30,3 @@ impl PartialEq<RunError> for RunError {
 }
 
 impl Eq for RunError {}
-
-/*
-impl RunError {
-    pub fn unknown_error(msg: &str) -> Self {
-        RunError {
-            message: String::from(msg),
-            cause: String::from(UNKNOWN_ERROR_MSG),
-        }
-    }
-}
- */

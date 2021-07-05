@@ -1,5 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
+use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -7,6 +9,9 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_RUN_COMMAND: &str = "Run command GET\n";
 const CLIENT_ID: &str = "GetCommand";
 const CONST_CMD: &str = "get";
+
+const MIN_VALID_ARGS: i32 = 1;
+const MAX_VALID_ARGS: i32 = 1;
 
 pub struct GetCommand {
     id_job: u32,
@@ -52,9 +57,14 @@ impl Command for GetCommand {
             .info(self, INFO_RUN_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let db = app_info.get_string_db();
-        let mut string = db.get_string(String::from(args[0]));
-        string.push('\n');
+        //let db = app_info.get_string_db();
+        let key = args[0];
+        let db = app_info.get_string_db_sharding(key);
+
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
+
+        let mut string = db.get_string(key.to_string());
+        string.push(LINE_BREAK);
 
         Ok(string)
     }

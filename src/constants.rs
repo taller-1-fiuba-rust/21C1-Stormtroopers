@@ -8,5 +8,10 @@ pub static THREAD_POOL_COUNT: usize = 1000; //ponerlo en el config para que se p
 pub static END_FLAG: &str = "exit";
 pub static MSG_OVER: &str = "MESSAGE: Connection over\n";
 pub static LINE_BREAK: char = '\n';
-pub static RESP_SIMPLE_STRING: &str = "OK\r\n";
+pub static RESPONSE_SIMPLE_STRING: &str = "OK\r\n";
 pub const ERROR_LOG_CREATE: &str = "Error creating Logger";
+pub const MARK_BULLET: &str = ") ";
+pub const NIL_RESPONSE: &str = "(nil)\n";
+
+/** Default values **/
+pub static SHARING_COUNT_DEFAULT: u32 = 4;

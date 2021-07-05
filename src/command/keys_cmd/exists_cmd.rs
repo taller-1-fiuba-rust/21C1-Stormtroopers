@@ -1,5 +1,6 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -7,6 +8,9 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command EXISTS\n";
 const CLIENT_ID: &str = "ExistsCommmand";
 const CONST_CMD: &str = "exists";
+
+const MIN_VALID_ARGS: i32 = 1;
+const MAX_VALID_ARGS: i32 = -1;
 
 pub struct ExistsCommand {
     id_job: u32,
@@ -39,7 +43,7 @@ impl Clone for ExistsCommand {
         }
     }
 }
-
+//TODO: ver thread safety impl
 impl Command for ExistsCommand {
     fn run(
         &self,
@@ -50,11 +54,17 @@ impl Command for ExistsCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        let db = app_info.get_string_db();
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let mut result_del = db.exists(args).to_string();
-        result_del.push('\n');
+        let mut db;
+        let mut count_exists = 0;
+        for key in args {
+            db = app_info.get_string_db_sharding(key);
+            count_exists += db.exists(vec![key]);
+        }
+        let mut res = count_exists.to_string();
+        res.push('\n');
 
-        Ok(result_del)
+        Ok(res)
     }
 }

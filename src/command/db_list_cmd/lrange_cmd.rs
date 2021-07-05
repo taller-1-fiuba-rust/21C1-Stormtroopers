@@ -1,5 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
+use crate::constants::TYPE_LIST;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -8,6 +10,9 @@ const INFO_COMMAND: &str = "Run command LRANGE\n";
 const CLIENT_ID: &str = "LrangeCommand";
 const RESPONSE_EMPTY: &str = "(empty list or set)\n";
 const LRANGE_CMD: &str = "lrange";
+
+const MIN_VALID_ARGS: i32 = 3;
+const MAX_VALID_ARGS: i32 = 3;
 
 pub struct LrangeCommand {
     id_job: u32,
@@ -51,19 +56,12 @@ impl Command for LrangeCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        //TODO: ver si conviene poner esta logica en otro lado
-        if args.len() != 3 {
-            let msg_err = format!(
-                "(error) ERR wrong number of arguments for '{}' command",
-                LRANGE_CMD
-            );
-            return Err(RunError {
-                message: msg_err,
-                cause: String::from(""),
-            });
-        }
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let db = app_info.get_list_db();
+        let key = args[0];
+        app_info.get_db_resolver().valid_key_type(key, TYPE_LIST)?;
+
+        let db = app_info.get_list_db_sharding(key);
 
         let items = db.lrange(args);
 

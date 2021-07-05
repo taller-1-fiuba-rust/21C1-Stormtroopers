@@ -100,6 +100,7 @@ impl DataBaseString<String> {
         .unwrap();
     }
 
+    //TODO: refactor impl please!
     pub fn mget(&self, keys: Vec<&str>) -> Vec<String> {
         let mut db = self.clone();
         let mut keys_sender = String::from("");
@@ -175,12 +176,12 @@ impl DataBaseString<String> {
         })
     }
 
-    pub fn copy(&mut self, src_key: String, target: String) -> u32 {
+    pub fn copy(&mut self, src_key: String, target_key: String) -> u32 {
         let src_val = self.get_string(src_key);
         if src_val == *RESPONSE_NIL {
             return 0;
         }
-        self.set_string(target, src_val);
+        self.set_string(target_key, src_val);
         1
     }
 

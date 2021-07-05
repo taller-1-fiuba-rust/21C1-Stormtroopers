@@ -1,6 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
+use crate::constants::{LINE_BREAK, TYPE_LIST};
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -54,18 +55,21 @@ impl Command for LpushCommand {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        //TODO: chequear el caso de que la clave sea de otro tipo
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
+
+        let key = args[0];
+        app_info.get_db_resolver().valid_key_type(key, TYPE_LIST)?;
 
         ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
         app_info
             .get_db_resolver()
-            .validate_key_contain_db(args[0].to_string())?;
+            .validate_key_contain_db(key.to_string())?;
 
-        let db = app_info.get_list_db();
+        let db = app_info.get_list_db_sharding(key);
 
         let mut result = db.lpush(args).to_string();
-        result.push('\n');
+        result.push(LINE_BREAK);
 
         Ok(result)
     }

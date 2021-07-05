@@ -1,10 +1,13 @@
-use crate::constants::{TYPE_LIST, TYPE_SET, TYPE_STRING};
+use crate::constants::{SHARING_COUNT_DEFAULT, TYPE_LIST, TYPE_SET, TYPE_STRING};
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_set::DataBaseSet;
 use crate::data_base::db_string::DataBaseString;
 use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hasher;
 
 const ERROR_MSG_GET_DB: &str = "Error al recuperar el tipo de la db";
 
@@ -16,48 +19,62 @@ pub enum DataBase {
 }
 
 pub struct DataBaseResolver {
-    data_base: Arc<Mutex<HashMap<String, DataBase>>>,
+    data_bases: Arc<Mutex<HashMap<String, Vec<DataBase>>>>,
+    data_bases2: Arc<Mutex<HashMap<String, DataBase>>>,
+    sharing_count_db: u32,
 }
 
 impl Default for DataBaseResolver {
     fn default() -> Self {
-        Self::new()
+        Self::new(SHARING_COUNT_DEFAULT)
     }
 }
 
 impl Clone for DataBaseResolver {
     fn clone(&self) -> Self {
         Self {
-            data_base: self.data_base.clone(),
+            data_bases: self.data_bases.clone(),
+            data_bases2: self.data_bases2.clone(),
+            sharing_count_db: self.sharing_count_db,
         }
     }
 }
 
 impl DataBaseResolver {
-    pub fn new() -> Self {
+    pub fn new(sharing_count_db: u32) -> Self {
         let data_base = Arc::new(Mutex::new(HashMap::new()));
-        Self { data_base }
+        let data_base2 = Arc::new(Mutex::new(HashMap::new()));
+        Self {
+            data_bases: data_base,
+            data_bases2: data_base2,
+            sharing_count_db,
+        }
     }
 
-    pub fn get(&self, name_type: String) -> DataBase {
-        let data_base = self.data_base.lock().unwrap();
-        data_base.get(&name_type).unwrap().clone()
-    }
+    /*
+       pub fn get(&self, name_type: String) -> DataBase {
+           let data_bases = self.data_bases.lock().unwrap();
+           //data_base.get(&name_type).unwrap().clone()
+           data_bases.get(&name_type).unwrap()[0].clone()
+       }
+    */
 
-    pub fn add_data_base(&self, key: String, value: DataBase) {
-        let mut data_base_general = self.data_base.lock().unwrap();
+    pub fn add_data_base(&self, key_db: String, values: Vec<DataBase>) {
+        let mut data_base_general = self.data_bases.lock().unwrap();
 
-        data_base_general.insert(key, value); //no usar unwrap acá porque devuelve None
-                                              //la primera vez que se inserta algo en una key, entonces pincha todo
+        //no usar unwrap acá porque devuelve None
+        //la primera vez que se inserta algo en una key, entonces pincha todo
+        data_base_general.insert(key_db, values);
     }
 
     pub fn dbsize(&self) -> usize {
         let mut cont = 0;
-        let data_base = self.data_base.lock().unwrap();
+        let data_base = self.data_bases.lock().unwrap();
         for (_key, val) in data_base.iter() {
-            match val {
-                DataBase::DataBaseString(a) => {
-                    cont += a.dbsize();
+            let val0 = val[0].clone();
+            match val0 {
+                DataBase::DataBaseString(db_string) => {
+                    cont += db_string.dbsize();
                 }
                 #[allow(unreachable_patterns)]
                 _ => {
@@ -65,27 +82,28 @@ impl DataBaseResolver {
                 }
             }
         }
-
         cont
     }
 
     pub fn clean_all_data(&self) -> bool {
         let mut response = true;
-        let data_base = self.data_base.lock().unwrap();
-        for (_key, val) in data_base.iter() {
-            match val {
-                DataBase::DataBaseString(string) => {
-                    response &= string.clean_all_data();
-                }
-                DataBase::DataBaseSet(set) => {
-                    response &= set.clean_all_data();
-                }
-                DataBase::DataBaseList(list) => {
-                    response &= list.clean_all_data();
-                }
-                #[allow(unreachable_patterns)]
-                _ => {
-                    response = false;
+        let data_bases = self.data_bases.lock().unwrap();
+        for (_key, dbs) in data_bases.iter() {
+            for i in 0..self.sharing_count_db {
+                match dbs[i as usize].clone() {
+                    DataBase::DataBaseString(string) => {
+                        response &= string.clean_all_data();
+                    }
+                    DataBase::DataBaseSet(set) => {
+                        response &= set.clean_all_data();
+                    }
+                    DataBase::DataBaseList(list) => {
+                        response &= list.clean_all_data();
+                    }
+                    #[allow(unreachable_patterns)]
+                    _ => {
+                        response = false;
+                    }
                 }
             }
         }
@@ -93,78 +111,133 @@ impl DataBaseResolver {
     }
 
     pub fn delete_keys(&self, keys: Vec<&str>) -> u32 {
-        let databases = self.data_base.lock().unwrap();
+        let databases = self.data_bases.lock().unwrap();
         let mut clear_count = 0_u32;
-        for db in databases.values() {
-            if let DataBase::DataBaseString(mut db_string) = db.clone() {
-                clear_count = db_string.delete(keys.clone());
-            } else if let DataBase::DataBaseList(mut db_list) = db.clone() {
-                clear_count = db_list.delete_keys(keys.clone());
-            } else if let DataBase::DataBaseSet(mut db_set) = db.clone() {
-                clear_count = db_set.delete(keys.clone());
+        for key in keys.clone() {
+            for dbs in databases.values() {
+                let idx = self.retrieve_index(&(*key));
+                if let DataBase::DataBaseString(mut db_string) = dbs[idx].clone() {
+                    clear_count += db_string.delete(vec![&(*key)]);
+                } else if let DataBase::DataBaseList(mut db_list) = dbs[idx].clone() {
+                    clear_count += db_list.delete(vec![&(*key)]);
+                } else if let DataBase::DataBaseSet(mut db_set) = dbs[idx].clone() {
+                    clear_count += db_set.delete(vec![&(*key)]);
+                }
             }
         }
         clear_count
     }
 
+    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn clear_key(&self, key: String) {
-        let databases = self.data_base.lock().unwrap();
-        for db in databases.values() {
-            if let DataBase::DataBaseString(db_string) = db {
+        let databases = self.data_bases.lock().unwrap();
+        for dbs in databases.values() {
+            let idx = self.retrieve_index(key.as_str());
+            if let DataBase::DataBaseString(db_string) = dbs[idx].clone() {
                 db_string.clear_key(key.clone());
-            } else if let DataBase::DataBaseList(db_list) = db {
+            } else if let DataBase::DataBaseList(db_list) = dbs[idx].clone() {
                 db_list.clear_key(key.clone());
-            } else if let DataBase::DataBaseSet(db_set) = db {
+            } else if let DataBase::DataBaseSet(db_set) = dbs[idx].clone() {
                 db_set.clear_key(key.clone());
             }
         }
     }
 
-    pub fn get_string_db(&self) -> DataBaseString<String> {
-        let db_gral = self
-            .data_base
+    fn get_string_db(&self, idx: usize) -> DataBaseString<String> {
+        let dbs = self
+            .data_bases
             .lock()
             .unwrap()
             .get(TYPE_STRING)
             .unwrap()
             .clone();
-        match db_gral {
+        match dbs[idx].clone() {
             DataBase::DataBaseString(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
         }
     }
 
-    pub fn get_list_db(&self) -> DataBaseList<String> {
-        let db_gral = self
-            .data_base
-            .lock()
-            .unwrap()
-            .get(TYPE_LIST)
-            .unwrap()
-            .clone();
-        match db_gral {
-            DataBase::DataBaseList(s) => s,
-            _ => panic!("{}", ERROR_MSG_GET_DB),
-        }
-    }
-
-    pub fn get_set_db(&self) -> DataBaseSet<String> {
-        let db_gral = self
-            .data_base
+    fn get_list_db(&self, idx: usize) -> DataBaseList<String> {
+        let dbs = self
+            .data_bases
             .lock()
             .unwrap()
             .get(TYPE_SET)
             .unwrap()
             .clone();
-        match db_gral {
+        match dbs[idx].clone() {
+            DataBase::DataBaseList(s) => s,
+            _ => panic!("{}", ERROR_MSG_GET_DB),
+        }
+    }
+
+    fn get_set_db(&self, idx: usize) -> DataBaseSet<String> {
+        let dbs = self
+            .data_bases
+            .lock()
+            .unwrap()
+            .get(TYPE_SET)
+            .unwrap()
+            .clone();
+        match dbs[idx].clone() {
             DataBase::DataBaseSet(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
         }
     }
 
+    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
+    pub fn get_string_db_sharding(&self, key: &str) -> DataBaseString<String> {
+        let dbs = self
+            .data_bases
+            .lock()
+            .unwrap()
+            .get(TYPE_STRING)
+            .unwrap()
+            .clone();
+
+        let index_sharing = self.retrieve_index(key);
+
+        match dbs[index_sharing].clone() {
+            DataBase::DataBaseString(s) => s,
+            _ => panic!("{}", ERROR_MSG_GET_DB),
+        }
+    }
+
+    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
+    pub fn get_set_db_sharding(&self, key: &str) -> DataBaseSet<String> {
+        let dbs = self
+            .data_bases
+            .lock()
+            .unwrap()
+            .get(TYPE_SET)
+            .unwrap()
+            .clone();
+        let index_sharing = self.retrieve_index(key);
+        match dbs[index_sharing].clone() {
+            DataBase::DataBaseSet(s) => s,
+            _ => panic!("{}", ERROR_MSG_GET_DB),
+        }
+    }
+
+    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
+    pub fn get_list_db_sharding(&self, key: &str) -> DataBaseList<String> {
+        let dbs = self
+            .data_bases
+            .lock()
+            .unwrap()
+            .get(TYPE_LIST)
+            .unwrap()
+            .clone();
+        let index_sharing = self.retrieve_index(key);
+        match dbs[index_sharing].clone() {
+            DataBase::DataBaseList(s) => s,
+            _ => panic!("{}", ERROR_MSG_GET_DB),
+        }
+    }
+
     pub fn sort(&self, key: String) -> Result<Vec<String>, RunError> {
-        let db_list = self.get_list_db();
-        let db_set = self.get_set_db();
+        let db_list = self.get_list_db_sharding(key.as_str());
+        let db_set = self.get_set_db_sharding(key.as_str());
 
         if db_list.contains(key.clone()) {
             return db_list.sort(key);
@@ -176,6 +249,42 @@ impl DataBaseResolver {
             message: "Key is not a list or set".to_string(),
             cause: "The key may be a string or may not be in the db\n".to_string(),
         })
+    }
+    pub fn valid_key_type(&self, key: &str, key_type: &str) -> Result<bool, RunError> {
+        let key_type_db = key_type.to_string();
+        match self.type_key(key.to_string()) {
+            Ok(db_type) => {
+                if db_type == key_type_db {
+                    Ok(true)
+                } else {
+                    println!("ERROR valid");
+                    Err(RunError {
+                        message: "ERR WRONGTYPE.".to_string(),
+                        cause:
+                            "Operación contra una clave que contiene el tipo de valor incorrecto"
+                                .to_string(),
+                    })
+                }
+            }
+            Err(_e) => Ok(false),
+        }
+    }
+
+    //TODO: threadsafety?
+    pub fn check_db_string(&self, key: String) -> bool {
+        //let db_string = self.get_string_db();
+        let db_string = self.get_string_db_sharding(key.as_str());
+        db_string.contains(key)
+    }
+
+    pub fn check_db_list(&self, key: String) -> bool {
+        let db_list = self.get_list_db_sharding(key.as_str());
+        db_list.contains(key)
+    }
+
+    pub fn check_db_set(&self, key: String) -> bool {
+        let db_set = self.get_set_db_sharding(key.as_str());
+        db_set.contains(key)
     }
 
     pub fn type_key(&self, key: String) -> Result<String, RunError> {
@@ -206,39 +315,56 @@ impl DataBaseResolver {
     }
 
     pub fn touch(&self, keys: Vec<String>) -> usize {
-        let db_string = self.get_string_db();
-        let db_list = self.get_list_db();
-        let db_set = self.get_set_db();
-
-        let mut cont = db_string.touch(keys.clone());
-        cont += db_list.touch(keys.clone());
-        cont += db_set.touch(keys);
-
-        cont
+        let mut count = 0;
+        for key in keys.clone() {
+            let db_string = self.get_string_db_sharding(key.as_str());
+            count += db_string.touch_key(key.clone());
+            let db_list = self.get_list_db_sharding(key.as_str());
+            count += db_list.touch_key(key.clone());
+            let db_set = self.get_set_db_sharding(key.as_str());
+            count += db_set.touch_key(key.clone());
+        }
+        count
     }
 
-    //TODO: Es thread safety esto?
-    fn check_db_string(&self, key: String) -> bool {
-        let db_string = self.get_string_db();
-        db_string.contains(key)
+    fn retrieve_index(&self, key: &str) -> usize {
+        let mut hasher = DefaultHasher::new();
+        hasher.write(key.to_string().as_bytes());
+        let nh = hasher.finish() as u32;
+        println!("Hash retrieve: {}", nh);
+
+        let idx = nh % self.sharing_count_db;
+
+        println!("Hash index: {}", idx);
+
+        idx as usize
     }
 
-    fn check_db_list(&self, key: String) -> bool {
-        let db_list = self.get_list_db();
-        db_list.contains(key)
-    }
+    /*
+       //TODO: Es thread safety esto?
+       fn check_db_string(&self, key: String) -> bool {
+           let db_string = self.get_string_db();
+           db_string.contains(key)
+       }
 
-    fn check_db_set(&self, key: String) -> bool {
-        let db_set = self.get_set_db();
-        db_set.contains(key)
-    }
+       fn check_db_list(&self, key: String) -> bool {
+           let db_list = self.get_list_db();
+           db_list.contains(key)
+       }
+
+       fn check_db_set(&self, key: String) -> bool {
+           let db_set = self.get_set_db();
+           db_set.contains(key)
+       }
+    */
 
     pub fn keys(&self, pattern: &str) -> Vec<String> {
         let mut keys_vec = Vec::<String>::new();
-        keys_vec.extend(self.get_string_db().keys(pattern));
-        keys_vec.extend(self.get_list_db().keys(pattern));
-        keys_vec.extend(self.get_set_db().keys(pattern));
-
+        for i in 0..self.sharing_count_db {
+            keys_vec.extend(self.get_string_db(i as usize).keys(pattern));
+            keys_vec.extend(self.get_list_db(i as usize).keys(pattern));
+            keys_vec.extend(self.get_set_db(i as usize).keys(pattern));
+        }
         keys_vec
     }
 }

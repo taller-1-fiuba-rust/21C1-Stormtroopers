@@ -1,15 +1,17 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
+use crate::constants::RESPONSE_SIMPLE_STRING;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
 const CLIENT_ID: &str = "PersistCommmand";
-const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
-const WHITESPACE: &str = " ";
-const OK: &str = "OK.\n";
 const CONST_CMD: &str = "persist";
+
+const MIN_VALID_ARGS: i32 = 1;
+const MAX_VALID_ARGS: i32 = 1;
 
 pub struct PersistCommand {
     id_job: u32,
@@ -54,12 +56,7 @@ impl Command for PersistCommand {
             .logger
             .info(self, INFO_EXPIRE_COMMAND, app_info.get_verbose());
 
-        if args.len() != 1 {
-            return Err(RunError {
-                message: args.join(WHITESPACE),
-                cause: String::from(WRONG_NUMBER_ARGUMENTS),
-            });
-        }
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
         let key_str = args[0]; // The key for the DB
         let db = app_info.get_db_resolver();
@@ -72,9 +69,9 @@ impl Command for PersistCommand {
                         ttl_scheduler
                             .delete_ttl(key)
                             .unwrap_or_else(|_| String::from(""));
-                        Ok(String::from(OK))
+                        Ok(RESPONSE_SIMPLE_STRING.to_string())
                     }
-                    Err(_) => Ok(String::from(OK)),
+                    Err(_) => Ok(RESPONSE_SIMPLE_STRING.to_string()),
                 }
             }
             Err(e) => Err(e),
