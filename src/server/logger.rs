@@ -94,7 +94,7 @@ impl Logger<String> {
 
 fn print_info(msg: String, print_msg: bool) {
     if print_msg {
-        println!("{:?}", msg);
+        println!("-> {}", msg);
     }
 }
 
@@ -103,7 +103,7 @@ fn generate_menssage(service: &dyn Loggable, message_info: &str) -> String {
     let id_thread = service.get_id_thread();
 
     format!(
-        "[{:20?} -- {:03?} -- {:?}] -- {}\n",
+        "[{} -- {} -- {}] -- {}\n",
         id_client,
         id_thread,
         format_timestamp_now(),
