@@ -1,5 +1,5 @@
 use crate::constants::THREAD_POOL_COUNT;
-use crate::data_base::filedump::start_dbdump;
+use crate::data_base::filedump::{start_filedump, load_filedump};
 use crate::handle_connection::handle_threadpool::{threadpool_read, threadpool_write};
 use crate::server::app_info::AppInfo;
 use crate::server::threadpool::ThreadPool;
@@ -14,7 +14,9 @@ pub fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io:
 
     app_info.get_ttl_scheduler().run(&app_info);
 
-    start_dbdump(&app_info);
+    load_filedump(&app_info);
+
+    start_filedump(&app_info);
 
     let listener = TcpListener::bind(&address)?;
 
