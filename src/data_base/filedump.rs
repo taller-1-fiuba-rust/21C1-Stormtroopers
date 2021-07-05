@@ -71,8 +71,7 @@ pub fn load_filedump(app_info: &AppInfo) -> String {
             }
         }
         String::from("Data loaded!")
-    }
-    else {
+    } else {
         String::from("No database file found.")
     }
 }

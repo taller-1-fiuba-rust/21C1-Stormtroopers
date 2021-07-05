@@ -209,7 +209,7 @@ impl DataBaseSet<String> {
         }
         data
     }
-  
+
     pub fn keys(&self, pattern: &str) -> Vec<String> {
         let mut keys_vec = Vec::<String>::new();
         let db = self.db_set.lock().unwrap();

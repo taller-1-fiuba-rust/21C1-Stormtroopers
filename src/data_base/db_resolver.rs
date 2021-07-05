@@ -350,7 +350,7 @@ impl DataBaseResolver {
         }
         data
     }
-  
+
     pub fn keys(&self, pattern: &str) -> Vec<String> {
         let mut keys_vec = Vec::<String>::new();
         for i in 0..self.sharing_count_db {
