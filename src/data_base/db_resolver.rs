@@ -328,6 +328,29 @@ impl DataBaseResolver {
         idx as usize
     }
 
+    pub fn get_snapshot(&self) -> String {
+        let dbs = self.data_bases.lock().unwrap().clone();
+        let mut data = String::from("");
+        for (_, value) in dbs {
+            let mut aux = String::from("");
+            for db in value.iter() {
+                match db {
+                    DataBase::DataBaseString(str_db) => {
+                        aux.push_str(&str_db.get_all_data());
+                    }
+                    DataBase::DataBaseSet(set_db) => {
+                        aux.push_str(&set_db.get_all_data());
+                    }
+                    DataBase::DataBaseList(list_db) => {
+                        aux.push_str(&list_db.get_all_data());
+                    }
+                }
+            }
+            data.push_str(&aux);
+        }
+        data
+    }
+
     pub fn keys(&self, pattern: &str) -> Vec<String> {
         let mut keys_vec = Vec::<String>::new();
         for i in 0..self.sharing_count_db {
