@@ -1,5 +1,6 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -8,6 +9,9 @@ const INFO_PING_COMMAND: &str = "Run command PING\n";
 const RESPONSE_PING_COMMAND: &str = "PONG\n";
 const CLIENT_ID: &str = "PingCommand";
 const CONST_CMD: &str = "ping";
+
+const MIN_VALID_ARGS: i32 = 0;
+const MAX_VALID_ARGS: i32 = 0;
 
 pub struct PingCommand {
     id_job: u32,
@@ -41,6 +45,8 @@ impl Command for PingCommand {
         let _log_info_res = self
             .logger
             .info(self, INFO_PING_COMMAND, app_info.get_verbose());
+
+        ParsedMessage::validate_args(_args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
         Ok(String::from(RESPONSE_PING_COMMAND))
     }

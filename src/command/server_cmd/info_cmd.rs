@@ -1,24 +1,24 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
-use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
+use std::process;
 
-const INFO_RUN_COMMAND: &str = "Run command GET\n";
-const CLIENT_ID: &str = "GetCommand";
-const CONST_CMD: &str = "get";
+const INFO_RUN_COMMAND: &str = "Run command INFO\n";
+const CLIENT_ID: &str = "InfoCommand";
+const CONST_CMD: &str = "info";
 
-const MIN_VALID_ARGS: i32 = 1;
-const MAX_VALID_ARGS: i32 = 1;
+const MIN_VALID_ARGS: i32 = 0;
+const MAX_VALID_ARGS: i32 = 0;
 
-pub struct GetCommand {
+pub struct InfoCommand {
     id_job: u32,
     logger: Logger<String>,
 }
 
-impl GetCommand {
+impl InfoCommand {
     pub fn new(id_job: u32, logger: Logger<String>, mut command_builder: CommandBuilder) -> Self {
         let cmd = Self { id_job, logger };
         command_builder.insert(CONST_CMD.to_string(), Box::new(cmd.clone()));
@@ -26,7 +26,7 @@ impl GetCommand {
     }
 }
 
-impl Loggable for GetCommand {
+impl Loggable for InfoCommand {
     fn get_id_client(&self) -> &str {
         CLIENT_ID
     }
@@ -36,19 +36,19 @@ impl Loggable for GetCommand {
     }
 }
 
-impl Clone for GetCommand {
-    fn clone(&self) -> GetCommand {
-        GetCommand {
+impl Clone for InfoCommand {
+    fn clone(&self) -> InfoCommand {
+        InfoCommand {
             id_job: self.id_job,
             logger: self.logger.clone(),
         }
     }
 }
 
-impl Command for GetCommand {
+impl Command for InfoCommand {
     fn run(
         &self,
-        args: Vec<&str>,
+        mut _args: Vec<&str>,
         app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
@@ -57,15 +57,10 @@ impl Command for GetCommand {
             .info(self, INFO_RUN_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        //let db = app_info.get_string_db();
-        let key = args[0];
-        let db = app_info.get_string_db_sharding(key);
+        ParsedMessage::validate_args(_args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
+        let response = app_info.system_info(process::id() as usize);
 
-        let mut string = db.get_string(key.to_string());
-        string.push(LINE_BREAK);
-
-        Ok(string)
+        Ok(response)
     }
 }
