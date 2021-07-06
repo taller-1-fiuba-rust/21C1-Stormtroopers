@@ -1,3 +1,4 @@
+use crate::command::command_parser::obtain_str_command;
 use crate::constants::END_FLAG;
 use crate::handle_connection::handle_monitor::publish_monitor;
 use crate::server::app_info::AppInfo;
@@ -13,9 +14,15 @@ pub fn process_request(
     let command_builder = app_info.get_command_builder();
 
     let cmd = command_builder.get_command(&String::from(request.trim()));
-    let mut command_splited: Vec<&str> = request.split(' ').collect();
-    publish_monitor(app_info.clone(), command_splited.clone(), id_client);
+    let response = obtain_str_command(&request).unwrap();
+    let arguments = response.arguments;
+    let command = response.command;
 
+    let mut command_splited: Vec<&str> = vec![&command];
+    for value in &arguments {
+        command_splited.push(value);
+    }
+    publish_monitor(app_info.clone(), command_splited.clone(), id_client);
     command_splited.remove(0);
 
     match cmd {
