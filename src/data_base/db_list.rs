@@ -71,78 +71,101 @@ impl DataBaseList<String> {
         result
     }
 
-    pub fn lrem(&self, args: Vec<&str>) -> u32 {
-        let key_list = args[0];
-        let mut count = args[1].parse::<i32>().unwrap();
-        let val_rem = args[2];
-
+    fn insert_list(&self, key: String, list: Vec<String>) {
         let mut db_list = self.db_list.lock().unwrap();
-
-        let mut list: Vec<String> = match db_list.get(key_list) {
-            Some(l) => l.get_value(),
-            None => vec![],
-        };
-
-        match count.cmp(&0) {
-            Ordering::Greater => {}
-            Ordering::Less => {
-                list.reverse();
-                count = count.abs();
-            }
-            Ordering::Equal => count = -1,
-        }
-
-        let mut rem = 0;
-        let list_iter = list.clone();
-        let mut i = 0;
-        for val in list_iter.iter() {
-            if val == val_rem {
-                list.remove(i);
-                rem += 1;
-                if rem == count {
-                    break;
-                }
-            } else {
-                i += 1;
-            }
-        }
-        if count < 0 {
-            list.reverse()
-        };
         let mut data = DataList::new();
         data.insert_values(list);
-        db_list.insert(String::from(key_list), data);
-
-        rem as u32
+        db_list.insert(key, data);
     }
 
-    //TODO: ver impl con nros negativos! ???
-    pub fn lrange(&self, args: Vec<&str>) -> Vec<String> {
-        let key = args[0];
-        let db_list = self.db_list.lock().unwrap();
-        let list: Vec<String> = match db_list.get(key) {
-            Some(l) => l.get_value(),
-            None => return vec![],
-        };
+    fn drop_value_from_start(&self, key: String, value: String, count: i32) -> u32 {
+        let mut list = self.get_list(key.clone()).unwrap();
+        let mut deleted_values = 0;
+        let mut i = 0;
 
-        let mut rini_i32 = args[1].parse::<i32>().unwrap();
-        let mut rend_i32 = args[2].parse::<i32>().unwrap();
-        if rini_i32 < 0 {
-            rini_i32 += list.len() as i32;
+        while (deleted_values < count) && (i < list.len()) {
+            if list[i as usize] == value.clone() {
+                list.remove(i as usize);
+                deleted_values += 1;
+            }
+            i += 1;
         }
-        if rend_i32 < 0 {
-            rend_i32 += list.len() as i32;
-        }
-        if rini_i32 > rend_i32 || (rini_i32 < 0 && rend_i32 < 0) {
-            return vec![];
-        }
-        if rend_i32 > (list.len() as i32 - 1) {
-            rend_i32 = list.len() as i32 - 1;
-        }
-        let rini = rini_i32 as usize;
-        let rend = rend_i32 as usize;
 
-        list[rini..=rend].to_vec()
+        self.insert_list(key, list);
+        deleted_values as u32
+    }
+
+    fn drop_value_from_end(&self, key: String, value: String, count: i32) -> u32 {
+        let mut list = self.get_list(key.clone()).unwrap();
+        let mut deleted_values = 0;
+        let mut i = list.len() - 1;
+
+        while (deleted_values < count) && (i > 0) {
+            if list[i as usize] == value.clone() {
+                list.remove(i as usize);
+                deleted_values += 1;
+            }
+            i -= 1;
+        }
+
+        self.insert_list(key, list);
+        deleted_values as u32
+    }
+
+    fn drop_all_values(&self, key: String, value: String) -> u32 {
+        let list = self.get_list(key.clone()).unwrap();
+        let mut deleted_values = 0;
+        let mut new_list = vec![];
+
+        for i in 0..list.len() {
+            if list[i as usize].clone() != value.clone() {
+                new_list.push(list[i as usize].clone());
+            } else {
+                deleted_values += 1;
+            }
+        }
+
+        self.insert_list(key, new_list);
+        deleted_values as u32
+    }
+
+    pub fn lrem(&self, key: String, value: String, count: String) -> Result<u32, RunError> {
+        let validate_count = self.validate_pos(count)?;
+
+        match validate_count.cmp(&0) {
+            Ordering::Greater => Ok(self.drop_value_from_start(key, value, validate_count)),
+            Ordering::Less => Ok(self.drop_value_from_end(key, value, -validate_count)),
+            Ordering::Equal => Ok(self.drop_all_values(key, value)),
+        }
+    }
+
+    pub fn lrange(&self, key: String, positions: Vec<&str>) -> Result<Vec<String>, RunError> {
+        let mut response_vec = vec![];
+        let positions = self.generate_positions_range(key.clone(), positions)?;
+        for pos in positions {
+            let elem_in_pos = self.lindex(key.clone(), pos.to_string()).unwrap();
+            response_vec.push(elem_in_pos);
+        }
+
+        Ok(response_vec)
+    }
+
+    fn generate_positions_range(
+        &self,
+        key: String,
+        positions: Vec<&str>,
+    ) -> Result<Vec<String>, RunError> {
+        let start_pos = self.validate_pos(positions[0].to_string())?;
+        let mut end_pos = self.validate_pos(positions[1].to_string())?;
+        if end_pos < 0 {
+            end_pos = (self.llen(key)? as i32) - 1;
+        }
+        let mut response_vec = vec![];
+        for i in start_pos..end_pos + 1 {
+            response_vec.push(i.to_string());
+        }
+
+        Ok(response_vec)
     }
 
     pub fn lpop(&self, args: Vec<&str>) -> Vec<String> {
@@ -262,14 +285,12 @@ impl DataBaseList<String> {
         }
     }
 
-    #[allow(dead_code)]
     pub fn clean_all_data(&self) -> bool {
         let mut db_list = self.db_list.lock().unwrap();
         db_list.clear();
         db_list.is_empty()
     }
 
-    #[allow(dead_code)]
     pub fn dbsize(&self) -> usize {
         let db_list = self.db_list.lock().unwrap();
         db_list.len()
@@ -383,6 +404,25 @@ impl DataBaseList<String> {
         db.insert(key, list);
     }
 
+    fn parse_data(&self, list: Vec<String>) -> String {
+        let mut parsed_data = String::from("");
+        for item in list.iter() {
+            parsed_data.push_str(&(format!("{}\t", item)));
+        }
+        parsed_data
+    }
+
+    pub fn get_all_data(&self) -> String {
+        let db = self.db_list.lock().unwrap().clone();
+        let mut data = String::from("");
+        for (key, value) in &db {
+            let list = value.get_value();
+            let aux = format!("List\t{}\t{}\n", key, self.parse_data(list.clone()));
+            data.push_str(&aux);
+        }
+        data
+    }
+
     pub fn keys(&self, pattern: &str) -> Vec<String> {
         let mut keys_vec = Vec::<String>::new();
         let db = self.db_list.lock().unwrap();
@@ -430,7 +470,7 @@ mod tests {
         assert!(cpush == 1);
         count = db.delete(vec!["key0"]);
         assert!(count == 1);
-        let crange = db.lrange(vec!["key0", "0", "-1"]);
+        let crange = db.lrange("key0".to_string(), vec!["0", "-1"]).unwrap();
         assert!(crange.len() == 0);
 
         cpush = db.lpush(vec!["key0", "val0", "val1"]);
@@ -460,12 +500,11 @@ mod tests {
     #[test]
     fn lrem_test() {
         let db = DataBaseList::new();
-        let mut res;
-        res = db.lrem(vec!["key0", "0", "val0"]);
-        assert!(res == 0);
 
         db.lpush(vec!["key0", "val", "val2", "val", "val0", "val"]);
-        res = db.lrem(vec!["key0", "-2", "val"]);
+        let res = db
+            .lrem("key0".to_string(), "val".to_string(), "-2".to_string())
+            .unwrap();
         assert!(res == 2);
     }
 }

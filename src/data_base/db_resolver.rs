@@ -59,18 +59,26 @@ impl DataBaseResolver {
         data_base_general.insert(key_db, values);
     }
 
+    //tiene que estar el doble for porque antes solo se fijaba en val[0]
     pub fn dbsize(&self) -> usize {
         let mut cont = 0;
         let data_base = self.data_bases.lock().unwrap();
         for (_key, val) in data_base.iter() {
-            let val0 = val[0].clone();
-            match val0 {
-                DataBase::DataBaseString(db_string) => {
-                    cont += db_string.dbsize();
-                }
-                #[allow(unreachable_patterns)]
-                _ => {
-                    cont += 0;
+            for item in val {
+                match item.clone() {
+                    DataBase::DataBaseString(db_string) => {
+                        cont += db_string.dbsize();
+                    }
+                    DataBase::DataBaseList(db_list) => {
+                        cont += db_list.dbsize();
+                    }
+                    DataBase::DataBaseSet(db_set) => {
+                        cont += db_set.dbsize();
+                    }
+                    #[allow(unreachable_patterns)]
+                    _ => {
+                        panic!("no tiene que pasar");
+                    }
                 }
             }
         }
@@ -154,7 +162,7 @@ impl DataBaseResolver {
             .data_bases
             .lock()
             .unwrap()
-            .get(TYPE_SET)
+            .get(TYPE_LIST)
             .unwrap()
             .clone();
         match dbs[idx].clone() {
@@ -294,14 +302,24 @@ impl DataBaseResolver {
     }
 
     //TODO: operacion no thread safe!
-    pub fn validate_key_contain_db(&self, key: String) -> Result<bool, RunError> {
-        match self.type_key(key) {
-            Ok(_typee) => Err(RunError {
-                message: "(error) Ya se esta usando esta clave para otro tipo de operación."
-                    .to_string(),
-                cause: "".to_string(),
-            }),
-            Err(_e) => Ok(true),
+    pub fn validate_key_contain_db(
+        &self,
+        key: String,
+        _type_key: String,
+    ) -> Result<bool, RunError> {
+        let self_type = self.type_key(key);
+
+        match self_type {
+            Ok(key) => match key {
+                _type_key => Ok(true),
+                #[allow(unreachable_patterns)]
+                _ => Err(RunError {
+                    message: "(error) Ya se esta usando esta clave para otro tipo de operación."
+                        .to_string(),
+                    cause: "".to_string(),
+                }),
+            },
+            _ => Ok(true),
         }
     }
 
@@ -326,6 +344,29 @@ impl DataBaseResolver {
         let idx = nh % self.sharing_count_db;
 
         idx as usize
+    }
+
+    pub fn get_snapshot(&self) -> String {
+        let dbs = self.data_bases.lock().unwrap().clone();
+        let mut data = String::from("");
+        for (_, value) in dbs {
+            let mut aux = String::from("");
+            for db in value.iter() {
+                match db {
+                    DataBase::DataBaseString(str_db) => {
+                        aux.push_str(&str_db.get_all_data());
+                    }
+                    DataBase::DataBaseSet(set_db) => {
+                        aux.push_str(&set_db.get_all_data());
+                    }
+                    DataBase::DataBaseList(list_db) => {
+                        aux.push_str(&list_db.get_all_data());
+                    }
+                }
+            }
+            data.push_str(&aux);
+        }
+        data
     }
 
     pub fn keys(&self, pattern: &str) -> Vec<String> {

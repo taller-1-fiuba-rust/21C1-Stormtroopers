@@ -1,4 +1,5 @@
 use crate::constants::THREAD_POOL_COUNT;
+use crate::data_base::filedump::{load_filedump, start_filedump};
 use crate::handle_connection::handle_threadpool::{threadpool_read, threadpool_write};
 use crate::server::app_info::AppInfo;
 use crate::server::threadpool::ThreadPool;
@@ -12,6 +13,11 @@ pub fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io:
     println!("Timeout for connections: {:?} secs", timeout);
 
     app_info.get_ttl_scheduler().run(&app_info);
+
+    println!("{}", load_filedump(&app_info));
+
+    start_filedump(&app_info);
+
     let listener = TcpListener::bind(&address)?;
 
     for (id_client, stream) in listener.incoming().enumerate() {
