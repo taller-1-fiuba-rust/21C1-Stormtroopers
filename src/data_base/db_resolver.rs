@@ -363,28 +363,6 @@ impl DataBaseResolver {
         })
     }
 
-    //TODO: operacion no thread safe!
-    pub fn validate_key_contain_db(
-        &self,
-        key: String,
-        _type_key: String,
-    ) -> Result<bool, RunError> {
-        let self_type = self.type_key(key);
-
-        match self_type {
-            Ok(key) => match key {
-                _type_key => Ok(true),
-                #[allow(unreachable_patterns)]
-                _ => Err(RunError {
-                    message: "(error) Ya se esta usando esta clave para otro tipo de operación."
-                        .to_string(),
-                    cause: "".to_string(),
-                }),
-            },
-            _ => Ok(true),
-        }
-    }
-
     pub fn touch(&self, keys: Vec<String>) -> Vec<u64> {
         let mut vec = vec![];
         for key in keys.clone() {
