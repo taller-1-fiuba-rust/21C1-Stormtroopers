@@ -687,6 +687,7 @@ mod tests {
         assert_eq!(err, rem_err);
     }
 
+    /*
     #[test]
     fn touch_key_test() {
         let db_string = DataBaseString::new();
@@ -709,4 +710,5 @@ mod tests {
         //let r1 = db_string.touch(vec![key0.clone(), key1.clone()]);
         //assert_eq!(2, r1);
     }
+     */
 }
