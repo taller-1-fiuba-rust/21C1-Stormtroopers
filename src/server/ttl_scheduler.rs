@@ -1,4 +1,5 @@
 use crate::constants::TTL_CHECK_RANGE;
+use crate::constants::TTL_SLEEP_TIME;
 use crate::errors::run_error::RunError;
 use crate::server::logger::Loggable;
 use crate::server::utils;
@@ -13,7 +14,7 @@ const NOT_FOUND: &str = "Key not found.";
 const OK: &str = "OK";
 
 pub struct TtlScheduler {
-    pub ttl_map: Arc<Mutex<HashMap<u64, String>>>,
+    pub ttl_map: Arc<Mutex<HashMap<u64, Vec<String>>>>,
     pub key_map: Arc<Mutex<HashMap<String, u64>>>,
     sender: Arc<SyncSender<String>>,
     receiver: Arc<Mutex<Receiver<String>>>,
@@ -65,32 +66,42 @@ impl TtlScheduler {
     }
 
     fn check_ttl(&mut self, query_time: u64, app_info: AppInfo) {
-        let ttl_scheduler = self.clone();
-        let db = app_info.get_db_resolver();
+        let mut ttl_scheduler = self.clone();
 
         for n in (0..TTL_CHECK_RANGE).rev() {
+            let app_info = app_info.clone();
+
+            //https://doc.rust-lang.org/std/primitive.u64.html#method.overflowing_sub
+            //con la resta común no anda
             let time = query_time.overflowing_sub(n).0;
             let time_str = time.to_string();
             match ttl_scheduler.delete_ttl(time_str.clone()) {
-                Ok(key) => {
-                    let _aux = ttl_scheduler.delete_ttl_key(key.clone());
-
-                    if let Ok(val) = db.type_key(key.clone()) {
-                        match val.as_str() {
-                            "String" => {
-                                db.get_string_db_sharding(key.as_str()).delete(vec![&key]);
-                            }
-                            "List" => {
-                                db.get_list_db_sharding(key.as_str()).clear_key(key);
-                            }
-                            "Set" => {
-                                db.get_set_db_sharding(key.as_str()).clear_key(key);
-                            }
-                            _ => (),
-                        }
-                    }
+                Ok(vec_keys) => {
+                    ttl_scheduler.delete_keys(vec_keys, app_info);
                 }
                 Err(_) => continue,
+            }
+        }
+    }
+
+    fn delete_keys(&mut self, keys: Vec<String>, app_info: AppInfo) {
+        let db = app_info.get_db_resolver();
+        for key in keys {
+            let _aux = self.delete_ttl_key(key.clone());
+
+            if let Ok(val) = db.type_key(key.clone()) {
+                match val.as_str() {
+                    "String" => {
+                        db.get_string_db_sharding(key.as_str()).delete(vec![&key]);
+                    }
+                    "List" => {
+                        db.get_list_db_sharding(key.as_str()).clear_key(key);
+                    }
+                    "Set" => {
+                        db.get_set_db_sharding(key.as_str()).clear_key(key);
+                    }
+                    _ => (),
+                }
             }
         }
     }
@@ -99,7 +110,7 @@ impl TtlScheduler {
         let mut ttl_scheduler = self.clone();
         thread::spawn(move || loop {
             let now: u64 = utils::timestamp_now();
-            thread::sleep(Duration::from_secs(10));
+            thread::sleep(Duration::from_secs(TTL_SLEEP_TIME));
             ttl_scheduler.check_ttl(now, app_info.clone());
         });
     }
@@ -173,7 +184,7 @@ impl TtlScheduler {
         .unwrap();
     }
 
-    pub fn delete_ttl(&self, arg: String) -> Result<String, String> {
+    pub fn delete_ttl(&self, arg: String) -> Result<Vec<String>, String> {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.ttl_map.clone();
 
@@ -197,15 +208,17 @@ impl TtlScheduler {
         .unwrap()
     }
 
-    fn store(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> String {
+    fn store(&mut self, map: &mut Arc<Mutex<HashMap<u64, Vec<String>>>>) -> String {
         let key_val = self.receiver.lock().unwrap().recv().unwrap();
         let kv_splitted: Vec<&str> = key_val.split(':').collect();
 
         let mut map = map.lock().unwrap();
-        map.insert(
-            kv_splitted[0].trim().parse::<u64>().unwrap(),
-            String::from(kv_splitted[1].trim()),
-        );
+        let mut get_key = map.clone();
+        let ttl_key = kv_splitted[0].trim().parse::<u64>().unwrap();
+
+        let values = get_key.entry(ttl_key).or_insert_with(Vec::new);
+        values.push(String::from(kv_splitted[1].trim()));
+        map.insert(ttl_key, values.to_vec());
         String::from(OK)
     }
 
@@ -240,7 +253,10 @@ impl TtlScheduler {
         }
     }
 
-    fn delete(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> Result<String, String> {
+    fn delete(
+        &mut self,
+        map: &mut Arc<Mutex<HashMap<u64, Vec<String>>>>,
+    ) -> Result<Vec<String>, String> {
         let key = self.receiver.lock().unwrap().recv().unwrap();
         let key_parsed = key.parse::<u64>().unwrap(); //ojo con este unwrap
         let mut map = map.lock().unwrap();
