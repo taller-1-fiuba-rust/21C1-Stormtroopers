@@ -60,15 +60,14 @@ impl Command for RenameCommand {
         let key_src = args[0];
         let key_target = args[1];
 
-        let mut db_src = app_info.get_string_db_sharding(key_src);
-        let val = match db_src.get_del(key_src.to_string()) {
-            Ok(str) => str,
-            Err(e) => return Err(e),
-        };
+        app_info
+            .get_db_resolver()
+            .copy(key_src, key_target, true, app_info.get_ttl_scheduler())?
+            .to_string();
 
         app_info
-            .get_string_db_sharding(key_target)
-            .set_string(key_target.to_string(), val);
+            .get_ttl_scheduler()
+            .update_key(String::from(key_src), String::from(key_target));
 
         Ok(RESPONSE_SIMPLE_STRING.to_string())
     }
