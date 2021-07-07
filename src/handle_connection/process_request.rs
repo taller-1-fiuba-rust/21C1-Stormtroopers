@@ -4,7 +4,6 @@ use crate::handle_connection::handle_monitor::publish_monitor;
 use crate::server::app_info::AppInfo;
 use crate::Connection;
 
-//TODO: ver porque si vienen mal los args explota
 pub fn process_request(
     request: String,
     app_info: &AppInfo,
@@ -14,7 +13,14 @@ pub fn process_request(
     let command_builder = app_info.get_command_builder();
 
     let cmd = command_builder.get_command(&String::from(request.trim()));
-    let response = obtain_str_command(&request).unwrap();
+    let response;
+
+    if let Err(_err) = obtain_str_command(&request) {
+        return _err.to_string();
+    } else {
+        response = obtain_str_command(&request).unwrap();
+    }
+
     let arguments = response.arguments;
     let command = response.command;
 
