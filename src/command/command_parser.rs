@@ -33,11 +33,9 @@ fn fin_end_quote(
     mut string: String,
 ) -> Result<(usize, String), ParseError> {
     for (i, val) in request.iter().enumerate().skip(pos + 1) {
+        string.push_str(request[i]);
         if val.to_string().contains('\"') {
-            string.push_str(request[i]);
             return Ok((i, string));
-        } else {
-            string.push_str(request[i]);
         }
     }
 
