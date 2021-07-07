@@ -57,11 +57,10 @@ impl Command for GetCommand {
             .info(self, INFO_RUN_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
         //let db = app_info.get_string_db();
         let key = args[0];
         let db = app_info.get_string_db_sharding(key);
-
-        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
         let mut string = db.get_string(key.to_string());
         string.push(LINE_BREAK);
