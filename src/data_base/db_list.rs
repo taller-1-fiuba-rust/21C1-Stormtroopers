@@ -262,21 +262,20 @@ impl DataBaseList<String> {
         })
     }
 
-    pub fn touch_key(&self, key: String) -> usize {
+    pub fn touch_key(&self, key: String) -> u64 {
         if self.contains(key.clone()) {
-            self.get_value(key).update_touch();
-            return 1;
+            return self.get_value(key).update_touch();
         }
         0
     }
 
-    pub fn touch(&self, keys: Vec<String>) -> usize {
+    /*pub fn touch(&self, keys: Vec<String>) -> usize {
         let mut cont = 0;
         for key in keys {
             cont += self.touch_key(key);
         }
         cont
-    }
+    }*/
 
     pub fn clear_key(&self, key: String) {
         let mut db = self.db_list.lock().unwrap().clone();
