@@ -84,6 +84,12 @@ impl Command for TouchCommand {
             }
         }
 
+        //chequeo el ttl
+        let mut app_info = app_info.clone();
+        for key in vec_args {
+            app_info.check_ttl_key(key)?;
+        }
+
         Ok(generate_response(response_vec))
     }
 }

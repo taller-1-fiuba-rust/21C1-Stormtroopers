@@ -12,7 +12,7 @@ pub fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io:
     let timeout = app_info.get_timeout();
     println!("Timeout for connections: {:?} secs", timeout);
 
-    app_info.get_ttl_scheduler().run(&app_info);
+    app_info.get_ttl_scheduler().run(app_info.clone());
 
     println!("{}", load_filedump(&app_info));
 

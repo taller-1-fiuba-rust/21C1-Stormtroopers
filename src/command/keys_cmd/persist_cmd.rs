@@ -68,7 +68,7 @@ impl Command for PersistCommand {
                     Ok(key) => {
                         ttl_scheduler
                             .delete_ttl(key)
-                            .unwrap_or_else(|_| String::from(""));
+                            .unwrap_or_else(|_| vec![String::from("")]);
                         Ok(RESPONSE_SIMPLE_STRING.to_string())
                     }
                     Err(_) => Ok(RESPONSE_SIMPLE_STRING.to_string()),
