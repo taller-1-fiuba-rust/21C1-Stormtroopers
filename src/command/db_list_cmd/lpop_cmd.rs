@@ -1,7 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
-use crate::constants::{LINE_BREAK, TYPE_LIST};
+use crate::constants::TYPE_LIST;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -45,7 +45,7 @@ impl Clone for LpopCommand {
         }
     }
 }
-//TODO: falta impl con el modificador count para que retorne un rango de elementos
+
 impl Command for LpopCommand {
     fn run(
         &self,
@@ -63,14 +63,17 @@ impl Command for LpopCommand {
 
         app_info.get_db_resolver().valid_key_type(key, TYPE_LIST)?;
 
-        let result = db.lpop(args);
+        let items = db.lpop(args)?;
 
-        if result.is_empty() {
+        if items.is_empty() {
             return Ok(String::from(RESPONSE_EMPTY));
         }
 
-        let mut to_return = result[0].clone();
-        to_return.push(LINE_BREAK);
+        let mut to_return = String::from("");
+        for (i, it) in items.iter().enumerate() {
+            to_return.push_str(&format!("{}) {}\n", i, it.clone()));
+        }
+
         Ok(to_return)
     }
 }

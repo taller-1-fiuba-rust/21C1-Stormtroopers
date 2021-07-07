@@ -288,7 +288,9 @@ impl DataBaseResolver {
                                             .set_ttl(ttl, String::from(key_target))
                                             .unwrap();
                                         if del_src_key {
-                                            ttl_scheduler.delete_ttl_key(key_src.to_string()).unwrap_or_else(|_| String::from(""));
+                                            ttl_scheduler
+                                                .delete_ttl_key(key_src.to_string())
+                                                .unwrap_or_else(|_| String::from(""));
                                         }
                                     }
                                     Err(_e) => {

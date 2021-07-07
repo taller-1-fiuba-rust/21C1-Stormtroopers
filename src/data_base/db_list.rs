@@ -168,22 +168,39 @@ impl DataBaseList<String> {
         Ok(response_vec)
     }
 
-    pub fn lpop(&self, args: Vec<&str>) -> Vec<String> {
+    pub fn lpop(&self, args: Vec<&str>) -> Result<Vec<String>, RunError> {
         let key = args[0];
+        let mut count = 1;
+        if args.len() == 2 {
+            count = match args[1].parse::<u32>() {
+                Ok(i) => i,
+                Err(_e) => {
+                    return Err(RunError {
+                        message: "ERR".to_string(),
+                        cause: "ERR. El valor esta fuera del rango. Debe ser positivo".to_string(),
+                    })
+                }
+            }
+        }
         let mut db_list = self.db_list.lock().unwrap();
         let mut list: Vec<String> = match db_list.get(key) {
             Some(l) => l.get_value(),
-            None => return vec![],
+            None => vec![],
         };
-
-        let item = list.remove(0);
+        if list.is_empty() {
+            return Ok(list);
+        }
+        let mut items = vec![];
+        for _i in 0..count {
+            items.push(list.remove(0));
+        }
 
         let mut data = DataList::new();
         data.insert_values(list);
 
         db_list.insert(String::from(key), data);
 
-        vec![item]
+        Ok(items)
     }
 
     pub fn lindex(&self, key: String, pos: String) -> Result<String, RunError> {

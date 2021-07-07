@@ -67,21 +67,5 @@ impl Command for CopyCommand {
             .to_string();
         res.push(LINE_BREAK);
         Ok(res)
-
-        /*
-        let db_target = app_info.get_string_db_sharding(target_key);
-
-        if db_target.contains(target_key.to_string()) {
-            return Ok("0\n".to_string());
-        }
-
-        let val_to_copy = app_info
-            .get_string_db_sharding(src_key)
-            .get_string(src_key.to_string());
-
-        db_target.set_string(target_key.to_string(), val_to_copy);
-
-        Ok("1\n".to_string())
-         */
     }
 }

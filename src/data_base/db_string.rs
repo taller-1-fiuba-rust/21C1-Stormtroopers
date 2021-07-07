@@ -221,7 +221,7 @@ impl DataBaseString<String> {
         } else {
             return Err(RunError {
                 message: "Error when increment/decrement a value".to_string(),
-                cause: "The argument cannot be interpreted as an integer\n".to_string(),
+                cause: "The argument cannot be interpreted as an integer".to_string(),
             });
         }
 
@@ -680,7 +680,7 @@ mod tests {
 
         let err = Err(RunError {
             message: "Error when increment/decrement a value".to_string(),
-            cause: "The argument cannot be interpreted as an integer\n".to_string(),
+            cause: "The argument cannot be interpreted as an integer".to_string(),
         });
 
         let rem_err = db_string.incrby(key, "error".to_string());
