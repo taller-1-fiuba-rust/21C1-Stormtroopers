@@ -3,7 +3,7 @@ use crate::errors::run_error::RunError;
 
 pub struct ParsedMessage {
     pub command: String,
-    pub arguments: String,
+    pub arguments: Vec<String>,
 }
 
 impl ParsedMessage {
@@ -27,6 +27,43 @@ impl ParsedMessage {
     }
 }
 
+fn fin_end_quote(
+    pos: usize,
+    request: Vec<&str>,
+    mut string: String,
+) -> Result<(usize, String), ParseError> {
+    for (i, val) in request.iter().enumerate().skip(pos + 1) {
+        string.push_str(request[i]);
+        if val.to_string().contains('\"') {
+            return Ok((i, string));
+        }
+    }
+
+    Err(ParseError::quote_value(&"err"))
+}
+
+fn validate_request(request: Vec<&str>) -> Result<Vec<String>, ParseError> {
+    let mut validates_args = vec![];
+    let mut pos = 0;
+
+    while pos < request.len() {
+        if !request[pos].is_empty() && request[pos] != " " {
+            let arg = request[pos].split_ascii_whitespace().next().unwrap();
+            if arg.to_string().contains('\"') {
+                let vec = fin_end_quote(pos, request.clone(), request[pos].to_string())?;
+                pos = vec.0;
+                validates_args.push(vec.1.trim_end().to_string());
+            } else {
+                validates_args.push(arg.to_string());
+            }
+        }
+
+        pos += 1;
+    }
+
+    Ok(validates_args)
+}
+
 pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
     let msg_lower = String::from(msg).to_lowercase();
     if msg_lower.is_empty() {
@@ -37,20 +74,25 @@ pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
         return Err(ParseError::numeric_value(msg_lower.as_str()));
     }
 
-    let mut split_msg = msg_lower.split_whitespace();
+    let split_msg = msg_lower.split_inclusive(' ').collect();
 
-    let command = String::from(split_msg.next().unwrap());
-    let arguments = split_msg.fold(String::new(), |acc, x| {
-        if acc.is_empty() {
-            String::from(x)
-        } else {
-            format!("{}{}{}", acc, " ", x)
-        }
-    });
+    let mut _retrieved = vec![];
+    if let Ok(value) = validate_request(split_msg) {
+        _retrieved = value;
+    } else {
+        return Err(ParseError::quote_value(
+            &"Text without final quote".to_string(),
+        ));
+    }
+
+    let command = _retrieved[0].to_string();
+    _retrieved.remove(0);
+    let arguments = _retrieved;
 
     Ok(ParsedMessage { command, arguments })
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -127,4 +169,4 @@ mod tests {
             "test_argument_1 test_argument_2 test_argument_3"
         );
     }
-}
+}*/

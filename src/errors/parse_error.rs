@@ -2,6 +2,7 @@ use std::fmt;
 
 const NUMERIC_VALUE_MSG: &str = "Numeric values are not allowed.\n";
 const EMPTY_VALUE_MSG: &str = "Empty values are not allowed.\n";
+const QUOTE_VALUE_MSG: &str = "Close the quotation mark before entering the command.\n";
 
 pub struct ParseError {
     pub message: String,
@@ -44,6 +45,13 @@ impl ParseError {
         ParseError {
             message: String::from(msg),
             cause: String::from(EMPTY_VALUE_MSG),
+        }
+    }
+
+    pub fn quote_value(msg: &str) -> Self {
+        Self {
+            message: msg.to_string(),
+            cause: String::from(QUOTE_VALUE_MSG),
         }
     }
 }
