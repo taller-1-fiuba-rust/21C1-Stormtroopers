@@ -191,6 +191,11 @@ impl DataBaseList<String> {
             return Ok(list);
         }
         let mut items = vec![];
+
+        if count > list.len() as u32 {
+            count = list.len() as u32;
+        }
+
         for _i in 0..count {
             items.push(list.remove(0));
         }
