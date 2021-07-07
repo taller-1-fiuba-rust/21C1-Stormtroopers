@@ -15,6 +15,8 @@ pub const DBDUMP_INTERVAL_SECS: u64 = 600;
 pub const DBDUMP_PATH: &str = "./";
 pub const MARK_BULLET: &str = ") ";
 pub const NIL_RESPONSE: &str = "(nil)\n";
+pub const TTL_CHECK_RANGE: u64 = 5;
+pub const TTL_SLEEP_TIME: u64 = 1;
 
 /** Default values **/
 pub static SHARING_COUNT_DEFAULT: u32 = 4;
