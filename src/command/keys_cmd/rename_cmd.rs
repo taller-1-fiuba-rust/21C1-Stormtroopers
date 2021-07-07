@@ -70,6 +70,10 @@ impl Command for RenameCommand {
             .get_string_db_sharding(key_target)
             .set_string(key_target.to_string(), val);
 
+        app_info
+            .get_ttl_scheduler()
+            .update_key(String::from(key_src), String::from(key_target));
+
         Ok(RESPONSE_SIMPLE_STRING.to_string())
     }
 }
