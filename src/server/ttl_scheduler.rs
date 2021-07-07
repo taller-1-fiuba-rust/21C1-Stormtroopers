@@ -1,3 +1,4 @@
+use crate::constants::TTL_CHECK_RANGE;
 use crate::errors::run_error::RunError;
 use crate::server::logger::Loggable;
 use crate::server::utils;
@@ -8,7 +9,6 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
-const TTL_CHECK_RANGE: u64 = 5;
 const NOT_FOUND: &str = "Key not found.";
 const OK: &str = "OK";
 
@@ -64,40 +64,61 @@ impl TtlScheduler {
         }
     }
 
-    pub fn run(&mut self, app_info: &AppInfo) {
+    fn check_ttl(&mut self, query_time: u64, app_info: AppInfo) {
         let ttl_scheduler = self.clone();
         let db = app_info.get_db_resolver();
-        thread::spawn(move || loop {
-            let now: u64 = utils::timestamp_now();
-            thread::sleep(Duration::from_secs(1));
-            for n in (0..TTL_CHECK_RANGE).rev() {
-                let time = now - n;
-                let time_str = time.to_string();
-                match ttl_scheduler.delete_ttl(time_str.clone()) {
-                    Ok(key) => {
-                        let _aux = ttl_scheduler.delete_ttl_key(key.clone());
 
-                        if let Ok(val) = db.type_key(key.clone()) {
-                            match val.as_str() {
-                                "String" => {
-                                    //db.get_string_db().delete(vec![key.as_str()]);
-                                    db.get_string_db_sharding(key.as_str())
-                                        .delete(vec![key.as_str()]);
-                                }
-                                "List" => {
-                                    db.get_list_db_sharding(key.as_str()).clear_key(key);
-                                }
-                                "Set" => {
-                                    db.get_set_db_sharding(key.as_str()).clear_key(key);
-                                }
-                                _ => (),
+        for n in (0..TTL_CHECK_RANGE).rev() {
+            let time = query_time.overflowing_sub(n).0;
+            let time_str = time.to_string();
+            match ttl_scheduler.delete_ttl(time_str.clone()) {
+                Ok(key) => {
+                    let _aux = ttl_scheduler.delete_ttl_key(key.clone());
+
+                    if let Ok(val) = db.type_key(key.clone()) {
+                        match val.as_str() {
+                            "String" => {
+                                db.get_string_db_sharding(key.as_str()).delete(vec![&key]);
                             }
+                            "List" => {
+                                db.get_list_db_sharding(key.as_str()).clear_key(key);
+                            }
+                            "Set" => {
+                                db.get_set_db_sharding(key.as_str()).clear_key(key);
+                            }
+                            _ => (),
                         }
                     }
-                    Err(_) => continue,
                 }
+                Err(_) => continue,
             }
+        }
+    }
+
+    pub fn run(&mut self, app_info: AppInfo) {
+        let mut ttl_scheduler = self.clone();
+        thread::spawn(move || loop {
+            let now: u64 = utils::timestamp_now();
+            thread::sleep(Duration::from_secs(10));
+            ttl_scheduler.check_ttl(now, app_info.clone());
         });
+    }
+
+    pub fn check_ttl_key(&mut self, app_info: AppInfo, key: String) -> Result<String, RunError> {
+        let ttl_key;
+        if let Ok(ttl) = self.get_ttl_key(key) {
+            ttl_key = ttl;
+        } else {
+            return Ok("OK\n".to_string());
+        }
+
+        let ttl_key = ttl_key.parse::<u64>().unwrap();
+
+        //https://doc.rust-lang.org/std/primitive.u64.html#method.overflowing_sub
+        if ttl_key.overflowing_sub(utils::timestamp_now()).1 {
+            self.check_ttl(ttl_key, app_info);
+        }
+        Ok("OK".to_string())
     }
 
     pub fn set_ttl(&self, ttl: u64, arg: String) -> Result<String, RunError> {
@@ -163,6 +184,7 @@ impl TtlScheduler {
         .join()
         .unwrap()
     }
+
     pub fn delete_ttl_key(&self, arg: String) -> Result<String, String> {
         let mut ttl_scheduler = self.clone();
         let mut ttl_map = self.key_map.clone();
@@ -220,7 +242,7 @@ impl TtlScheduler {
 
     fn delete(&mut self, map: &mut Arc<Mutex<HashMap<u64, String>>>) -> Result<String, String> {
         let key = self.receiver.lock().unwrap().recv().unwrap();
-        let key_parsed = key.parse::<u64>().unwrap();
+        let key_parsed = key.parse::<u64>().unwrap(); //ojo con este unwrap
         let mut map = map.lock().unwrap();
         match map.remove(&key_parsed) {
             Some(v) => Ok(v),

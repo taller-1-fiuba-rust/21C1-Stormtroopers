@@ -306,6 +306,10 @@ impl AppInfo {
     pub fn get_actives_threads(&self) -> usize {
         self.system_info.get_actives_threads()
     }
+
+    pub fn check_ttl_key(&mut self, key: String) -> Result<String, RunError> {
+        self.ttl_scheduler.check_ttl_key(self.clone(), key)
+    }
 }
 
 pub fn load_config(
