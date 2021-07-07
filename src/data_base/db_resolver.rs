@@ -280,6 +280,7 @@ impl DataBaseResolver {
                         self.get_string_db_sharding(key_target)
                             .set_string(key_target.to_string(), value_src);
 
+                        //pasarlo al scheduler
                         match ttl_scheduler.get_ttl_key(key_src.to_string()) {
                             Ok(ttl_str) => {
                                 match ttl_str.parse::<u64>() {
