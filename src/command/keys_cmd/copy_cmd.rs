@@ -1,6 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
+use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -60,6 +61,14 @@ impl Command for CopyCommand {
         let src_key = args[0];
         let target_key = args[1];
 
+        let mut res = app_info
+            .get_db_resolver()
+            .copy(src_key, target_key, app_info.get_ttl_scheduler())
+            .to_string();
+        res.push(LINE_BREAK);
+        Ok(res)
+
+        /*
         let db_target = app_info.get_string_db_sharding(target_key);
 
         if db_target.contains(target_key.to_string()) {
@@ -73,5 +82,6 @@ impl Command for CopyCommand {
         db_target.set_string(target_key.to_string(), val_to_copy);
 
         Ok("1\n".to_string())
+         */
     }
 }

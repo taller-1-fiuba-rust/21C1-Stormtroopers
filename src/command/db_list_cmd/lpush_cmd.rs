@@ -62,9 +62,7 @@ impl Command for LpushCommand {
 
         ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        app_info
-            .get_db_resolver()
-            .validate_key_contain_db(key.to_string(), "List".to_string())?;
+        app_info.get_db_resolver().valid_key_type(key, TYPE_LIST)?;
 
         let db = app_info.get_list_db_sharding(key);
 

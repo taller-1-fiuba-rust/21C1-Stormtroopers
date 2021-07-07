@@ -174,7 +174,7 @@ impl DataBaseString<String> {
         })
     }
 
-    pub fn copy(&mut self, src_key: String, target_key: String) -> u32 {
+    pub fn copy(&mut self, src_key: String, target_key: String) -> u8 {
         let src_val = self.get_string(src_key);
         if src_val == *RESPONSE_NIL {
             return 0;
