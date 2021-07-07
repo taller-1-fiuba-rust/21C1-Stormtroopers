@@ -686,27 +686,4 @@ mod tests {
         let rem_err = db_string.incrby(key, "error".to_string());
         assert_eq!(err, rem_err);
     }
-
-    #[test]
-    fn touch_key_test() {
-        let db_string = DataBaseString::new();
-        let key0 = "key0".to_string();
-        let key1 = "key1".to_string();
-        let val0 = "val0".to_string();
-        let val1 = "val1".to_string();
-
-        db_string.set_string(key0.clone(), val0);
-        let r = db_string.touch_key(key0.clone());
-        assert_eq!(1, r);
-
-        //let r0 = db_string.touch(vec![key0.clone()]);
-        //assert_eq!(1, r0);
-
-        //let r1 = db_string.touch(vec![key0.clone(), key1.clone()]);
-        //assert_eq!(1, r1);
-
-        db_string.set_string(key1.clone(), val1);
-        //let r1 = db_string.touch(vec![key0.clone(), key1.clone()]);
-        //assert_eq!(2, r1);
-    }
 }
