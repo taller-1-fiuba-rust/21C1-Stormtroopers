@@ -236,4 +236,10 @@ impl TtlScheduler {
             None => Err(String::from("")),
         }
     }
+
+    pub fn update_key(&self, src: String, new: String) {
+        // Buscarla a key_map y actualizar
+        let ttl = self.delete_ttl_key(src).unwrap();
+        let _ = self.set_ttl(ttl.parse::<u64>().unwrap(), new);
+    }
 }

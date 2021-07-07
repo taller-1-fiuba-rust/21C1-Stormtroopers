@@ -1,6 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
+use crate::constants::TYPE_SET;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -57,7 +58,10 @@ impl Command for SmembersCommand {
 
         ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
-        let db = app_info.get_set_db_sharding(args[0]);
+        let key = args[0];
+        app_info.get_db_resolver().valid_key_type(key, TYPE_SET)?;
+
+        let db = app_info.get_set_db_sharding(key);
 
         let res_items = db.smembers(args);
 

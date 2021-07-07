@@ -1,7 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
-use crate::constants::LINE_BREAK;
+use crate::constants::{LINE_BREAK, TYPE_STRING};
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -60,6 +60,10 @@ impl Command for DecrbyCommand {
         ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
         let key = args[0];
+        app_info
+            .get_db_resolver()
+            .valid_key_type(key, TYPE_STRING)?;
+
         let db = app_info.get_string_db_sharding(key);
 
         let rsp = db.decrby(key.to_string(), args[1].to_string())?;

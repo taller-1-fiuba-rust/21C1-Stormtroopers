@@ -6,6 +6,7 @@ use crate::errors::run_error::RunError;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
+use crate::server::ttl_scheduler::TtlScheduler;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
 
@@ -250,6 +251,67 @@ impl DataBaseResolver {
             cause: "The key may be a string or may not be in the db\n".to_string(),
         })
     }
+
+    pub fn copy(
+        &self,
+        key_src: &str,
+        key_target: &str,
+        del_src_key: bool,
+        ttl_scheduler: TtlScheduler,
+    ) -> Result<u32, RunError> {
+        return match self.type_key(key_src.to_string()) {
+            Ok(typee) => {
+                return match typee.as_str() {
+                    "String" => {
+                        let value_src;
+                        if del_src_key {
+                            value_src = match self
+                                .get_string_db_sharding(key_src)
+                                .get_del(key_src.to_string())
+                            {
+                                Ok(val) => val,
+                                Err(_e) => return Ok(0),
+                            };
+                        } else {
+                            value_src = self
+                                .get_string_db_sharding(key_src)
+                                .get_string(key_src.to_string());
+                        }
+                        self.get_string_db_sharding(key_target)
+                            .set_string(key_target.to_string(), value_src);
+
+                        match ttl_scheduler.get_ttl_key(key_src.to_string()) {
+                            Ok(ttl_str) => {
+                                match ttl_str.parse::<u64>() {
+                                    Ok(ttl) => {
+                                        ttl_scheduler
+                                            .set_ttl(ttl, String::from(key_target))
+                                            .unwrap();
+                                        if del_src_key {
+                                            ttl_scheduler
+                                                .delete_ttl_key(key_src.to_string())
+                                                .unwrap_or_else(|_| String::from(""));
+                                        }
+                                    }
+                                    Err(_e) => {
+                                        self.get_string_db_sharding(key_target)
+                                            .delete(vec![key_target]);
+                                        return Ok(0);
+                                    }
+                                };
+                            }
+                            Err(_e) => {}
+                        }
+                        Ok(1)
+                    }
+                    "List" => return Ok(0),
+                    "Set" => return Ok(0),
+                    _ => Ok(0),
+                };
+            }
+            Err(_e) => Err(_e),
+        };
+    }
     pub fn valid_key_type(&self, key: &str, key_type: &str) -> Result<bool, RunError> {
         let key_type_db = key_type.to_string();
         match self.type_key(key.to_string()) {
@@ -267,6 +329,27 @@ impl DataBaseResolver {
                 }
             }
             Err(_e) => Ok(false),
+        }
+    }
+    //TODO: operacion no thread safe!
+    pub fn validate_key_contain_db(
+        &self,
+        key: String,
+        _type_key: String,
+    ) -> Result<bool, RunError> {
+        let self_type = self.type_key(key);
+
+        match self_type {
+            Ok(key) => match key {
+                _type_key => Ok(true),
+                #[allow(unreachable_patterns)]
+                _ => Err(RunError {
+                    message: "(error) Ya se esta usando esta clave para otro tipo de operación."
+                        .to_string(),
+                    cause: "".to_string(),
+                }),
+            },
+            _ => Ok(true),
         }
     }
 
