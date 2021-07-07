@@ -49,7 +49,7 @@ impl Clone for LrangeCommand {
 impl Command for LrangeCommand {
     fn run(
         &self,
-        args: Vec<&str>,
+        mut args: Vec<&str>,
         app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
@@ -62,21 +62,17 @@ impl Command for LrangeCommand {
         app_info.get_db_resolver().valid_key_type(key, TYPE_LIST)?;
 
         let db = app_info.get_list_db_sharding(key);
+        args.remove(0);
 
-        let items = db.lrange(args);
+        let items = db.lrange(key.to_string(), args)?;
 
         if items.is_empty() {
             return Ok(String::from(RESPONSE_EMPTY));
         }
 
-        //TODO: codigo duplicado
         let mut to_return = String::from("");
         for (i, it) in items.iter().enumerate() {
-            to_return.push_str(i.to_string().as_str());
-            to_return.push_str(") ");
-            let mut item = it.clone();
-            item.push('\n');
-            to_return.push_str(&item);
+            to_return.push_str(&format!("{}) {}\n", i, it.clone()));
         }
 
         Ok(to_return)

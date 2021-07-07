@@ -64,7 +64,7 @@ impl Command for LpushCommand {
 
         app_info
             .get_db_resolver()
-            .validate_key_contain_db(key.to_string())?;
+            .validate_key_contain_db(key.to_string(), "List".to_string())?;
 
         let db = app_info.get_list_db_sharding(key);
 

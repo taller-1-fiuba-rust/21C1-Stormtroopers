@@ -48,7 +48,7 @@ impl Clone for LremCommand {
 impl Command for LremCommand {
     fn run(
         &self,
-        args: Vec<&str>,
+        mut args: Vec<&str>,
         app_info: &AppInfo,
         _id_client: usize,
     ) -> Result<String, RunError> {
@@ -58,29 +58,13 @@ impl Command for LremCommand {
         ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
         let key = args[0];
+        args.remove(0);
         app_info.get_db_resolver().valid_key_type(key, TYPE_LIST)?;
 
         let db = app_info.get_list_db_sharding(key);
-        let mut result = db.lrem(args).to_string();
-
-        /*
-        let key_str = args[0];
-        match db_resolver.type_key(String::from(key_str)) {
-            Ok(typee) => {
-                if typee == *TYPE_LIST.to_string() {
-                    let db = app_info.get_list_db();
-                    result = db.lrem(args).to_string();
-                } else {
-                    return Err(RunError {
-                        message: "ERR WRONGTYPE.".to_string(),
-                        cause: "Operación incorrecta para el tipo de valor asociado a la clave."
-                            .to_string(),
-                    });
-                }
-            }
-            Err(_e) => result = String::from(ZERO_RESULT),
-        }
-         */
+        let mut result = db
+            .lrem(key.to_string(), args[0].to_string(), args[1].to_string())?
+            .to_string();
 
         result.push(LINE_BREAK);
 

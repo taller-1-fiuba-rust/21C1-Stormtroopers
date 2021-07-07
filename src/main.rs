@@ -11,7 +11,7 @@ mod errors;
 mod handle_connection;
 mod server;
 
-fn main() -> Result<(), std::io::Error> {
+fn main() {
     let argv = args().collect::<Vec<String>>();
 
     println!("Init Server ...");
@@ -31,6 +31,4 @@ fn main() -> Result<(), std::io::Error> {
     println!("\nServer address: {}\n", server_port);
     println!("Execute listener ...");
     let _listener = exec_server(&server_port, &mut server);
-
-    Ok(())
 }

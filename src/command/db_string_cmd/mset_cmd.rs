@@ -59,9 +59,9 @@ impl Command for MsetCommand {
         ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
         /* Validate num of params */
         if args.len() % 2 != 0 {
-            let msg_err = "Numero de argumentos inválido para el comando".to_string();
+            let msg_err = "Number of arguments must be pair".to_string();
             return Err(RunError {
-                message: "ERR.".to_string(),
+                message: "ERROR NUMBER OR ARGUMENTS.".to_string(),
                 cause: msg_err,
             });
         }

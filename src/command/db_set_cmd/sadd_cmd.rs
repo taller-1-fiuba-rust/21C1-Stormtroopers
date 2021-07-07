@@ -1,6 +1,7 @@
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
+use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
@@ -59,7 +60,7 @@ impl Command for SaddCommand {
         let db = app_info.get_set_db_sharding(args[0]);
 
         let mut result = db.sadd(args).to_string();
-        result.push('\n');
+        result.push(LINE_BREAK);
 
         Ok(result)
     }
