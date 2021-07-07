@@ -174,7 +174,7 @@ impl DataBaseString<String> {
         })
     }
 
-    pub fn copy(&mut self, src_key: String, target_key: String) -> u32 {
+    pub fn copy(&mut self, src_key: String, target_key: String) -> u8 {
         let src_val = self.get_string(src_key);
         if src_val == *RESPONSE_NIL {
             return 0;
@@ -221,7 +221,7 @@ impl DataBaseString<String> {
         } else {
             return Err(RunError {
                 message: "Error when increment/decrement a value".to_string(),
-                cause: "The argument cannot be interpreted as an integer\n".to_string(),
+                cause: "The argument cannot be interpreted as an integer".to_string(),
             });
         }
 
@@ -680,7 +680,7 @@ mod tests {
 
         let err = Err(RunError {
             message: "Error when increment/decrement a value".to_string(),
-            cause: "The argument cannot be interpreted as an integer\n".to_string(),
+            cause: "The argument cannot be interpreted as an integer".to_string(),
         });
 
         let rem_err = db_string.incrby(key, "error".to_string());
