@@ -252,14 +252,31 @@ impl DataBaseResolver {
         })
     }
 
-    pub fn copy(&self, key_src: &str, key_target: &str, ttl_scheduler: TtlScheduler) -> u8 {
+    pub fn copy(
+        &self,
+        key_src: &str,
+        key_target: &str,
+        del_src_key: bool,
+        ttl_scheduler: TtlScheduler,
+    ) -> Result<u32, RunError> {
         return match self.type_key(key_src.to_string()) {
             Ok(typee) => {
                 return match typee.as_str() {
                     "String" => {
-                        let value_src = self
-                            .get_string_db_sharding(key_src)
-                            .get_string(key_src.to_string());
+                        let value_src;
+                        if del_src_key {
+                            value_src = match self
+                                .get_string_db_sharding(key_src)
+                                .get_del(key_src.to_string())
+                            {
+                                Ok(val) => val,
+                                Err(_e) => return Ok(0),
+                            };
+                        } else {
+                            value_src = self
+                                .get_string_db_sharding(key_src)
+                                .get_string(key_src.to_string());
+                        }
                         self.get_string_db_sharding(key_target)
                             .set_string(key_target.to_string(), value_src);
 
@@ -270,24 +287,27 @@ impl DataBaseResolver {
                                         ttl_scheduler
                                             .set_ttl(ttl, String::from(key_target))
                                             .unwrap();
+                                        if del_src_key {
+                                            ttl_scheduler.delete_ttl_key(key_src.to_string()).unwrap_or_else(|_| String::from(""));
+                                        }
                                     }
                                     Err(_e) => {
                                         self.get_string_db_sharding(key_target)
                                             .delete(vec![key_target]);
-                                        return 0;
+                                        return Ok(0);
                                     }
                                 };
                             }
                             Err(_e) => {}
                         }
-                        1
+                        Ok(1)
                     }
-                    "List" => return 0,
-                    "Set" => return 0,
-                    _ => 0,
+                    "List" => return Ok(0),
+                    "Set" => return Ok(0),
+                    _ => Ok(0),
                 };
             }
-            Err(_e) => 0,
+            Err(_e) => Err(_e),
         };
     }
     pub fn valid_key_type(&self, key: &str, key_type: &str) -> Result<bool, RunError> {

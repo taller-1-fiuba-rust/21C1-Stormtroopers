@@ -63,7 +63,7 @@ impl Command for CopyCommand {
 
         let mut res = app_info
             .get_db_resolver()
-            .copy(src_key, target_key, app_info.get_ttl_scheduler())
+            .copy(src_key, target_key, false, app_info.get_ttl_scheduler())?
             .to_string();
         res.push(LINE_BREAK);
         Ok(res)

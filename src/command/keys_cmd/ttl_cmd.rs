@@ -7,7 +7,7 @@ use crate::server::utils::timestamp_now;
 
 const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
 const CLIENT_ID: &str = "ExpireCommmand";
-const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments.\n";
+const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments";
 const TTL_ZERO_OR_ABSENT: &str = "-2\n";
 const WHITESPACE: &str = " ";
 const NEW_LINE: &str = "\n";
