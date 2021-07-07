@@ -384,17 +384,42 @@ impl DataBaseResolver {
         })
     }
 
-    pub fn touch(&self, keys: Vec<String>) -> usize {
-        let mut count = 0;
+    //TODO: operacion no thread safe!
+    pub fn validate_key_contain_db(
+        &self,
+        key: String,
+        _type_key: String,
+    ) -> Result<bool, RunError> {
+        let self_type = self.type_key(key);
+
+        match self_type {
+            Ok(key) => match key {
+                _type_key => Ok(true),
+                #[allow(unreachable_patterns)]
+                _ => Err(RunError {
+                    message: "(error) Ya se esta usando esta clave para otro tipo de operación."
+                        .to_string(),
+                    cause: "".to_string(),
+                }),
+            },
+            _ => Ok(true),
+        }
+    }
+
+    pub fn touch(&self, keys: Vec<String>) -> Vec<u64> {
+        let mut vec = vec![];
         for key in keys.clone() {
+            let mut count = 0;
             let db_string = self.get_string_db_sharding(key.as_str());
             count += db_string.touch_key(key.clone());
             let db_list = self.get_list_db_sharding(key.as_str());
             count += db_list.touch_key(key.clone());
             let db_set = self.get_set_db_sharding(key.as_str());
             count += db_set.touch_key(key.clone());
+
+            vec.push(count);
         }
-        count
+        vec
     }
 
     fn retrieve_index(&self, key: &str) -> usize {

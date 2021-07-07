@@ -26,11 +26,6 @@ impl DataList<String> {
         self.value.clone()
     }
 
-    #[allow(dead_code)]
-    pub fn get_time_touch(&self) -> SystemTime {
-        self.time_touch
-    }
-
     pub fn insert_values(&mut self, values: Vec<String>) {
         for value in values {
             self.value.push(value);
@@ -43,7 +38,9 @@ impl DataList<String> {
         self.time_touch = SystemTime::now();
     }
 
-    pub fn update_touch(&mut self) {
+    pub fn update_touch(&mut self) -> u64 {
+        let old_time = self.time_touch;
         self.time_touch = SystemTime::now();
+        self.time_touch.duration_since(old_time).unwrap().as_secs()
     }
 }

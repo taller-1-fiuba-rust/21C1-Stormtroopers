@@ -27,11 +27,6 @@ impl DataSet<String> {
         self.value.clone()
     }
 
-    #[allow(dead_code)]
-    pub fn get_time_touch(&self) -> SystemTime {
-        self.time_touch
-    }
-
     pub fn insert_value(&mut self, value: String) -> bool {
         if self.value.insert(value) {
             self.time_touch = SystemTime::now();
@@ -40,8 +35,10 @@ impl DataSet<String> {
         false
     }
 
-    pub fn update_touch(&mut self) {
+    pub fn update_touch(&mut self) -> u64 {
+        let old_time = self.time_touch;
         self.time_touch = SystemTime::now();
+        self.time_touch.duration_since(old_time).unwrap().as_secs()
     }
 
     pub fn remove_value(&mut self, value: String) -> bool {
