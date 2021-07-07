@@ -65,6 +65,10 @@ impl Command for RenameCommand {
             .copy(key_src, key_target, true, app_info.get_ttl_scheduler())?
             .to_string();
 
+        app_info
+            .get_ttl_scheduler()
+            .update_key(String::from(key_src), String::from(key_target));
+
         Ok(RESPONSE_SIMPLE_STRING.to_string())
     }
 }
