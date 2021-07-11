@@ -251,6 +251,10 @@ impl AppInfo {
         self.config_server.get_server_port(self.logger.clone())
     }
 
+    pub fn get_http_server_port(&self) -> String {
+        self.config_server.get_http_server_port(self.logger.clone())
+    }
+
     pub fn get_verbose(&self) -> bool {
         self.config_server.get_verbose()
     }

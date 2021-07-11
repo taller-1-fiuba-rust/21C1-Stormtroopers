@@ -29,6 +29,7 @@ fn main() {
     let server_port = server.get_server_port();
 
     println!("\nServer address: {}\n", server_port);
+    println!("\nHTTP Server address: {}", server_port);
     println!("Execute listener ...");
     let _listener = exec_server(&server_port, &mut server);
 }

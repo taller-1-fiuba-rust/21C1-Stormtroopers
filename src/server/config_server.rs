@@ -93,6 +93,16 @@ impl ConfigServer {
         path_server_port
     }
 
+    pub fn get_http_server_port(&self, _logger: Logger<String>) -> String {
+        let port = self.get_prop("httpport");
+
+        let mut path_server_port = self.get_prop("httpserver");
+
+        path_server_port.push(':');
+        path_server_port.push_str(&port);
+        path_server_port
+    }
+
     pub fn get_prop(&self, prop: &str) -> String {
         let map = self.props.lock().unwrap();
         map.get(prop).unwrap().to_string()
