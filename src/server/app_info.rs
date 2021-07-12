@@ -223,28 +223,16 @@ impl AppInfo {
         self.args[0].to_owned()
     }
 
-    /* Impl of sharing db */
     pub fn get_string_db_sharding(&self, key: &str) -> DataBaseString<String> {
         self.db_resolver.get_string_db_sharding(key)
     }
 
-    /*
-       pub fn get_string_db(&self) -> DataBaseString<String> {
-           self.db_resolver.get_string_db()
-       }
-
-
-       pub fn get_list_db(&self) -> DataBaseList<String> {
-           self.db_resolver.get_list_db()
-       }
-    */
     pub fn get_list_db_sharding(&self, key: &str) -> DataBaseList<String> {
         self.db_resolver.get_list_db_sharding(key)
     }
 
     pub fn get_set_db_sharding(&self, key: &str) -> DataBaseSet<String> {
         self.db_resolver.get_set_db_sharding(key)
-        //self.db_resolver.get_set_db()
     }
 
     pub fn get_server_port(&self) -> String {

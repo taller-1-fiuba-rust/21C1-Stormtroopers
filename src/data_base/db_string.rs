@@ -120,8 +120,8 @@ impl DataBaseString<String> {
     }
 
     pub fn clean_all_data(&self) -> bool {
-        let mut db_string = self.clone();
         let mut data = self.db.clone();
+        let mut db_string = self.clone();
         thread::spawn(move || {
             db_string.sender.send(String::from("")).unwrap();
             db_string.clean(&mut data);
