@@ -47,7 +47,7 @@ impl DataBaseResolver {
             sharing_count_db,
         }
     }
-    //TODO: ver de usar get_met en vez de lock()
+
     pub fn add_data_base(&self, key_db: String, values: Vec<DataBase>) {
         let mut data_base_general = self.data_bases.lock().unwrap();
 

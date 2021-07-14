@@ -268,15 +268,6 @@ impl DataBaseString<String> {
         0
     }
 
-    /*pub fn touch(&self, keys: Vec<String>) -> Vec<u64> {
-        //let mut cont = 0;
-        let mut vec = vec![];
-        for key in keys {
-            vec.push(self.touch_key(key));
-        }
-        vec
-    }*/
-
     fn get_value(&self, key: String) -> DataString<String> {
         let db = self.db.lock().unwrap();
 
