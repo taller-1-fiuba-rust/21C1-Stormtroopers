@@ -316,7 +316,6 @@ impl DataBaseResolver {
     }
 
     pub fn valid_key_type(&self, key: &str, key_type: &str) -> Result<bool, RunError> {
-
         let key_type_db = key_type.to_string();
         match self.type_key(key.to_string()) {
             Ok(db_type) => {
@@ -325,8 +324,8 @@ impl DataBaseResolver {
                 } else {
                     Err(RunError {
                         message: "ERR WRONGTYPE.".to_string(),
-                        cause:
-                        "Operation against a key holding the wrong kind of value".to_string(),
+                        cause: "Operation against a key holding the wrong kind of value"
+                            .to_string(),
                     })
                 }
             }
@@ -334,9 +333,7 @@ impl DataBaseResolver {
         }
     }
 
-    pub fn valid_key_type_lock(&self, db: &DataBaseString<String>, key: &str){
-
-    }
+    pub fn valid_key_type_lock(&self, db: &DataBaseString<String>, key: &str) {}
 
     //TODO: threadsafety?
     pub fn check_db_string(&self, key: String) -> bool {
