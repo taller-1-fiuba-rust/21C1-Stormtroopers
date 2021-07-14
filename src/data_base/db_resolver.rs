@@ -129,13 +129,13 @@ impl DataBaseResolver {
         let idx = self.retrieve_index(key.as_str());
         for dbs in databases.values() {
             if let DataBase::DataBaseString(db_string) = dbs[idx].clone() {
-                db_string.clear_key(key.clone());
+                db_string.clear_key(key);
                 break;
             } else if let DataBase::DataBaseList(db_list) = dbs[idx].clone() {
-                db_list.clear_key(key.clone());
+                db_list.clear_key(key);
                 break;
             } else if let DataBase::DataBaseSet(db_set) = dbs[idx].clone() {
-                db_set.clear_key(key.clone());
+                db_set.clear_key(key);
                 break;
             }
         }
@@ -333,7 +333,7 @@ impl DataBaseResolver {
         }
     }
 
-    pub fn valid_key_type_lock(&self, db: &DataBaseString<String>, key: &str) {}
+    pub fn valid_key_type_lock(&self, _db: &DataBaseString<String>, _key: &str) {}
 
     //TODO: threadsafety?
     pub fn check_db_string(&self, key: String) -> bool {
