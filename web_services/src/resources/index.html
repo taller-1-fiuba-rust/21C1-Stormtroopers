@@ -1,0 +1,73 @@
+<!--
+<html>
+<head>
+    <style>
+        .myDiv {
+            border: 5px outset red;
+            background-color: lightblue;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bienvenido a Redis Taller de Programacion I</h1>
+    <p>Redis</p>
+    <form action="http://127.0.0.1:8080/redis" method="post" target="_blank">
+        <input type="text" maxlength="10">
+        <input type="submit" value="Send">
+        <input type="hidden" value="aaaaa">
+    </form>
+    <div id="redis_response" class="redis-response">
+    </div>
+</body>
+</html>
+-->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Redis Web</title>
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+</head>
+<body>
+
+<form action="/redis" id="redisForm">
+    <input type="text" name="message" placeholder="Redis message...">
+    <input type="submit" value="Send">
+</form>
+<!-- the result of the search will be rendered inside this div -->
+<div id="result"></div>
+
+<script>
+    // Attach a submit handler to the form
+    $( "#redisForm" ).submit(function( event ) {
+
+        event.preventDefault();
+
+        var $form = $( this ),
+            url = $form.attr( "action" );
+        var term = $form.find( "input[name='message']" ).val();
+        //term += '%3D';
+        /*
+        var posting = $.post( url, { message: term } );
+        posting.done(function( data ) {
+            var content = data;
+            $( "#result" ).append("<br> <strong>"+ content + "</strong>");
+        });
+         */
+        var posting = $.ajax({
+          type: "POST",
+            beforeSend: function(request) {
+                request.setRequestHeader("Content-type", "text/html; charset=utf-8");
+            },
+            url: url,
+            data: "command="+term,
+            success: function(data) {
+                $( "#result" ).append("<br> <strong>"+ data + "</strong>");
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
