@@ -17,7 +17,7 @@ use web_services::Request;
 use std::io::{BufRead, BufReader};
 
 fn main() {
-    let host_port = "127.0.0.1:8080";
+    let host_port = "127.0.0.1:8081";
     let listener = TcpListener::bind(host_port).unwrap();
     let pool = ThreadPool::new(4);
     println!("Init web server. Server host:port: {}", host_port);
@@ -64,7 +64,7 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
             cmd = line.split_at(8).1.to_string().replace("\x00","");
         }
     }
-    println!("CMD: {}",cmd);
+    println!("CMD: {}",req);
 
     let get = b"GET / HTTP/1.1\r\n";
     let get_index = b"GET /index HTTP/1.1";
@@ -100,7 +100,7 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
 
         thread::sleep(Duration::from_secs(rand));
 
-        let mut file = File::open("src/hello.html").unwrap();
+        let mut file = File::open("src/resources/index.html").unwrap();
 
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();
@@ -111,7 +111,7 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
         stream.flush().unwrap();
     } else {
         let status_line = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
-        let mut file = File::open("src/404.html").unwrap();
+        let mut file = File::open("src/resources/404.html").unwrap();
         let mut contents = String::new();
 
         file.read_to_string(&mut contents).unwrap();

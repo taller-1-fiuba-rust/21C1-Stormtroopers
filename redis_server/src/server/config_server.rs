@@ -66,7 +66,6 @@ impl ConfigServer {
         println!("Load file config {}", path_file);
         if let Ok(lines) = read_lines(path_file) {
             for line in lines.into_iter().flatten() {
-                //let mut props = props.clone();
                 let prop_slited: Vec<&str> = line.split('=').collect();
                 println!(
                     "Load prop config '{}' -> {}",

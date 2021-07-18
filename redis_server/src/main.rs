@@ -21,9 +21,6 @@ fn main() {
         Err(e) => panic!("{}", e.message),
     };
 
-    //deprecated
-    //server.load_config(argv)?;
-
     println!("Server {} is up!", server.server_name());
 
     let server_port = server.get_server_port();
