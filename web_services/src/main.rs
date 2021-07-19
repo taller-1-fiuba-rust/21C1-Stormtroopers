@@ -3,28 +3,29 @@ use std::net::TcpListener;
 use std::net::TcpStream;
 use std::fs::File;
 use web_services::ThreadPool;
-
 use std::str;
-
 use std::thread;
-
 use rand::prelude::*;
-
 use std::time::{Duration, SystemTime};
-
 use web_services::Request;
-
 use std::io::{BufRead, BufReader};
 
-fn main() {
-    let host_port = "127.0.0.1:8081";
-    let listener = TcpListener::bind(host_port).unwrap();
-    let pool = ThreadPool::new(4);
-    println!("Init web server. Server host:port: {}", host_port);
+// CONSTANTS
+const HTTP_PORT: &str = "127.0.0.1:8081";
+const REDIS_PORT: &str = "127.0.0.1:8082";
+const HTTP_GET: &[u8; 16] = b"GET / HTTP/1.1\r\n";
+const HTTP_GET_INDEX: &[u8; 21] = b"GET /index HTTP/1.1\r\n";
+const HTTP_POST_REDIS: &[u8; 22] = b"POST /redis HTTP/1.1\r\n";
+const HTTP_POST_CONFIG: &[u8; 23] = b"POST /config HTTP/1.1\r\n";
 
-    let host_port = "127.0.0.1:8082";
-    let mut stream_redis = TcpStream::connect(host_port).unwrap();
-    println!("Connection Redis server[{}]...",host_port);
+fn main() {
+
+    let listener = TcpListener::bind(HTTP_PORT).unwrap();
+    let pool = ThreadPool::new(4);
+    println!("Init web server. Server host:port: {}", HTTP_PORT);
+
+    let mut stream_redis = TcpStream::connect(REDIS_PORT).unwrap();
+    println!("Connection Redis server[{}]...",REDIS_PORT);
 
     for stream in listener.incoming() {
         let mut stream = stream.unwrap();
@@ -64,17 +65,12 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
             cmd = line.split_at(8).1.to_string().replace("\x00","");
         }
     }
-    println!("CMD: {}",req);
-
-    let get = b"GET / HTTP/1.1\r\n";
-    let get_index = b"GET /index HTTP/1.1";
-    let post_redis = b"POST /redis";
-    let post_config = b"POST /config HTTP/1.1\r\n";
+    println!("CMD: {}", cmd);
 
     //println!("request: {}", req);
-    if buffer.starts_with(get_index) {
+    if buffer.starts_with(HTTP_GET_INDEX) {
         process_get_index(stream);
-    } else if buffer.starts_with(post_redis) {
+    } else if buffer.starts_with(HTTP_POST_REDIS) {
         println!("in redis");
         /*
        for line in reader.lines() {
@@ -91,9 +87,9 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
             break;
         } */
         process_redis(stream, stream_redis, cmd);
-    } else if buffer.starts_with(post_config) {
+    } else if buffer.starts_with(HTTP_POST_CONFIG) {
         process_config(stream);
-    } else if buffer.starts_with(get) {
+    } else if buffer.starts_with(HTTP_GET) {
         let mut rng = thread_rng();
         let rand = rng.gen_range(0..5);
         println!("Random number: {}",rand);

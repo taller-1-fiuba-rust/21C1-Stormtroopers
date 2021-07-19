@@ -75,14 +75,7 @@
         var $form = $(this),
           url = $form.attr("action");
         var term = $form.find("input[name='message']").val();
-        //term += '%3D';
-        /*
-        var posting = $.post( url, { message: term } );
-        posting.done(function( data ) {
-            var content = data;
-            $( "#result" ).append("<br> <strong>"+ content + "</strong>");
-        });
-         */
+
         var posting = $.ajax({
           type: "POST",
           beforeSend: function (request) {
