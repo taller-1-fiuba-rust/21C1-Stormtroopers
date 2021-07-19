@@ -24,7 +24,7 @@ const INFO_LOAD_FILE_CONFIG: &str = "Load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_DEFAULT: &str = "Load file config server default ...\n";
 const ERROR_COUNT_ARGS: &str = "Error count args\n";
 const LOG_NAME: &str = "log";
-const LOG_PATH: &str = "../";
+const LOG_PATH: &str = "./";
 const ERROR_LOG_CREATE: &str = "Error creating Logger";
 
 impl Loggable for AppInfo {
