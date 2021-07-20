@@ -50,13 +50,15 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
     //Parse request
 
 
-    println!("Request out");
+    //println!("Request out");
     let mut buffer = [0; 2048];
     let len = stream.read(&mut buffer).unwrap();
     //buffer = bytes.Trim(buffer, "\x00");
     //std::replace( vecBuffer.begin(), vecBuffer.end(), '\x00', "");
+
     let req = String::from_utf8_lossy(&buffer);
-    println!("Request Buffer: {}",req);
+    //println!("Request Buffer: {}",req);
+
     let req_split = req.split('\n').collect::<Vec<&str>>();
 //    println!("line0: {}",req_split[0]);
     let mut cmd = "".to_string();
@@ -65,28 +67,13 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
             cmd = line.split_at(8).1.to_string().replace("\x00","");
         }
     }
-    println!("CMD: {}", cmd);
+    println!("Command received: {}", cmd);
 
-    //println!("request: {}", req);
     if buffer.starts_with(HTTP_GET_INDEX) {
         process_get_index(stream);
     } else if buffer.starts_with(HTTP_POST_REDIS) {
-        println!("in redis");
-        /*
-       for line in reader.lines() {
-
-           println!("Request line: {}", line.unwrap());
-
-           if line.to_string().contains("message=") {
-               //msg = line.clone().split('=').collect::<Vec<&str>>();
-               //println!("Message found {} -> {}",msg[0],msg[1]);
-               return line
-
-           }
-
-            break;
-        } */
         process_redis(stream, stream_redis, cmd);
+    /*
     } else if buffer.starts_with(HTTP_POST_CONFIG) {
         process_config(stream);
     } else if buffer.starts_with(HTTP_GET) {
@@ -105,6 +92,7 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
 
         stream.write_all(response.as_bytes()).unwrap();
         stream.flush().unwrap();
+     */
     } else {
         let status_line = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
         let mut file = File::open("src/resources/404.html").unwrap();
@@ -126,6 +114,7 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
     println!("Time duration {:?}",difference);
 }
 
+/*
 fn process_message(stream: &mut TcpStream) -> String {
     let stream_reader = stream.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream);
@@ -147,25 +136,70 @@ fn process_message(stream: &mut TcpStream) -> String {
     println!("OUT");
     "ping".to_string()
 }
+ */
 fn process_redis(stream: &mut TcpStream, stream_redis: &mut TcpStream, msg_redis: String) {
+    /*
     println!();
     println!("ME CONECTO A REDIS!!!");
     println!("Sending ... {:?}", msg_redis);
+     */
 
 /*
     let host_port = "127.0.0.1:8082";
     let mut stream_out = TcpStream::connect(host_port).unwrap();
     println!("Connection Redis server[{}]...",host_port);
  */
+
+    println!("Execute Redis command..");
+
     let mut msg = msg_redis.to_string();
     msg.push('\n');
     stream_redis.write_all(msg.as_bytes());
-    //let mut buffer = [0;64];
-    //stream2.read(&mut buffer);
+    stream_redis.flush().unwrap();
+    let max_read = 4;
+    let mut len = 0;
+    let mut len2 = 0;
+    let mut eof = false;
+
+    let mut buffer = "".to_string();
+    let mut buffer2 = vec![0;max_read];
+    let mut res = "".to_string();
+    stream_redis.set_read_timeout(Some(Duration::from_millis(500)));
+    loop {
+        match stream_redis.read_to_string(&mut buffer) {
+            Ok(n) => { println!("Reding: {} -> {}", len, buffer); },
+            _ => { println!("Error"); break; }
+        }
+    }
+    /*
+        len = stream_redis.read(&mut buffer).unwrap();
+        println!("len reading: {}", len);
+
+        if len < max_read {
+            len2 = stream_redis.read(&mut buffer2).unwrap();
+            println!("End buffer: {} -> {}", len2, String::from_utf8_lossy(&buffer2));
+            break;
+        }
+        res.push_str(&String::from_utf8_lossy(&buffer));
+         */
+
+        println!("Reading partial: {}", buffer);
+
+    res = buffer;
+
+    println!("Response Redis: {}", res);
+    let res_clean = res.replace("127.0.0.1:8082>","");
+    println!("Response Redis clean: {}", res_clean);
+
+    let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",res_clean.len(), res_clean);//String::from_utf8_lossy(&buffer)
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
+
+    /*
     let stream_reader = stream_redis.try_clone().expect("Cannot clone stream reader");
     let reader = BufReader::new(stream_reader);
-    let lines = reader.lines();
-    let mut res = "".to_string();
+    let mut lines = reader.lines();
+     */
 
     /*
     let mut buffer = [0; 2048];
@@ -174,19 +208,42 @@ fn process_redis(stream: &mut TcpStream, stream_redis: &mut TcpStream, msg_redis
     println!("Response Redis Buffer: {}",res);
      */
 
+    /*
+    while let Some(line) = lines.next() {
+        //let length: i32 = line.as_ref().unwrap().trim().parse().unwrap();
+        let line_ok = line.as_ref().unwrap();
+        println!("Read line Redis: {}", line_ok);
+        if line_ok.contains("#") {
+            break;
+        } else {
+            res.push_str(line_ok);
+            res.push_str("\n");
+        }
 
+
+        /*
+        for _ in 0..length {
+            let line = lines
+                .next()
+                .expect("there was no next line")
+                .expect("the line could not be read");
+
+            println!("{}", line);
+        }
+         */
+
+    }
+     */
+
+/*
     for line in lines {
         if let Ok(line_ok) = line {
+            println!("Read line Redis: {}", line_ok);
             res += &line_ok;
-            break;
-        }
+            //break;
+        } else { break; }
     }
-    println!("Response Redis: {}", res);
-
-
-    let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",res.len(), res);//String::from_utf8_lossy(&buffer)
-    stream.write(response.as_bytes()).unwrap();
-    stream.flush().unwrap();
+ */
 
     /*
     for stream in listener.incoming() {

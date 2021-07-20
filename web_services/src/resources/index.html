@@ -87,8 +87,11 @@
           url: url,
           data: "command=" + term,
           success: function (data) {
-            $("#result").append("<br> <strong>" + term + "</strong>");
-            $("#result").append("<br> <strong>" + data + "</strong>");
+            data = data.replaceAll("\n","<br>");
+            var term_show = "localhost:8081> "+term;
+            $("#result").prepend("<br> <strong>" + data + "</strong>");
+            $("#result").prepend("<br> <strong>" + term_show + "</strong>");
+
           },
         });
       });

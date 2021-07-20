@@ -4,7 +4,7 @@ pub static TYPE_LIST: &str = "List";
 pub static TYPE_SET: &str = "Set";
 
 /** Constants used in the app **/
-pub static THREAD_POOL_COUNT: usize = 4; //ponerlo en el config para que se pueda cambiar
+pub static THREAD_POOL_COUNT: usize = 16; //TODO: ponerlo en el config para que se pueda cambiar
 pub static END_FLAG: &str = "exit";
 pub static MSG_OVER: &str = "MESSAGE: Connection over\n";
 pub static LINE_BREAK: char = '\n';
