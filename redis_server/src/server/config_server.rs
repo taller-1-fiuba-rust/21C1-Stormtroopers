@@ -12,7 +12,7 @@ use crate::server::logger::{Loggable, Logger};
 
 const INFO_LOAD_FILE_CONFIG: &str = "Init load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_OK: &str = "Load file config OK\n";
-const PATH_FILE_CONFIG_DEFAULT: &str = "../redis.config";
+const PATH_FILE_CONFIG_DEFAULT: &str = "./redis.config";
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where

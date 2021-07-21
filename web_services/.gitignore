@@ -2,4 +2,4 @@
 Cargo.lock
 target/
 log
-../dump.rdb
+../redis_server/dump.rdb

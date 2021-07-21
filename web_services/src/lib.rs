@@ -66,6 +66,7 @@ impl Worker {
     }
 }
 
+/*
 pub struct Request {
     pub other: (bool, String),
     pub body: (bool, String),
@@ -81,3 +82,4 @@ impl Request {
         }
     }
 }
+ */
