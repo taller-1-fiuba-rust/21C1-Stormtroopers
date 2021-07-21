@@ -1,6 +1,4 @@
-/*
-    This is to expose the server submodule to main.rs
-*/
+//! This crate takes care of the vital parts of the app. 
 pub mod app_info;
 pub mod config_server;
 pub mod connection;

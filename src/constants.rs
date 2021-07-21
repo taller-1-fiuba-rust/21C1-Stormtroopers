@@ -1,3 +1,4 @@
+//! Some of the common constants used in various crates.
 /** Data base types **/
 pub static TYPE_STRING: &str = "String";
 pub static TYPE_LIST: &str = "List";
