@@ -1,12 +1,18 @@
+//! Has the responsibility of validating the user input and fetching the apropiate command for it.
 use crate::errors::parse_error::ParseError;
 use crate::errors::run_error::RunError;
 
+/// The ParsedMessage struct stores the correctly parsed input of the user.
 pub struct ParsedMessage {
+    /// The command entered.
     pub command: String,
+    /// The remaining words entered by the user.
     pub arguments: Vec<String>,
 }
 
 impl ParsedMessage {
+
+    /// Validates the number of words in the input, and returns a Result<>.
     pub fn validate_args(
         args: Vec<&str>,
         min_num_args_valid: i32,
@@ -27,7 +33,8 @@ impl ParsedMessage {
     }
 }
 
-fn fin_end_quote(
+/// Tries to find the ending double quote of a given argument.
+fn find_end_quote(
     pos: usize,
     request: Vec<&str>,
     mut string: String,
@@ -42,6 +49,7 @@ fn fin_end_quote(
     Err(ParseError::quote_value(&"err"))
 }
 
+/// Validates that the request is correct in terms of arguments with double quotes and spaces.
 fn validate_request(request: Vec<&str>) -> Result<Vec<String>, ParseError> {
     let mut validates_args = vec![];
     let mut pos = 0;
@@ -50,7 +58,7 @@ fn validate_request(request: Vec<&str>) -> Result<Vec<String>, ParseError> {
         if !request[pos].is_empty() && request[pos] != " " {
             let arg = request[pos].split_ascii_whitespace().next().unwrap();
             if arg.to_string().contains('\"') {
-                let vec = fin_end_quote(pos, request.clone(), request[pos].to_string())?;
+                let vec = find_end_quote(pos, request.clone(), request[pos].to_string())?;
                 pos = vec.0;
                 validates_args.push(vec.1.trim_end().to_string());
             } else {
@@ -64,6 +72,7 @@ fn validate_request(request: Vec<&str>) -> Result<Vec<String>, ParseError> {
     Ok(validates_args)
 }
 
+/// Validates the correctness of the first argument of the input, aka. the command.
 pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
     let msg_lower = String::from(msg).to_lowercase();
     if msg_lower.is_empty() {

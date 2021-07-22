@@ -1,4 +1,4 @@
-//! This crate takes care of the vital parts of the app. 
+//! This crate takes care of the vital parts of the app.
 pub mod app_info;
 pub mod config_server;
 pub mod connection;

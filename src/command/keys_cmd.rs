@@ -1,3 +1,4 @@
+//! Commands related to Keys (doesn't depend on the type of the data refered to) and its functionality.
 pub mod copy_cmd;
 pub mod del_cmd;
 pub mod exists_cmd;

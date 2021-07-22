@@ -1,3 +1,4 @@
+//! Commands related to the server and configurations.
 pub mod clear_cmd;
 pub mod config_cmd;
 pub mod dbsize_cmd;
