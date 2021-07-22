@@ -1,4 +1,4 @@
-//! If the data is a string that can be parsed as a number, it increments it by the amount entered. 
+//! If the data is a string that can be parsed as a number, it increments it by the amount entered.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

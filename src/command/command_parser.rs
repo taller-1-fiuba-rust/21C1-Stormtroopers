@@ -11,7 +11,6 @@ pub struct ParsedMessage {
 }
 
 impl ParsedMessage {
-
     /// Validates the number of words in the input, and returns a Result<>.
     pub fn validate_args(
         args: Vec<&str>,
