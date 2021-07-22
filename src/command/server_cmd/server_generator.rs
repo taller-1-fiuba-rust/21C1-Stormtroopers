@@ -1,3 +1,4 @@
+//! Helper function that instanciate all of the server related commands.
 use crate::command::command_builder::CommandBuilder;
 use crate::command::server_cmd::clear_cmd::ClearCommand;
 use crate::command::server_cmd::config_cmd::ConfigCommand;

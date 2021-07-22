@@ -1,3 +1,4 @@
+//! Clears the client terminal and resets the cursor.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::server::app_info::AppInfo;

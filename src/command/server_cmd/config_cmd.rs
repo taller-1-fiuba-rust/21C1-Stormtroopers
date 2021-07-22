@@ -1,3 +1,4 @@
+//! Consists of two parts, get and set. This make this command to retrieve and modify some settings in redis.conf file.
 use crate::command::cmd_trait::Command;
 
 use crate::command::command_builder::CommandBuilder;

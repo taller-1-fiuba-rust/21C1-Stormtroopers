@@ -1,3 +1,4 @@
+//! Logs in the screen all inputs and outputs made by all clients and the server.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::constants::LINE_BREAK;

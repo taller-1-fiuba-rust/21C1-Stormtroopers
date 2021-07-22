@@ -1,3 +1,4 @@
+//! A command group that ables the client to create and subscribe to channels of information.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;

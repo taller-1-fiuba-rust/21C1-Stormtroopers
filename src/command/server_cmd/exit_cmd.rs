@@ -1,3 +1,4 @@
+//! Closes the connection between the redis server and the client.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
