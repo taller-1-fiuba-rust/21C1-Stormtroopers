@@ -1,4 +1,5 @@
 use crate::data_base::data_db::data_set::DataSet;
+use crate::data_base::db_list::{list_can_be_parsed, parse_list, sort_parsed_list};
 use crate::errors::run_error::RunError;
 use regex::Regex;
 use std::collections::{BTreeSet, HashMap};
@@ -160,6 +161,10 @@ impl DataBaseSet<String> {
         for elem in set {
             list.push(elem);
         }
+        if list_can_be_parsed(list.clone()) {
+            let response = parse_list(sort_parsed_list(list));
+            return response;
+        }
         list.sort();
         list
     }
@@ -182,14 +187,6 @@ impl DataBaseSet<String> {
         0
     }
 
-    /*pub fn touch(&self, keys: Vec<String>) -> usize {
-        let mut cont = 0;
-        for key in keys {
-            cont += self.touch_key(key);
-        }
-        cont
-    }*/
-
     fn parse_data(&self, set: BTreeSet<String>) -> String {
         let mut parsed_data = String::from("");
         for item in set.iter() {
@@ -209,9 +206,23 @@ impl DataBaseSet<String> {
         data
     }
 
+    fn return_all_keys(&self) -> Vec<String> {
+        let mut response = vec![];
+        let hash = self.db_set.lock().unwrap();
+
+        for key in hash.keys() {
+            response.push(key.clone());
+        }
+
+        response
+    }
+
     pub fn keys(&self, pattern: &str) -> Vec<String> {
         let mut keys_vec = Vec::<String>::new();
         let db = self.db_set.lock().unwrap();
+        if pattern == "*" {
+            return self.return_all_keys();
+        }
         let re = Regex::new(pattern).unwrap();
 
         for key in db.keys() {
