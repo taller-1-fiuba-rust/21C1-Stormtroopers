@@ -5,29 +5,33 @@ use std::fs::File;
 use web_services::ThreadPool;
 use std::str;
 use std::time::{Duration, SystemTime};
+use std::env::args;
 
-// CONSTANTS
-const HTTP_PORT: &str = "127.0.0.1:8081";
-const REDIS_PORT: &str = "127.0.0.1:8082";
-//const HTTP_GET: &[u8; 16] = b"GET / HTTP/1.1\r\n";
+/* Constants */
 const HTTP_GET_INDEX: &[u8; 21] = b"GET /index HTTP/1.1\r\n";
 const HTTP_POST_REDIS: &[u8; 22] = b"POST /redis HTTP/1.1\r\n";
-//const HTTP_POST_CONFIG: &[u8; 23] = b"POST /config HTTP/1.1\r\n";
 
 fn main() {
+    let argv = args().collect::<Vec<String>>();
+    if argv.len() != 3 {
+        println!("Error: Debe agregar el host y port del servicio web y del servidor Redis destino: <host>:<port> <host_redis>:<port_redis>");
+        return;
+    }
+    let host_port = &argv[1];
+    let host_port_redis = &argv[2];
 
-    let listener = TcpListener::bind(HTTP_PORT).unwrap();
-    let _pool = ThreadPool::new(4);
-    println!("Init web server. Server host:port: {}", HTTP_PORT);
+    let listener = TcpListener::bind(host_port).unwrap();
+    //let _pool = ThreadPool::new(4);
+    println!("Init web server. Server hosting in: {}", host_port);
 
-    let mut stream_redis = TcpStream::connect(REDIS_PORT).unwrap();
-    println!("Connection Redis server[{}]...",REDIS_PORT);
+    let mut stream_redis = TcpStream::connect(host_port_redis).unwrap();
+    println!("Connection Redis server[{}]...",host_port_redis);
 
     for stream in listener.incoming() {
         let mut stream = stream.unwrap();
         println!("Execute listener!");
 
-        handle_connection(&mut stream, &mut stream_redis);
+        handle_connection(&mut stream, &mut stream_redis, host_port_redis);
 
         /*
         pool.execute(|| {
@@ -37,7 +41,7 @@ fn main() {
     }
 }
 
-fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
+fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream, host_port_redis: &str) {
     let time = SystemTime::now();
 
     let _stream_reader = stream.try_clone().expect("Cannot clone stream reader");
@@ -61,7 +65,7 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
     if buffer.starts_with(HTTP_GET_INDEX) {
         process_get_index(stream);
     } else if buffer.starts_with(HTTP_POST_REDIS) {
-        process_redis(stream, stream_redis, cmd);
+        process_redis(stream, stream_redis, cmd, host_port_redis);
     } else {
         let status_line = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
         let mut file = File::open("src/resources/404.html").unwrap();
@@ -83,7 +87,7 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream) {
     println!("Time duration {:?}",difference);
 }
 
-fn process_redis(stream: &mut TcpStream, stream_redis: &mut TcpStream, msg_redis: String) {
+fn process_redis(stream: &mut TcpStream, stream_redis: &mut TcpStream, msg_redis: String, host_port_redis: &str) {
     println!("Execute Redis command..");
 
     let mut msg = msg_redis;
@@ -110,7 +114,9 @@ fn process_redis(stream: &mut TcpStream, stream_redis: &mut TcpStream, msg_redis
     _res = buffer;
 
     println!("Response Redis: {}", _res);
-    let res_clean = _res.replace("127.0.0.1:8082>","");
+    let mut replace_host_redis = host_port_redis.to_string();
+    replace_host_redis.push('>');
+    let res_clean = _res.replace(replace_host_redis.as_str(),"");
     println!("Response Redis clean: {}", res_clean);
 
     let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",res_clean.len(), res_clean);//String::from_utf8_lossy(&buffer)
