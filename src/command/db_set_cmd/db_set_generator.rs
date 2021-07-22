@@ -1,3 +1,4 @@
+//! Helper function that instanciate all of the set related commands.
 use crate::command::command_builder::CommandBuilder;
 use crate::command::db_set_cmd::sadd_cmd::SaddCommand;
 use crate::command::db_set_cmd::scard_cmd::ScardCommand;

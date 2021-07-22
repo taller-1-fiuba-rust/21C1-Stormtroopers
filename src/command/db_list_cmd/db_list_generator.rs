@@ -1,3 +1,4 @@
+//! Helper function that instanciate all of the list related commands.
 use crate::command::command_builder::CommandBuilder;
 use crate::command::db_list_cmd::lindex_cmd::LindexCommand;
 use crate::command::db_list_cmd::llen_cmd::LLenCommand;

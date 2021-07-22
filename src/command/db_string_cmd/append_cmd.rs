@@ -1,3 +1,4 @@
+//! Agrega el valor al final del String dado por la clave. Si no eiste, se crea una nueva.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

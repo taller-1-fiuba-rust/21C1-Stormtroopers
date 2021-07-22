@@ -1,3 +1,4 @@
+//! Gets the string value and then sets it as the value specified.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

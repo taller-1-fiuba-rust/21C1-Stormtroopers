@@ -1,3 +1,4 @@
+//! Helper function that instanciate all of the string related commands.
 use crate::command::command_builder::CommandBuilder;
 use crate::command::db_string_cmd::append_cmd::AppendCommand;
 use crate::command::db_string_cmd::decrby_cmd::DecrbyCommand;
