@@ -452,11 +452,11 @@ impl DataBaseList<String> {
     }
 
     pub fn keys(&self, pattern: &str) -> Vec<String> {
-        let mut keys_vec = Vec::<String>::new();
-        let db = self.db_list.lock().unwrap();
         if pattern == "*" {
             return self.return_all_keys();
         }
+        let mut keys_vec = Vec::<String>::new();
+        let db = self.db_list.lock().unwrap();
         let re = Regex::new(pattern).unwrap();
 
         for key in db.keys() {
