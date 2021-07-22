@@ -1,3 +1,4 @@
+//! Given a key, resets last access time and, triggers cleanup if ttl is expired for that key.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

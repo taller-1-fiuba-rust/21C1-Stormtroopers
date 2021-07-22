@@ -1,3 +1,4 @@
+//! Returns the elements contained in the List or Set asociated to the given key, sorted.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

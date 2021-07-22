@@ -1,3 +1,4 @@
+//! Returns the expire time of a key.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;

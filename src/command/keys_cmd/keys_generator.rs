@@ -1,3 +1,4 @@
+//! Helper function that instanciate all of the key related commands. 
 use crate::command::command_builder::CommandBuilder;
 use crate::command::keys_cmd::copy_cmd::CopyCommand;
 use crate::command::keys_cmd::del_cmd::DelCommand;
