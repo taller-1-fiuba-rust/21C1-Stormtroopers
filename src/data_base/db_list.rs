@@ -485,7 +485,7 @@ pub fn sort_parsed_list(list: Vec<String>) -> Vec<i32> {
     for elem in list {
         return_list.push(validate_elem(elem).unwrap());
     }
-    return_list.sort();
+    return_list.sort_unstable();
     return_list
 }
 
@@ -508,10 +508,7 @@ pub fn list_can_be_parsed(list: Vec<String>) -> bool {
 }
 
 pub fn elem_can_be_parsed(elem: String) -> bool {
-    if let Ok(_) = validate_elem(elem) {
-        return true;
-    }
-    false
+    validate_elem(elem).is_ok()
 }
 
 #[cfg(test)]
