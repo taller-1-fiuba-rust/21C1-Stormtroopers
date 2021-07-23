@@ -1,4 +1,16 @@
 //! Consists of two parts, get and set. This make this command to retrieve and modify some settings in redis.conf file.
+//! 
+//! Example config get:
+//! ```text
+//! > config get port
+//! 8081
+//! ```
+//! 
+//! Example config set:
+//! ```text
+//! > config set verbose true
+//! OK
+//! ```
 use crate::command::cmd_trait::Command;
 
 use crate::command::command_builder::CommandBuilder;
@@ -9,18 +21,32 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_RUN_COMMAND: &str = "Run command CONFIG\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "ConfigCommand";
+
+/// Key of the command.
 const CONST_CMD: &str = "config";
 
+/// Substring for the command.
 const SUB_CMD_GET: &str = "get";
+
+/// Substring for the command.
 const SUB_CMD_SET: &str = "set";
 
+/// Min amount of arguments besides the command name.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides the command name.
 const MAX_VALID_ARGS: i32 = 3;
 
+/// Main structure of the command.
 pub struct ConfigCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

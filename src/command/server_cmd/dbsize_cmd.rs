@@ -1,4 +1,10 @@
 //! Returns the amount of pairs key/value stored in the database.
+//! 
+//! Example:
+//! ```text
+//! > dbsize
+//! 4
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -7,15 +13,26 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_DBSIZE_COMMAND: &str = "Run command DBSIZE\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "DbSizeCommand";
+
+/// Key of the command.
 const CONST_CMD: &str = "dbsize";
 
+/// Min amount of arguments besides the command name.
 const MIN_VALID_ARGS: i32 = 0;
+
+/// Max amount of arguments besides the command name.
 const MAX_VALID_ARGS: i32 = 0;
 
+/// Main structure of the command.
 pub struct DbSizeCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

@@ -1,4 +1,10 @@
 //! Closes the connection between the redis server and the client.
+//! 
+//! Example:
+//! ```text
+//! > exit
+//! MESSAGE: Connection over
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -7,15 +13,26 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command EXIT\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "ExitCommand";
+
+/// Key of the command.
 const CONST_CMD: &str = "exit";
 
+/// Min amount of arguments besides the command name.
 const MIN_VALID_ARGS: i32 = 0;
+
+/// Max amount of arguments besides the command name.
 const MAX_VALID_ARGS: i32 = 0;
 
+/// Main structure of the command.
 pub struct ExitCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

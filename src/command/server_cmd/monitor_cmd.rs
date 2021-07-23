@@ -1,4 +1,10 @@
 //! Logs in the screen all inputs and outputs made by all clients and the server.
+//! 
+//! Example
+//! ```text
+//! > monitor
+//! OK
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::constants::LINE_BREAK;
@@ -6,12 +12,20 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command MONITOR\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "MonitorCommand";
+
+/// Key of the command.
 const CONST_CMD: &str = "monitor";
 
+/// Main structure of the command.
 pub struct MonitorCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

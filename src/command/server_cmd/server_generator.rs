@@ -12,6 +12,7 @@ use crate::command::server_cmd::pubsub_cmd::PubsubCommand;
 use crate::server::logger::Logger;
 use std::process;
 
+/// Each command is instanciated and stored in the command_builder Hashmap structure.
 pub fn insert_commands(command_builder: CommandBuilder, logger: Logger<String>) {
     PubsubCommand::new(process::id(), logger.clone(), command_builder.clone());
     ConfigCommand::new(process::id(), logger.clone(), command_builder.clone());
