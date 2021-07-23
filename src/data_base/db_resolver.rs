@@ -1,3 +1,4 @@
+//! Redirects the request to the apropiate database, and handles logic that is type agnostic.
 use crate::constants::{SHARING_COUNT_DEFAULT, TYPE_LIST, TYPE_SET, TYPE_STRING};
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_set::DataBaseSet;

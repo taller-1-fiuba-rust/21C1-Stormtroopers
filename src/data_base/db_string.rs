@@ -1,3 +1,4 @@
+//! Database structure in charge of storing and processing Strings.
 use crate::data_base::data_db::data_string::DataString;
 use crate::errors::run_error::RunError;
 use regex::Regex;
