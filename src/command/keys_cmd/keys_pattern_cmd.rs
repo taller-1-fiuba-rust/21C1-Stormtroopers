@@ -55,14 +55,15 @@ impl Command for KeysCommand {
         let keys = db.keys(&String::from(args[0]));
         let mut response = "".to_string();
 
-        for key in keys {
+        for (i, key) in keys.iter().enumerate() {
+            response.push_str(&format!("{}) ", i + 1));
             response.push_str(&key);
             response.push(LINE_BREAK);
         }
 
         /*probar
-        set hola@ 21
-        keys ^(?P<login>[^@\s]+)@
+        set aa 21
+        keys a*
         */
         Ok(response)
     }

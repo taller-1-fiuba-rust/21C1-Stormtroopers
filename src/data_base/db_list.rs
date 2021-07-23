@@ -274,6 +274,10 @@ impl DataBaseList<String> {
     pub fn sort(&self, key: String) -> Result<Vec<String>, RunError> {
         if let Ok(list) = self.get_list(key) {
             let mut list_client = list;
+            if list_can_be_parsed(list_client.clone()) {
+                let response = parse_list(sort_parsed_list(list_client));
+                return Ok(response);
+            }
             list_client.sort();
             return Ok(list_client);
         }
@@ -290,14 +294,6 @@ impl DataBaseList<String> {
         }
         0
     }
-
-    /*pub fn touch(&self, keys: Vec<String>) -> usize {
-        let mut cont = 0;
-        for key in keys {
-            cont += self.touch_key(key);
-        }
-        cont
-    }*/
 
     pub fn clear_key(&self, key: String) {
         let mut db = self.db_list.lock().unwrap().clone();
@@ -444,7 +440,21 @@ impl DataBaseList<String> {
         data
     }
 
+    fn return_all_keys(&self) -> Vec<String> {
+        let mut response = vec![];
+        let hash = self.db_list.lock().unwrap();
+
+        for key in hash.keys() {
+            response.push(key.clone());
+        }
+
+        response
+    }
+
     pub fn keys(&self, pattern: &str) -> Vec<String> {
+        if pattern == "*" {
+            return self.return_all_keys();
+        }
         let mut keys_vec = Vec::<String>::new();
         let db = self.db_list.lock().unwrap();
         let re = Regex::new(pattern).unwrap();
@@ -457,6 +467,48 @@ impl DataBaseList<String> {
 
         keys_vec
     }
+}
+
+pub fn validate_elem(elem: String) -> Result<i32, RunError> {
+    if let Ok(val) = elem.parse::<i32>() {
+        Ok(val)
+    } else {
+        Err(RunError {
+            message: "Element is not an integer".to_string(),
+            cause: "The argument cannot be interpreted as an integer".to_string(),
+        })
+    }
+}
+
+pub fn sort_parsed_list(list: Vec<String>) -> Vec<i32> {
+    let mut return_list = vec![];
+    for elem in list {
+        return_list.push(validate_elem(elem).unwrap());
+    }
+    return_list.sort_unstable();
+    return_list
+}
+
+pub fn parse_list(list: Vec<i32>) -> Vec<String> {
+    let mut response = vec![];
+    for elem in list {
+        response.push(elem.to_string());
+    }
+
+    response
+}
+
+pub fn list_can_be_parsed(list: Vec<String>) -> bool {
+    for elem in list {
+        if !elem_can_be_parsed(elem.clone()) {
+            return false;
+        }
+    }
+    true
+}
+
+pub fn elem_can_be_parsed(elem: String) -> bool {
+    validate_elem(elem).is_ok()
 }
 
 #[cfg(test)]

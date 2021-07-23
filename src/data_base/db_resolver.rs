@@ -123,7 +123,6 @@ impl DataBaseResolver {
         clear_count
     }
 
-    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn clear_key(&self, key: String) {
         let databases = self.data_bases.lock().unwrap();
         let idx = self.retrieve_index(key.as_str());
@@ -183,7 +182,6 @@ impl DataBaseResolver {
         }
     }
 
-    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn get_string_db_sharding(&self, key: &str) -> DataBaseString<String> {
         let index_sharing = self.retrieve_index(key);
 
@@ -201,7 +199,6 @@ impl DataBaseResolver {
         }
     }
 
-    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn get_set_db_sharding(&self, key: &str) -> DataBaseSet<String> {
         let index_sharing = self.retrieve_index(key);
 
@@ -219,7 +216,6 @@ impl DataBaseResolver {
         }
     }
 
-    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn get_list_db_sharding(&self, key: &str) -> DataBaseList<String> {
         let index_sharing = self.retrieve_index(key);
 
