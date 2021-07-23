@@ -8,21 +8,21 @@
 //! Example pubsub publish:
 //! ```text
 //! pubsub publish channel1 "Hello world!"
-//! ```
-//! Example pubsub suscribers_for_channel:
-//! ```text
+//! OK
 //! ```
 //! Example pubsub channels:
 //! ```text
+//! > pubsub channels
+//! ["channel1"]
 //! ```
 //! Example pubsub unsuscribe:
 //! ```text
-//! ```
-//! Example pubsub len_channel:
-//! ```text
+//! > pubsub unsuscribe channel1
+//! 
 //! ```
 //! Example pubsub numsub:
 //! ```text
+//! [("channel1", 1)]
 //! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
