@@ -64,10 +64,12 @@ impl Command for SortCommand {
         let response = db.sort(args[0].to_string())?;
         let mut response_str = "".to_string();
 
-        for elem in response {
+        for (i, elem) in response.iter().enumerate() {
+            response_str.push_str(&format!("{}) ", i + 1));
             response_str.push_str(&elem);
             response_str.push(LINE_BREAK);
         }
+
         Ok(response_str)
     }
 }

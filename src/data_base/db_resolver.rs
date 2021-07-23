@@ -11,7 +11,7 @@ use crate::server::ttl_scheduler::TtlScheduler;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
 
-const ERROR_MSG_GET_DB: &str = "Error al recuperar el tipo de la db";
+const ERROR_MSG_GET_DB: &str = "Failed to retrieve db type";
 
 #[derive(Clone)]
 pub enum DataBase {
@@ -22,7 +22,6 @@ pub enum DataBase {
 
 pub struct DataBaseResolver {
     data_bases: Arc<Mutex<HashMap<String, Vec<DataBase>>>>,
-    data_bases2: Arc<Mutex<HashMap<String, DataBase>>>,
     sharing_count_db: u32,
 }
 
@@ -36,7 +35,6 @@ impl Clone for DataBaseResolver {
     fn clone(&self) -> Self {
         Self {
             data_bases: self.data_bases.clone(),
-            data_bases2: self.data_bases2.clone(),
             sharing_count_db: self.sharing_count_db,
         }
     }
@@ -45,10 +43,8 @@ impl Clone for DataBaseResolver {
 impl DataBaseResolver {
     pub fn new(sharing_count_db: u32) -> Self {
         let data_base = Arc::new(Mutex::new(HashMap::new()));
-        let data_base2 = Arc::new(Mutex::new(HashMap::new()));
         Self {
             data_bases: data_base,
-            data_bases2: data_base2,
             sharing_count_db,
         }
     }
@@ -56,8 +52,6 @@ impl DataBaseResolver {
     pub fn add_data_base(&self, key_db: String, values: Vec<DataBase>) {
         let mut data_base_general = self.data_bases.lock().unwrap();
 
-        //no usar unwrap acá porque devuelve None
-        //la primera vez que se inserta algo en una key, entonces pincha todo
         data_base_general.insert(key_db, values);
     }
 
@@ -130,17 +124,19 @@ impl DataBaseResolver {
         clear_count
     }
 
-    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn clear_key(&self, key: String) {
         let databases = self.data_bases.lock().unwrap();
+        let idx = self.retrieve_index(key.as_str());
         for dbs in databases.values() {
-            let idx = self.retrieve_index(key.as_str());
             if let DataBase::DataBaseString(db_string) = dbs[idx].clone() {
-                db_string.clear_key(key.clone());
+                db_string.clear_key(key);
+                break;
             } else if let DataBase::DataBaseList(db_list) = dbs[idx].clone() {
-                db_list.clear_key(key.clone());
+                db_list.clear_key(key);
+                break;
             } else if let DataBase::DataBaseSet(db_set) = dbs[idx].clone() {
-                db_set.clear_key(key.clone());
+                db_set.clear_key(key);
+                break;
             }
         }
     }
@@ -187,8 +183,9 @@ impl DataBaseResolver {
         }
     }
 
-    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn get_string_db_sharding(&self, key: &str) -> DataBaseString<String> {
+        let index_sharing = self.retrieve_index(key);
+
         let dbs = self
             .data_bases
             .lock()
@@ -197,16 +194,15 @@ impl DataBaseResolver {
             .unwrap()
             .clone();
 
-        let index_sharing = self.retrieve_index(key);
-
         match dbs[index_sharing].clone() {
             DataBase::DataBaseString(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
         }
     }
 
-    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn get_set_db_sharding(&self, key: &str) -> DataBaseSet<String> {
+        let index_sharing = self.retrieve_index(key);
+
         let dbs = self
             .data_bases
             .lock()
@@ -214,15 +210,16 @@ impl DataBaseResolver {
             .get(TYPE_SET)
             .unwrap()
             .clone();
-        let index_sharing = self.retrieve_index(key);
+
         match dbs[index_sharing].clone() {
             DataBase::DataBaseSet(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
         }
     }
 
-    // TODO: usar https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.get_mut en vez de lockear!
     pub fn get_list_db_sharding(&self, key: &str) -> DataBaseList<String> {
+        let index_sharing = self.retrieve_index(key);
+
         let dbs = self
             .data_bases
             .lock()
@@ -230,7 +227,7 @@ impl DataBaseResolver {
             .get(TYPE_LIST)
             .unwrap()
             .clone();
-        let index_sharing = self.retrieve_index(key);
+
         match dbs[index_sharing].clone() {
             DataBase::DataBaseList(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
@@ -314,6 +311,7 @@ impl DataBaseResolver {
             Err(_e) => Err(_e),
         };
     }
+
     pub fn valid_key_type(&self, key: &str, key_type: &str) -> Result<bool, RunError> {
         let key_type_db = key_type.to_string();
         match self.type_key(key.to_string()) {
@@ -321,18 +319,18 @@ impl DataBaseResolver {
                 if db_type == key_type_db {
                     Ok(true)
                 } else {
-                    println!("ERROR valid");
                     Err(RunError {
                         message: "ERR WRONGTYPE.".to_string(),
-                        cause:
-                            "Operación contra una clave que contiene el tipo de valor incorrecto"
-                                .to_string(),
+                        cause: "Operation against a key holding the wrong kind of value"
+                            .to_string(),
                     })
                 }
             }
             Err(_e) => Ok(false),
         }
     }
+
+    pub fn valid_key_type_lock(&self, _db: &DataBaseString<String>, _key: &str) {}
 
     //TODO: threadsafety?
     pub fn check_db_string(&self, key: String) -> bool {

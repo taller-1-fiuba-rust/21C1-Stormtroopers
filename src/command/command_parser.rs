@@ -24,7 +24,7 @@ impl ParsedMessage {
             return Ok(true);
         }
 
-        let msg_err = "Numero de argumentos inválido para el comando".to_string();
+        let msg_err = "Invalid number of arguments for the command".to_string();
         Err(RunError {
             message: "ERR.".to_string(),
             cause: msg_err,

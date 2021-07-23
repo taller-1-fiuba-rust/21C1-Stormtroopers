@@ -121,8 +121,8 @@ impl DataBaseString<String> {
     }
 
     pub fn clean_all_data(&self) -> bool {
-        let mut db_string = self.clone();
         let mut data = self.db.clone();
+        let mut db_string = self.clone();
         thread::spawn(move || {
             db_string.sender.send(String::from("")).unwrap();
             db_string.clean(&mut data);
@@ -269,15 +269,6 @@ impl DataBaseString<String> {
         0
     }
 
-    /*pub fn touch(&self, keys: Vec<String>) -> Vec<u64> {
-        //let mut cont = 0;
-        let mut vec = vec![];
-        for key in keys {
-            vec.push(self.touch_key(key));
-        }
-        vec
-    }*/
-
     fn get_value(&self, key: String) -> DataString<String> {
         let db = self.db.lock().unwrap();
 
@@ -382,7 +373,21 @@ impl DataBaseString<String> {
         data
     }
 
+    fn return_all_keys(&self) -> Vec<String> {
+        let mut response = vec![];
+        let hash = self.db.lock().unwrap();
+
+        for key in hash.keys() {
+            response.push(key.clone());
+        }
+
+        response
+    }
+
     pub fn keys(&self, pattern: &str) -> Vec<String> {
+        if pattern == "*" {
+            return self.return_all_keys();
+        }
         let mut keys_vec = Vec::<String>::new();
         let db = self.db.lock().unwrap();
         let re = Regex::new(pattern).unwrap();
