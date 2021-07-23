@@ -1,3 +1,4 @@
+//! Handles the connection with a client, in particular the connection opening and closing.
 use crate::constants::END_FLAG;
 use crate::handle_connection::executor::write_redis_msg;
 use crate::handle_connection::process_request::{process_request, run_exit_cmd};

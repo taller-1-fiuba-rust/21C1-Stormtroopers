@@ -1,3 +1,4 @@
+//! The flow that the user request goes in order to be parsed, executed and its result returned.
 use crate::command::command_parser::obtain_str_command;
 use crate::constants::END_FLAG;
 use crate::handle_connection::handle_monitor::publish_monitor;

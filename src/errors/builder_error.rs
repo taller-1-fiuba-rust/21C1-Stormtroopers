@@ -1,3 +1,4 @@
+//! Exceptions while looking for commands in the command builder.
 use std::fmt;
 
 const COMMAND_NOT_FOUND_MSG: &str = "Unable to find the command entered.\n";
