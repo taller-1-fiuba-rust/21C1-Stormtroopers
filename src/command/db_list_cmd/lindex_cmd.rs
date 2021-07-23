@@ -1,3 +1,4 @@
+//! Returns the element at the given index.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

@@ -1,3 +1,4 @@
+//! Returns the range of values in the list given by the indexes.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

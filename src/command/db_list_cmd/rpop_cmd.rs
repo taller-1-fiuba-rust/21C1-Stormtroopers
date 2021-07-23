@@ -1,3 +1,4 @@
+//! Returns the last elements of the list (given by the user, defaults to 1), and removes them.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

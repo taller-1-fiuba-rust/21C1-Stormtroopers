@@ -1,3 +1,4 @@
+//! Inserts the given values at the beginning of the list, if it exists.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

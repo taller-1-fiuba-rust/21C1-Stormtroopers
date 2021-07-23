@@ -1,3 +1,4 @@
+//! Returns and removes the first element/s of the list, given by the user.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

@@ -1,3 +1,4 @@
+//! Given the index and a value, it sets the value at the index position of the list.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

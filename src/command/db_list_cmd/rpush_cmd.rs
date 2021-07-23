@@ -1,3 +1,4 @@
+//! Inserts all values to the given list. If it doesn't exist, then creates a new one.
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
