@@ -1,4 +1,22 @@
 //! Returns the last elements of the list (given by the user, defaults to 1), and removes them.
+//! 
+//! Example:
+//! ```text
+//! > lrange key 0 -1
+//! 0) value1
+//! 1) value2
+//! 2) value3
+//! 3) value4
+//! > rpop key
+//! "value4"
+//! > lrange key 0 -1
+//! 0) value1
+//! 1) value2
+//! 2) value3
+//! > rpop key 2
+//! 0) value2
+//! 1) value3
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -22,6 +40,7 @@ const MIN_VALID_ARGS: i32 = 1;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct RpopCommand {
     /// Id of the thread running.
     id_job: u32,

@@ -1,4 +1,10 @@
 //! Returns the length of the list.
+//! 
+//! Example:
+//! ```text
+//! > llen key
+//! 4
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -20,6 +26,7 @@ const MIN_VALID_ARGS: i32 = 1;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 1;
 
+/// Main struct of the command.
 pub struct LLenCommand {
     /// Id of the thread running.
     id_job: u32,

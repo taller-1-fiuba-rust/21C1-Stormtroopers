@@ -1,4 +1,28 @@
 //! Removes from the list the given amount of ocurrences of the given value.
+//! 
+//! Example: 
+//! ```text
+//! > lrange key 0 -1
+//! 0) 0
+//! 1) 1
+//! 2) 2
+//! 3) 1
+//! 4) 1
+//! 5) 1
+//! > lrem key 1 1
+//! 1
+//! > lrange key 0 -1
+//! 0) 0
+//! 1) 2
+//! 2) 1
+//! 3) 1
+//! 4) 1
+//! > lrem key 1 0
+//! 3
+//! > lrange key 0 -1
+//! 0) 0
+//! 1) 2
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;

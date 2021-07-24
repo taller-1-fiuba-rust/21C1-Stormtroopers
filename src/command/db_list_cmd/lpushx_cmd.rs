@@ -31,6 +31,7 @@ const MIN_VALID_ARGS: i32 = 2;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = -1;
 
+/// Main struct of the command.
 pub struct LpushxCommand {
     /// Id of the thread running.
     id_job: u32,

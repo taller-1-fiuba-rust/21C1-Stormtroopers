@@ -1,4 +1,10 @@
 //! Given the index and a value, it sets the value at the index position of the list.
+//! 
+//! Example:
+//! ```text
+//! > lset key 0 "Hola mundo"
+//! OK
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -22,6 +28,7 @@ const MIN_VALID_ARGS: i32 = 3;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 3;
 
+/// Main struct of the command.
 pub struct LsetCommand {
     /// Id of the thread running.
     id_job: u32,
