@@ -1,4 +1,12 @@
 //! Agrega el valor al final del String dado por la clave. Si no eiste, se crea una nueva.
+//! 
+//! Example:
+//! ```text
+//! > set key value
+//! OK
+//! > append key 1
+//! 6
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -12,6 +20,8 @@ const INFO_COMMAND: &str = "Run command APPEND\n";
 
 /// Name of the command.
 const CLIENT_ID: &str = "AppendCommand";
+
+/// Code of the command.
 const CONST_CMD: &str = "append";
 
 /// Min amount of arguments besides of the command.
@@ -20,6 +30,7 @@ const MIN_VALID_ARGS: i32 = 2;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct AppendCommand {
     /// Id of the thread running.
     id_job: u32,

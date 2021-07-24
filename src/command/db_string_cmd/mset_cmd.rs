@@ -1,4 +1,14 @@
 //! Sets several key/value pairs passed as arguments.
+//! 
+//! Example:
+//! ```text
+//! > mset key1 value1 key2 value2
+//! OK
+//! > get key1
+//! value1
+//! > get key2
+//! value2
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -11,7 +21,11 @@ const INFO_COMMAND: &str = "Run command MSET\n";
 
 /// Name of the command.
 const CLIENT_ID: &str = "MsetCommand";
+
+/// Success response string.
 const RESPONSE_COMMAND: &str = "OK\n";
+
+/// Code of the command.
 const CONST_CMD: &str = "mset";
 
 /// Min amount of arguments besides of the command.
@@ -20,6 +34,7 @@ const MIN_VALID_ARGS: i32 = 2;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = -1;
 
+/// Information string of the command.
 pub struct MsetCommand {
     /// Id of the thread running.
     id_job: u32,

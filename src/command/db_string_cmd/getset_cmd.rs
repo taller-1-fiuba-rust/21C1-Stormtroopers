@@ -1,4 +1,14 @@
 //! Gets the string value and then sets it as the value specified.
+//! 
+//! Example:
+//! ```text
+//! > set key value
+//! OK
+//! > getset key other
+//! value
+//! > get key
+//! other
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -12,6 +22,8 @@ const INFO_COMMAND: &str = "Run command GETSET\n";
 
 /// Name of the command.
 const CLIENT_ID: &str = "GetsetCommmand";
+
+/// Code of the command.
 const CONST_CMD: &str = "getset";
 
 /// Min amount of arguments besides of the command.
@@ -20,6 +32,7 @@ const MIN_VALID_ARGS: i32 = 2;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct GetSetCommand {
     /// Id of the thread running.
     id_job: u32,

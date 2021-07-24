@@ -1,4 +1,14 @@
 //! Gets the string value and then deletes it.
+//! 
+//! Example:
+//! ```text
+//! > set key "Hello World."
+//! OK
+//! > getdel key
+//! "Hello World."
+//! > get key
+//! (nil)
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -12,6 +22,8 @@ const INFO_COMMAND: &str = "Run command GETDEL\n";
 
 /// Name of the command.
 const CLIENT_ID: &str = "GetdelCommmand";
+
+/// Code of the command.
 const CONST_CMD: &str = "getdel";
 
 /// Min amount of arguments besides of the command.
@@ -20,6 +32,7 @@ const MIN_VALID_ARGS: i32 = 1;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 1;
 
+/// Main structure of the command.
 pub struct GetDelCommand {
     /// Id of the thread running.
     id_job: u32,

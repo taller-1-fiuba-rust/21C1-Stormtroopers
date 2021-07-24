@@ -1,4 +1,12 @@
 //! Sets a string value to a given key.
+//! 
+//! Example:
+//! ```text
+//! > set key value
+//! OK
+//! > get key
+//! value
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,11 +14,16 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_RUN_COMMAND: &str = "Run command SET\n";
 
 /// Name of the command.
 const CLIENT_ID: &str = "SetCommand";
+
+/// String to use as a success response.
 const RESPONSE_COMMAND: &str = "OK\n";
+
+/// Code of the command.
 const CONST_CMD: &str = "set";
 
 /// Min amount of arguments besides of the command.
@@ -19,6 +32,7 @@ const MIN_VALID_ARGS: i32 = 2;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct SetCommand {
     /// Id of the thread running.
     id_job: u32,
