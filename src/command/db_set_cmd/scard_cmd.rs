@@ -1,5 +1,5 @@
 //! Returns the size of the set.
-//! 
+//!
 //! Example:
 //! ```text
 //! > scard set_key

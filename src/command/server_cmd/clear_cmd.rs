@@ -1,5 +1,5 @@
 //! Clears the client terminal and resets the cursor.
-//! 
+//!
 //! Example:
 //! ```text
 //! > clear

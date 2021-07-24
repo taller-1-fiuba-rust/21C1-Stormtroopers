@@ -1,9 +1,9 @@
 //! Adds elements to the given set, or creates a new one.
-//! 
+//!
 //! Example:
 //! ```text
 //! > sadd set_key value1 value2 value3
-//! 3 
+//! 3
 //! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;

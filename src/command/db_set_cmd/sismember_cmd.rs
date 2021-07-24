@@ -1,5 +1,5 @@
 //! Returns whether the given element is part of the set.
-//! 
+//!
 //! Example:
 //! ```text
 //! > sismember set_key element

@@ -1,5 +1,5 @@
 //! A command group that ables the client to create and subscribe to channels of information.
-//! 
+//!
 //! Example pubsub suscribe:
 //! ```text
 //! > pubsub suscribe channel1
@@ -18,7 +18,7 @@
 //! Example pubsub unsuscribe:
 //! ```text
 //! > pubsub unsuscribe channel1
-//! 
+//!
 //! ```
 //! Example pubsub numsub:
 //! ```text
@@ -41,7 +41,7 @@ const CONST_CMD: &str = "pubsub";
 pub struct PubsubCommand {
     /// Id of the thread running.
     id_job: u32,
-    /// 
+    ///
     logger: Logger<String>,
 }
 

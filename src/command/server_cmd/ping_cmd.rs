@@ -1,5 +1,5 @@
 //! This is to get a simple response from the server, useful to test if the connection is alive.
-//! 
+//!
 //! Example:
 //! ```text
 //! > ping

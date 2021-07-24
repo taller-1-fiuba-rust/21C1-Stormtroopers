@@ -1,5 +1,5 @@
 //! Closes the connection between the redis server and the client.
-//! 
+//!
 //! Example:
 //! ```text
 //! > exit

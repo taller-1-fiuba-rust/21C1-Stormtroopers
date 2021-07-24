@@ -1,5 +1,5 @@
 //! Logs in the screen all inputs and outputs made by all clients and the server.
-//! 
+//!
 //! Example
 //! ```text
 //! > monitor

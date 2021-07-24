@@ -1,5 +1,5 @@
 //! Wipes the entire database.
-//! 
+//!
 //! Example:
 //! ```text
 //! > flushdb

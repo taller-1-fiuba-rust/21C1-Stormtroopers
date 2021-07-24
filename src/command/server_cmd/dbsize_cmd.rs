@@ -1,5 +1,5 @@
 //! Returns the amount of pairs key/value stored in the database.
-//! 
+//!
 //! Example:
 //! ```text
 //! > dbsize

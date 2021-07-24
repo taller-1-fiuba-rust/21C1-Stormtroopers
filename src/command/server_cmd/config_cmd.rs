@@ -1,11 +1,11 @@
 //! Consists of two parts, get and set. This make this command to retrieve and modify some settings in redis.conf file.
-//! 
+//!
 //! Example config get:
 //! ```text
 //! > config get port
 //! 8081
 //! ```
-//! 
+//!
 //! Example config set:
 //! ```text
 //! > config set verbose true

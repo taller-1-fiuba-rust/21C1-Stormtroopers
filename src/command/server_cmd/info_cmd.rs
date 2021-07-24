@@ -1,5 +1,5 @@
 //! Returns useful information of the system and the process running.
-//! 
+//!
 //! Example:
 //! ```text
 //! > info
