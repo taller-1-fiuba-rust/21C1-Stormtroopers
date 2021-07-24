@@ -32,10 +32,13 @@ impl Client {
         self.receiver.clone()
     }
 
-    pub fn publish(&self, msg: String) {
+    pub fn publish(&self, msg: String, name_channel: String) {
         let sender = self.sender.lock().unwrap();
 
-        let response = format!("\n{}\n{}\n", PUBLISH_CONSTANT, msg);
+        let response = format!(
+            "\n{}\nFrom Channel: {}\n{}\n",
+            PUBLISH_CONSTANT, name_channel, msg
+        );
         sender.send(response).unwrap();
     }
 
@@ -139,7 +142,7 @@ impl Pubsub {
             for suscriber in channel.iter() {
                 let client = suscribers.get(&suscriber).unwrap();
                 if !private {
-                    client.publish(msg.clone());
+                    client.publish(msg.clone(), name_channel.clone());
                 } else {
                     client.private_publish(msg.clone());
                 }
