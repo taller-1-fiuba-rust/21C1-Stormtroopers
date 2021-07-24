@@ -8,6 +8,7 @@ use crate::command::db_set_cmd::srem_cmd::SremCommand;
 use crate::server::logger::Logger;
 use std::process;
 
+/// Each command is instanciated and stored in the command_builder Hashmap structure.
 pub fn insert_commands(command_builder: CommandBuilder, logger: Logger<String>) {
     SaddCommand::new(process::id(), logger.clone(), command_builder.clone());
     ScardCommand::new(process::id(), logger.clone(), command_builder.clone());

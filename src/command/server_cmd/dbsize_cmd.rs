@@ -19,7 +19,7 @@ const INFO_DBSIZE_COMMAND: &str = "Run command DBSIZE\n";
 /// Name of the command.
 const CLIENT_ID: &str = "DbSizeCommand";
 
-/// Key of the command.
+/// Code of the command.
 const CONST_CMD: &str = "dbsize";
 
 /// Min amount of arguments besides the command name.

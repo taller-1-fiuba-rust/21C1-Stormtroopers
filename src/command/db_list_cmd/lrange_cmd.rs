@@ -16,7 +16,9 @@ const MIN_VALID_ARGS: i32 = 3;
 const MAX_VALID_ARGS: i32 = 3;
 
 pub struct LrangeCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

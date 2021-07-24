@@ -14,6 +14,7 @@ use crate::command::db_list_cmd::rpushx_cmd::RpushxCommand;
 use crate::server::logger::Logger;
 use std::process;
 
+/// Each command is instanciated and stored in the command_builder Hashmap structure.
 pub fn insert_commands(command_builder: CommandBuilder, logger: Logger<String>) {
     LLenCommand::new(process::id(), logger.clone(), command_builder.clone());
     LindexCommand::new(process::id(), logger.clone(), command_builder.clone());

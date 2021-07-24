@@ -11,7 +11,9 @@ const CLIENT_ID: &str = "KeysCommand";
 const CONST_CMD: &str = "keys";
 
 pub struct KeysCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

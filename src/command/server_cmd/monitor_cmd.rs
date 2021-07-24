@@ -18,7 +18,7 @@ const INFO_COMMAND: &str = "Run command MONITOR\n";
 /// Name of the command.
 const CLIENT_ID: &str = "MonitorCommand";
 
-/// Key of the command.
+/// Code of the command.
 const CONST_CMD: &str = "monitor";
 
 /// Main structure of the command.

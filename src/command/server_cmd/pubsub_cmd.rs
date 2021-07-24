@@ -7,7 +7,7 @@
 //! ```
 //! Example pubsub publish:
 //! ```text
-//! pubsub publish channel1 "Hello world!"
+//! > pubsub publish channel1 "Hello world!"
 //! OK
 //! ```
 //! Example pubsub channels:
@@ -22,6 +22,7 @@
 //! ```
 //! Example pubsub numsub:
 //! ```text
+//! > pubsub numsub
 //! [("channel1", 1)]
 //! ```
 use crate::command::cmd_trait::Command;
@@ -33,7 +34,7 @@ use crate::server::logger::{Loggable, Logger};
 /// Information string to log.
 const INFO_RUN_COMMAND: &str = "Run command PUBSUB\n";
 
-/// Key of the command.
+/// Code of the command.
 const CONST_CMD: &str = "pubsub";
 
 /// Main structure of the command.

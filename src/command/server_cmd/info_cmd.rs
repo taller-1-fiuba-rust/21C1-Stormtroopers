@@ -33,7 +33,7 @@ const INFO_RUN_COMMAND: &str = "Run command INFO\n";
 /// Name of the command.
 const CLIENT_ID: &str = "InfoCommand";
 
-/// Key of the command.
+/// Code of the command.
 const CONST_CMD: &str = "info";
 
 /// Min amount of arguments besides the command name.

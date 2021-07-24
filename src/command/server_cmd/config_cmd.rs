@@ -27,7 +27,7 @@ const INFO_RUN_COMMAND: &str = "Run command CONFIG\n";
 /// Name of the command.
 const CLIENT_ID: &str = "ConfigCommand";
 
-/// Key of the command.
+/// Code of the command.
 const CONST_CMD: &str = "config";
 
 /// Substring for the command.

@@ -21,7 +21,7 @@ const RESPONSE_PING_COMMAND: &str = "PONG\n";
 /// Name of the command.
 const CLIENT_ID: &str = "PingCommand";
 
-/// Key of the command.
+/// Code of the command.
 const CONST_CMD: &str = "ping";
 
 /// Min amount of arguments besides the command name.

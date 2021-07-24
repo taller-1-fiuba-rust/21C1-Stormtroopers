@@ -15,7 +15,9 @@ const NEW_LINE: &str = "\n";
 const CONST_CMD: &str = "ttl";
 
 pub struct TtlCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

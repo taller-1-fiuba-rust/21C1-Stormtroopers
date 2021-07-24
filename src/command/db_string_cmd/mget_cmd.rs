@@ -15,7 +15,9 @@ const MIN_VALID_ARGS: i32 = 1;
 const MAX_VALID_ARGS: i32 = -1;
 
 pub struct MgetCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

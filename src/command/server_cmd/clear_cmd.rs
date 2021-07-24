@@ -18,7 +18,7 @@ const INFO_RUN_COMMAND: &str = "Run command CLEAR\n";
 /// Name of the command.
 const CLIENT_ID: &str = "ClearCommand";
 
-/// Key of the command.
+/// Code of the command.
 const CONST_CMD: &str = "clear";
 
 /// Min amount of arguments besides the command name.

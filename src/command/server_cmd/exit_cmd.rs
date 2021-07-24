@@ -19,7 +19,7 @@ const INFO_COMMAND: &str = "Run command EXIT\n";
 /// Name of the command.
 const CLIENT_ID: &str = "ExitCommand";
 
-/// Key of the command.
+/// Code of the command.
 const CONST_CMD: &str = "exit";
 
 /// Min amount of arguments besides the command name.

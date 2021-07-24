@@ -1,4 +1,10 @@
 //! Returns whether the given element is part of the set.
+//! 
+//! Example:
+//! ```text
+//! > sismember set_key element
+//! 1
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -15,7 +21,9 @@ const MIN_VALID_ARGS: i32 = 2;
 const MAX_VALID_ARGS: i32 = 2;
 
 pub struct SismemberCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

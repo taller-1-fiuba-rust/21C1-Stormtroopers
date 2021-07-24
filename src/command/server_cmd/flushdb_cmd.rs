@@ -19,7 +19,7 @@ const INFO_FLUSHDB_COMMAND: &str = "Run command FLUSHDB\n";
 /// Name of the command.
 const CLIENT_ID: &str = "FlushdbCommand";
 
-/// Key of the command.
+/// Code of the command.
 const CONST_CMD: &str = "flushdb";
 
 /// Min amount of arguments besides the command name.
