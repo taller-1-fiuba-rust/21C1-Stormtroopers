@@ -7,13 +7,22 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command LREM\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "LremCommand";
+
+/// Code of the command.
 const LREM_CMD: &str = "lrem";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 3;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 3;
 
+/// Main struct of the command.
 pub struct LremCommand {
     /// Id of the thread running.
     id_job: u32,

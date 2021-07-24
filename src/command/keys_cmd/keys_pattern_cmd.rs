@@ -6,7 +6,10 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command KEYS\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "KeysCommand";
 const CONST_CMD: &str = "keys";
 

@@ -8,10 +8,15 @@ use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "PersistCommmand";
 const CONST_CMD: &str = "persist";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 1;
 
 pub struct PersistCommand {

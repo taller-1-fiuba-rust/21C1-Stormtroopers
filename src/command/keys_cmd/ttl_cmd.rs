@@ -7,6 +7,8 @@ use crate::server::logger::{Loggable, Logger};
 use crate::server::utils::timestamp_now;
 
 const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "ExpireCommmand";
 const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments";
 const TTL_ZERO_OR_ABSENT: &str = "-2\n";

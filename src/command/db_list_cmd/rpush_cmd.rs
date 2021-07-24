@@ -7,11 +7,19 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command RPUSH\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "RpushCommand";
+
+/// Code of the command.
 const RPUSH_CMD: &str = "rpush";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 2;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = -1;
 
 pub struct RpushCommand {

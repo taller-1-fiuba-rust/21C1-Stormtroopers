@@ -9,12 +9,17 @@ use crate::server::logger::{Loggable, Logger};
 use crate::server::utils::timestamp_now;
 
 const INFO_EXPIRE_COMMAND: &str = "Run command EXPIRE\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "ExpireCommmand";
 const WRONG_TTL_TYPE: &str = "Can't parse to expire time.\n";
 const WHITESPACE: &str = " ";
 const CONST_CMD: &str = "expire";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 2;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
 pub struct ExpireCommand {

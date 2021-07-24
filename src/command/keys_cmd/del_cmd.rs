@@ -6,11 +6,17 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command DEL\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "DelCommand";
 const CONST_CMD: &str = "del";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = -1;
 
 pub struct DelCommand {

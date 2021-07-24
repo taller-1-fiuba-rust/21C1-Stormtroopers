@@ -8,10 +8,15 @@ use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_DBSIZE_COMMAND: &str = "Run command DECRBY\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "DecrbyCommmand";
 const CONST_CMD: &str = "decrby";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
 pub struct DecrbyCommand {

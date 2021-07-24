@@ -7,11 +7,16 @@ use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_RUN_COMMAND: &str = "Run command SET\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "SetCommand";
 const RESPONSE_COMMAND: &str = "OK\n";
 const CONST_CMD: &str = "set";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 2;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
 pub struct SetCommand {

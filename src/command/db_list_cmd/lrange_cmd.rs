@@ -1,4 +1,16 @@
 //! Returns the range of values in the list given by the indexes.
+//! 
+//! Example:
+//! ```text
+//! > lpush key value1 value2 value3
+//! 3
+//! > lrange key 0 -1
+//! 0) value1
+//! 1) value2
+//! 2) value3
+//! > lrange key 1 1
+//! 0) value2
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -7,14 +19,25 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command LRANGE\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "LrangeCommand";
+
+/// Response string when the list is empty.
 const RESPONSE_EMPTY: &str = "(empty list or set)\n";
+
+/// Code of the command.
 const LRANGE_CMD: &str = "lrange";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 3;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 3;
 
+/// Main struct of the command.
 pub struct LrangeCommand {
     /// Id of the thread running.
     id_job: u32,
