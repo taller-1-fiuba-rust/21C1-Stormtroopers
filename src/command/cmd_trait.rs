@@ -7,7 +7,7 @@ pub trait Command: Send + CommandClone {
     /// This is the shape of the functions that a command needs to perform it's logic.
     /// The three required parameters are:
     ///
-    /// args: The user input minus the command i.e. << key "value1 value2" >>
+    /// args: The user input minus the command i.e. < key "value1 value2" >
     ///
     /// app_info: The facade of the app.
     ///
