@@ -12,7 +12,7 @@
 //! Verón, Lucas
 //! Queirolo Dominguez, Cristian Daniel
 //!
-use crate::handle_connection::executor::exec_server;
+use crate::handles::executor::exec_server;
 use crate::server::app_info::AppInfo;
 use crate::server::connection::Connection;
 use crate::server::connection_resolver::ConnectionResolver;
@@ -22,7 +22,7 @@ mod command;
 mod constants;
 mod data_base;
 mod errors;
-mod handle_connection;
+mod handles;
 mod server;
 
 /// Main function of the app, this works as it's main entrance point.

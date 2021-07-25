@@ -69,6 +69,9 @@ impl Default for Pubsub {
     }
 }
 
+///Module that implements all the logic of the model publish/subscriber of messages through Redis-style channels.
+///
+///The subscription of a client to a channel does not imply the suspension of the client to send messages.
 impl Pubsub {
     pub fn new() -> Self {
         let suscribers = Arc::new(Mutex::new(HashMap::new()));

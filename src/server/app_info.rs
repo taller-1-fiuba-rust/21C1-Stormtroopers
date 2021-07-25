@@ -123,6 +123,7 @@ fn create_private_pubsub() -> Pubsub {
     pubsub
 }
 
+///It carries out the insertions of all the commands by group.
 fn command_builder_generator(logger: Logger<String>) -> CommandBuilder {
     let command_builder = CommandBuilder::new(0);
 
@@ -134,7 +135,8 @@ fn command_builder_generator(logger: Logger<String>) -> CommandBuilder {
 
     command_builder
 }
-
+///It orchestrates the server and the interaction of the different modules throughout the application.
+///It provides convenience functions and access to different resources.
 impl AppInfo {
     pub fn new(args: Vec<String>) -> Result<AppInfo, RunError> {
         let config_server = ConfigServer::new();

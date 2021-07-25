@@ -2,6 +2,7 @@
 use crate::server::app_info::AppInfo;
 use crate::server::utils::format_timestamp_now;
 
+///Through the private pub/sub post the message on the monitor
 pub fn publish_monitor(app_info: AppInfo, args: Vec<&str>, id_client: usize) {
     let priv_pubsub = app_info.get_private_pubsub();
     let port = app_info.get_server_port();

@@ -4,6 +4,17 @@ use std::collections::HashMap;
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex};
 
+///It manages the state of the connections with a structure that identifies the client_id and a Connection.
+///
+///It allows managing connections by adding new ones to the structure and recovering each connection.
+///
+///Allows you to disconnect a connection.
+///
+///Connects according to client_id a connection with the pub / sub endpoints.
+///
+///Supports activating a monitor and knowing if the connection has an associated monitor.
+///
+///Lets know the size of the structure.
 pub struct ConnectionResolver {
     connections: Arc<Mutex<HashMap<usize, Connection<String>>>>,
 }

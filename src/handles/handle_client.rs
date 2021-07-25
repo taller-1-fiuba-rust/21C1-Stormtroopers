@@ -1,12 +1,19 @@
 //! Handles the connection with a client, in particular the connection opening and closing.
 use crate::constants::END_FLAG;
-use crate::handle_connection::executor::write_redis_msg;
-use crate::handle_connection::process_request::{process_request, run_exit_cmd};
+use crate::handles::executor::write_redis_msg;
+use crate::handles::handler_process_request::{process_request, run_exit_cmd};
 use crate::server::app_info::AppInfo;
 use crate::server::connection_resolver::ConnectionResolver;
 use std::io::{BufRead, BufReader};
 use std::net::TcpStream;
 
+///Gets the connection for the client. And iteratively read the buffer stream from its connection.
+/// For each reading it decides if it should process the request or exit in case of:
+/// * The request has an end of line (END_FLAG)
+/// * The connection time for the client has expired
+///
+/// When it processes the request (process_request), it sends the response to the end of
+/// the channel(recv) and performs a reconnection of the connection to subtract its timeout.
 pub fn handle_client(
     connection_resolver: ConnectionResolver,
     stream: &mut TcpStream,
