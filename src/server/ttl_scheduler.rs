@@ -286,7 +286,24 @@ impl TtlScheduler {
     }
 
     pub fn update_key(&self, src: String, new: String) {
-        let ttl = self.delete_ttl_key(src).unwrap();
+        let ttl;
+        if let Ok(val) = self.delete_ttl_key(src) {
+            ttl = val;
+        } else {
+            return;
+        }
+
+        let _ = self.set_ttl(ttl.parse::<u64>().unwrap(), new);
+    }
+
+    pub fn copy_ttl_key(&self, src: String, new: String) {
+        let ttl;
+        if let Ok(val) = self.get_ttl_key(src) {
+            ttl = val;
+        } else {
+            return;
+        }
+
         let _ = self.set_ttl(ttl.parse::<u64>().unwrap(), new);
     }
 }

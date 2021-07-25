@@ -47,6 +47,12 @@ impl DataBaseSet<String> {
         count
     }
 
+    pub fn get_del(&mut self, key: String) -> Result<BTreeSet<String>, RunError> {
+        let set = self.get_set(key.clone())?;
+        self.delete(vec![&key]);
+        Ok(set)
+    }
+
     pub fn sadd(&self, mut args: Vec<&str>) -> u32 {
         let mut db_set = self.db_set.lock().unwrap();
         let key = args.remove(0);

@@ -88,9 +88,7 @@ impl Command for RenameCommand {
 
         app_info
             .get_db_resolver()
-            .copy(key_src, key_target, true, app_info.get_ttl_scheduler())?
-            .to_string();
-
+            .rename(key_src, key_target, app_info.get_ttl_scheduler())?;
         Ok(RESPONSE_SIMPLE_STRING.to_string())
     }
 }

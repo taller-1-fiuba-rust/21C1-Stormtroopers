@@ -44,6 +44,12 @@ impl DataBaseList<String> {
         count
     }
 
+    pub fn get_del(&mut self, key: String) -> Result<Vec<String>, RunError> {
+        let list = self.get_list(key.clone())?;
+        self.delete(vec![&key]);
+        Ok(list)
+    }
+
     pub fn lpush(&self, args: Vec<&str>) -> u32 {
         self.lpush_common(false, args)
     }
@@ -295,7 +301,7 @@ impl DataBaseList<String> {
     }
 
     pub fn clear_key(&self, key: String) {
-        let mut db = self.db_list.lock().unwrap().clone();
+        let mut db = self.db_list.lock().unwrap();
         if db.contains_key(&key) {
             db.remove(&key);
         }
@@ -337,7 +343,7 @@ impl DataBaseList<String> {
         db.get(&key).unwrap().clone()
     }
 
-    fn get_list(&self, key: String) -> Result<Vec<String>, RunError> {
+    pub fn get_list(&self, key: String) -> Result<Vec<String>, RunError> {
         self.validate_or_insert_key(key.clone());
 
         let db = self.db_list.lock().unwrap();
