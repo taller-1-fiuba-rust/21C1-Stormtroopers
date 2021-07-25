@@ -2,7 +2,22 @@
 //!
 //! Example:
 //! ```text
-//!
+//! > mset key1 v1 key2 v2 key3 v3 other v4
+//! OK
+//! > keys *
+//! 0) key1
+//! 1) key2
+//! 2) key3
+//! 4) other
+//! > keys key
+//! 0) key1
+//! 1) key2
+//! 2) key3
+//! > keys e
+//! 0) key1
+//! 1) key2
+//! 2) key3
+//! 4) other
 //! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
