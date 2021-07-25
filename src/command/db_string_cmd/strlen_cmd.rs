@@ -1,5 +1,5 @@
 //! Returns the length of the string given a key.
-//! 
+//!
 //! Example:
 //! ```text
 //! > set key value1
@@ -19,7 +19,7 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command STRLEN\n";
 
 /// Name of the command.
-const CLIENT_ID: &str = "StrlenCommmand";
+const CLIENT_ID: &str = "StrlenCommand";
 
 /// Code of the command.
 const CONST_CMD: &str = "strlen";

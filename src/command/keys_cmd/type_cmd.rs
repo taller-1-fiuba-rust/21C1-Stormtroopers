@@ -1,4 +1,20 @@
 //! Returns the data type asociated to a key.
+//!
+//! Example:
+//! ```text
+//! > set key1 value
+//! OK
+//! > lpush key2 value1 value2
+//! 2
+//! > sadd key3 value1 value2
+//! 2
+//! > type key1
+//! String
+//! > type key2
+//! List
+//! > type key3
+//! Set
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -12,6 +28,8 @@ const INFO_COMMAND: &str = "Run command TYPE\n";
 
 /// Name of the command.
 const CLIENT_ID: &str = "TypeCommand";
+
+/// Code of the command.
 const CONST_CMD: &str = "type";
 
 /// Min amount of arguments besides of the command.
@@ -20,6 +38,7 @@ const MIN_VALID_ARGS: i32 = 1;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 1;
 
+/// Main struct of the command.
 pub struct TypeCommand {
     /// Id of the thread running.
     id_job: u32,

@@ -1,5 +1,5 @@
 //! Returns and removes the first element/s of the list, given by the user.
-//! 
+//!
 //! Example:
 //! ```text
 //! > lrange key 0 -1

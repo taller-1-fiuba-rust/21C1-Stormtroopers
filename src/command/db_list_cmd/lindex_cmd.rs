@@ -1,5 +1,5 @@
 //! Returns the element at the given index.
-//! 
+//!
 //! Example:
 //! ```text
 //! > lrange key 0 -1
@@ -27,7 +27,7 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command LINDEX\n";
 
 /// Name of the command.
-const CLIENT_ID: &str = "LindexCommmand";
+const CLIENT_ID: &str = "LindexCommand";
 
 /// Code of the command.
 const LINDEX_CMD: &str = "lindex";

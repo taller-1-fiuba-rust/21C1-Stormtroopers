@@ -1,5 +1,5 @@
 //! Agrega el valor al final del String dado por la clave. Si no eiste, se crea una nueva.
-//! 
+//!
 //! Example:
 //! ```text
 //! > set key value

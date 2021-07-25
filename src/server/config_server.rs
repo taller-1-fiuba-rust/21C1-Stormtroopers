@@ -7,7 +7,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use crate::constants::SHARING_COUNT_DEFAULT;
+use crate::constants::SHARDING_COUNT_DEFAULT;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_LOAD_FILE_CONFIG: &str = "Init load file config ...\n";
@@ -130,7 +130,7 @@ impl ConfigServer {
         let props = self.props.lock().unwrap();
         let count = match props.get("sharing_count") {
             Some(sc) => parse_value(sc.to_string(), 1),
-            None => SHARING_COUNT_DEFAULT,
+            None => SHARDING_COUNT_DEFAULT,
         };
         if count < 1 {
             return Err(RunError {

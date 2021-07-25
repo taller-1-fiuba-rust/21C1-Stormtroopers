@@ -17,7 +17,7 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command SADD\n";
 
 /// Name of the command.
-const CLIENT_ID: &str = "SAddCommmand";
+const CLIENT_ID: &str = "SAddCommand";
 
 /// Code of the command.
 const CONST_CMD: &str = "sadd";

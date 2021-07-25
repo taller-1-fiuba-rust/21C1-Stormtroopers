@@ -1,5 +1,5 @@
 //! Gets the string value and then sets it as the value specified.
-//! 
+//!
 //! Example:
 //! ```text
 //! > set key value
@@ -21,7 +21,7 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command GETSET\n";
 
 /// Name of the command.
-const CLIENT_ID: &str = "GetsetCommmand";
+const CLIENT_ID: &str = "GetsetCommand";
 
 /// Code of the command.
 const CONST_CMD: &str = "getset";

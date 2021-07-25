@@ -1,4 +1,14 @@
 //! Copies the contents of one key to another passed.
+//!
+//! Example:
+//! ```text
+//! > set key value
+//! OK
+//! > copy key other
+//! OK
+//! > get other
+//! value
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -12,6 +22,8 @@ const INFO_COMMAND: &str = "Run command COPY\n";
 
 /// Name of the command.
 const CLIENT_ID: &str = "CopyCommand";
+
+// Code of the command.
 const CONST_CMD: &str = "copy";
 
 /// Min amount of arguments besides of the command.
@@ -20,6 +32,7 @@ const MIN_VALID_ARGS: i32 = 2;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct CopyCommand {
     /// Id of the thread running.
     id_job: u32,

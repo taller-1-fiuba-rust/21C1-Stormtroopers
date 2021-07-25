@@ -1,6 +1,6 @@
 //! Removes from the list the given amount of ocurrences of the given value.
-//! 
-//! Example: 
+//!
+//! Example:
 //! ```text
 //! > lrange key 0 -1
 //! 0) 0

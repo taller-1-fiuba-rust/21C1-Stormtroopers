@@ -1,5 +1,5 @@
 //! Get the value of the String given by the key.
-//! 
+//!
 //! Example:
 //! ```text
 //! > set key value

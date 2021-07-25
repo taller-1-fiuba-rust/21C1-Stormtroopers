@@ -1,5 +1,5 @@
 //! Removes elements from the set given by its key.
-//! 
+//!
 //! Example:
 //! ```text
 //! > srem set_key value1 value2

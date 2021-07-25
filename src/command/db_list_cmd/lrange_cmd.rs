@@ -1,5 +1,5 @@
 //! Returns the range of values in the list given by the indexes.
-//! 
+//!
 //! Example:
 //! ```text
 //! > lpush key value1 value2 value3

@@ -1,5 +1,5 @@
 //! Gets the string value and then deletes it.
-//! 
+//!
 //! Example:
 //! ```text
 //! > set key "Hello World."
@@ -21,7 +21,7 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command GETDEL\n";
 
 /// Name of the command.
-const CLIENT_ID: &str = "GetdelCommmand";
+const CLIENT_ID: &str = "GetdelCommand";
 
 /// Code of the command.
 const CONST_CMD: &str = "getdel";

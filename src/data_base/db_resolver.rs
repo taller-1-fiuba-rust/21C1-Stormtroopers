@@ -1,5 +1,5 @@
 //! Redirects the request to the apropiate database, and handles logic that is type agnostic.
-use crate::constants::{SHARING_COUNT_DEFAULT, TYPE_LIST, TYPE_SET, TYPE_STRING};
+use crate::constants::{SHARDING_COUNT_DEFAULT, TYPE_LIST, TYPE_SET, TYPE_STRING};
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_set::DataBaseSet;
 use crate::data_base::db_string::DataBaseString;
@@ -22,12 +22,12 @@ pub enum DataBase {
 
 pub struct DataBaseResolver {
     data_bases: Arc<Mutex<HashMap<String, Vec<DataBase>>>>,
-    sharing_count_db: u32,
+    sharding_count_db: u32,
 }
 
 impl Default for DataBaseResolver {
     fn default() -> Self {
-        Self::new(SHARING_COUNT_DEFAULT)
+        Self::new(SHARDING_COUNT_DEFAULT)
     }
 }
 
@@ -35,17 +35,17 @@ impl Clone for DataBaseResolver {
     fn clone(&self) -> Self {
         Self {
             data_bases: self.data_bases.clone(),
-            sharing_count_db: self.sharing_count_db,
+            sharding_count_db: self.sharding_count_db,
         }
     }
 }
 
 impl DataBaseResolver {
-    pub fn new(sharing_count_db: u32) -> Self {
+    pub fn new(sharding_count_db: u32) -> Self {
         let data_base = Arc::new(Mutex::new(HashMap::new()));
         Self {
             data_bases: data_base,
-            sharing_count_db,
+            sharding_count_db,
         }
     }
 
@@ -85,7 +85,7 @@ impl DataBaseResolver {
         let mut response = true;
         let data_bases = self.data_bases.lock().unwrap();
         for (_key, dbs) in data_bases.iter() {
-            for i in 0..self.sharing_count_db {
+            for i in 0..self.sharding_count_db {
                 match dbs[i as usize].clone() {
                     DataBase::DataBaseString(string) => {
                         response &= string.clean_all_data();
@@ -184,7 +184,7 @@ impl DataBaseResolver {
     }
 
     pub fn get_string_db_sharding(&self, key: &str) -> DataBaseString<String> {
-        let index_sharing = self.retrieve_index(key);
+        let index_sharding = self.retrieve_index(key);
 
         let dbs = self
             .data_bases
@@ -194,14 +194,14 @@ impl DataBaseResolver {
             .unwrap()
             .clone();
 
-        match dbs[index_sharing].clone() {
+        match dbs[index_sharding].clone() {
             DataBase::DataBaseString(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
         }
     }
 
     pub fn get_set_db_sharding(&self, key: &str) -> DataBaseSet<String> {
-        let index_sharing = self.retrieve_index(key);
+        let index_sharding = self.retrieve_index(key);
 
         let dbs = self
             .data_bases
@@ -211,14 +211,14 @@ impl DataBaseResolver {
             .unwrap()
             .clone();
 
-        match dbs[index_sharing].clone() {
+        match dbs[index_sharding].clone() {
             DataBase::DataBaseSet(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
         }
     }
 
     pub fn get_list_db_sharding(&self, key: &str) -> DataBaseList<String> {
-        let index_sharing = self.retrieve_index(key);
+        let index_sharding = self.retrieve_index(key);
 
         let dbs = self
             .data_bases
@@ -228,7 +228,7 @@ impl DataBaseResolver {
             .unwrap()
             .clone();
 
-        match dbs[index_sharing].clone() {
+        match dbs[index_sharding].clone() {
             DataBase::DataBaseList(s) => s,
             _ => panic!("{}", ERROR_MSG_GET_DB),
         }
@@ -384,7 +384,7 @@ impl DataBaseResolver {
         hasher.write(key.to_string().as_bytes());
         let nh = hasher.finish() as u32;
 
-        let idx = nh % self.sharing_count_db;
+        let idx = nh % self.sharding_count_db;
 
         idx as usize
     }
@@ -412,13 +412,41 @@ impl DataBaseResolver {
         data
     }
 
-    pub fn keys(&self, pattern: &str) -> Vec<String> {
+    pub fn keys(&self, pattern: &str) -> Result<Vec<String>, RunError> {
         let mut keys_vec = Vec::<String>::new();
-        for i in 0..self.sharing_count_db {
-            keys_vec.extend(self.get_string_db(i as usize).keys(pattern));
-            keys_vec.extend(self.get_list_db(i as usize).keys(pattern));
-            keys_vec.extend(self.get_set_db(i as usize).keys(pattern));
+        let mut error: Option<RunError> = None;
+        // for i in 0..self.sharding_count_db {
+        //     keys_vec.extend(self.get_string_db(i as usize).keys(pattern));
+        //     keys_vec.extend(self.get_list_db(i as usize).keys(pattern));
+        //     keys_vec.extend(self.get_set_db(i as usize).keys(pattern));
+        // }
+        // keys_vec
+        for i in 0..self.sharding_count_db {
+            match self.get_string_db(i as usize).keys(pattern) {
+                Ok(vec) => keys_vec.extend(vec),
+                Err(e) => {
+                    error = Some(e);
+                    break;
+                }
+            };
+            match self.get_list_db(i as usize).keys(pattern) {
+                Ok(vec) => keys_vec.extend(vec),
+                Err(e) => {
+                    error = Some(e);
+                    break;
+                }
+            };
+            match self.get_set_db(i as usize).keys(pattern) {
+                Ok(vec) => keys_vec.extend(vec),
+                Err(e) => {
+                    error = Some(e);
+                    break;
+                }
+            };
         }
-        keys_vec
+        match error {
+            Some(e) => Err(e),
+            None => Ok(keys_vec),
+        }
     }
 }

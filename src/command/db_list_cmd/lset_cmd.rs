@@ -1,5 +1,5 @@
 //! Given the index and a value, it sets the value at the index position of the list.
-//! 
+//!
 //! Example:
 //! ```text
 //! > lset key 0 "Hola mundo"

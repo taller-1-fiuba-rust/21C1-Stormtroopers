@@ -1,4 +1,9 @@
 //! Finds keys matching a given pattern.
+//!
+//! Example:
+//! ```text
+//!
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::constants::LINE_BREAK;
@@ -11,8 +16,11 @@ const INFO_COMMAND: &str = "Run command KEYS\n";
 
 /// Name of the command.
 const CLIENT_ID: &str = "KeysCommand";
+
+/// Code of the command.
 const CONST_CMD: &str = "keys";
 
+/// Main struct of the command.
 pub struct KeysCommand {
     /// Id of the thread running.
     id_job: u32,
@@ -61,16 +69,17 @@ impl Command for KeysCommand {
         let keys = db.keys(&String::from(args[0]));
         let mut response = "".to_string();
 
-        for (i, key) in keys.iter().enumerate() {
-            response.push_str(&format!("{}) ", i + 1));
-            response.push_str(&key);
-            response.push(LINE_BREAK);
+        match keys {
+            Ok(vec) => {
+                for (i, key) in vec.iter().enumerate() {
+                    response.push_str(&format!("{}) ", i + 1));
+                    response.push_str(&key);
+                    response.push(LINE_BREAK);
+                }
+            }
+            Err(e) => response = e.to_string(),
         }
 
-        /*probar
-        set aa 21
-        keys a*
-        */
         Ok(response)
     }
 }

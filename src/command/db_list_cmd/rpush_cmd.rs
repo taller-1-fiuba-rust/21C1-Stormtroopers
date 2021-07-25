@@ -1,5 +1,5 @@
 //! Inserts all values to the given list at the end. If it doesn't exist, then creates a new one.
-//! 
+//!
 //! Example:
 //! ```text
 //! > lindex key 0 -1

@@ -1,5 +1,5 @@
 //! Returns all elements of the set.
-//! 
+//!
 //! Example:
 //! ```text
 //! > smembers set_key
@@ -20,7 +20,7 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command SMEMBERS\n";
 
 /// Name of the command.
-const CLIENT_ID: &str = "SmembersCommmand";
+const CLIENT_ID: &str = "SmembersCommand";
 
 /// Response of the command when is empty.
 const RESPONSE_EMPTY: &str = "(empty list or set)\n";

@@ -1,5 +1,5 @@
 //! Sets several key/value pairs passed as arguments.
-//! 
+//!
 //! Example:
 //! ```text
 //! > mset key1 value1 key2 value2

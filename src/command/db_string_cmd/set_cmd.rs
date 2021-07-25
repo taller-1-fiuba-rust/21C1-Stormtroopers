@@ -1,5 +1,5 @@
 //! Sets a string value to a given key.
-//! 
+//!
 //! Example:
 //! ```text
 //! > set key value

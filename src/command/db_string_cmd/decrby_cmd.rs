@@ -1,5 +1,5 @@
 //! If the data is a string that can be parsed as a number, it decrements it by the amount entered.
-//! 
+//!
 //! Example:
 //! ```text
 //! > set key 1
@@ -19,7 +19,7 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_DBSIZE_COMMAND: &str = "Run command DECRBY\n";
 
 /// Name of the command.
-const CLIENT_ID: &str = "DecrbyCommmand";
+const CLIENT_ID: &str = "DecrbyCommand";
 
 /// Code of the command.
 const CONST_CMD: &str = "decrby";

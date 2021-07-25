@@ -20,4 +20,4 @@ pub const TTL_CHECK_RANGE: u64 = 30;
 pub const TTL_SLEEP_TIME: u64 = 10;
 
 /** Default values **/
-pub static SHARING_COUNT_DEFAULT: u32 = 4;
+pub static SHARDING_COUNT_DEFAULT: u32 = 4;

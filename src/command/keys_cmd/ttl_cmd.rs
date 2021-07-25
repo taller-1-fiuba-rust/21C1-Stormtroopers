@@ -1,4 +1,12 @@
 //! Returns the expire time of a key.
+//!
+//! Example:
+//! ```text
+//! > expire key 60
+//! OK
+//! > ttl key
+//! 60
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
@@ -6,16 +14,28 @@ use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 use crate::server::utils::timestamp_now;
 
+/// Information string to log.
 const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
 
 /// Name of the command.
-const CLIENT_ID: &str = "ExpireCommmand";
+const CLIENT_ID: &str = "ExpireCommand";
+
+/// Failure string for the command.
 const WRONG_NUMBER_ARGUMENTS: &str = "Wrong number of arguments";
+
+/// Response string for the command.
 const TTL_ZERO_OR_ABSENT: &str = "-2\n";
+
+/// Whitespace character.
 const WHITESPACE: &str = " ";
+
+/// Newline character.
 const NEW_LINE: &str = "\n";
+
+/// Code of the command.
 const CONST_CMD: &str = "ttl";
 
+/// Main struct for the command.
 pub struct TtlCommand {
     /// Id of the thread running.
     id_job: u32,

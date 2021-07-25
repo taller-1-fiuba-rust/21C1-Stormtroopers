@@ -1,5 +1,5 @@
 //! Returns the last elements of the list (given by the user, defaults to 1), and removes them.
-//! 
+//!
 //! Example:
 //! ```text
 //! > lrange key 0 -1

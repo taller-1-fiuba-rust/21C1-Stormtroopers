@@ -1,5 +1,5 @@
 //! Gets the values of several keys passed as arguments.
-//! 
+//!
 //! Example:
 //! ```text
 //! > set key1 value

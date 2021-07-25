@@ -1,5 +1,5 @@
 //! If the list exits, then insert all given values at the end.
-//! 
+//!
 //! Example:
 //! ```text
 //! > lrange lkey 0 -1

@@ -1,5 +1,5 @@
 //! Returns the length of the list.
-//! 
+//!
 //! Example:
 //! ```text
 //! > llen key
@@ -17,7 +17,7 @@ use crate::server::logger::{Loggable, Logger};
 const INFO_COMMAND: &str = "Run command LLEN\n";
 
 /// Name of the command.
-const CLIENT_ID: &str = "LLenCommmand";
+const CLIENT_ID: &str = "LLenCommand";
 const LLEN_CMD: &str = "llen";
 
 /// Min amount of arguments besides of the command.

@@ -1,4 +1,14 @@
 //! Sets an expiration time for a key, given as the remaining seconds to reach that time.
+//!
+//! Example:
+//! ```text
+//! > set key value
+//! OK
+//! > expire key 60
+//! OK
+//! > ttl key
+//! 60
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -11,9 +21,15 @@ use crate::server::utils::timestamp_now;
 const INFO_EXPIRE_COMMAND: &str = "Run command EXPIRE\n";
 
 /// Name of the command.
-const CLIENT_ID: &str = "ExpireCommmand";
+const CLIENT_ID: &str = "ExpireCommand";
+
+/// A failure string for the command.
 const WRONG_TTL_TYPE: &str = "Can't parse to expire time.\n";
+
+/// A whitespace string.
 const WHITESPACE: &str = " ";
+
+/// Code of the command.
 const CONST_CMD: &str = "expire";
 
 /// Min amount of arguments besides of the command.
@@ -22,6 +38,7 @@ const MIN_VALID_ARGS: i32 = 2;
 /// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main string of the command.
 pub struct ExpireCommand {
     /// Id of the thread running.
     id_job: u32,

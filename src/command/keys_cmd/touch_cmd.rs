@@ -1,5 +1,5 @@
 //! Given a key, resets last access time and, triggers cleanup if ttl is expired for that key.
-//! 
+//!
 //! Example:
 //! ```text
 //! > touch key
@@ -17,6 +17,8 @@ const INFO_COMMAND: &str = "Run command TOUCH\n";
 
 /// Name of the command.
 const CLIENT_ID: &str = "TouchCommand";
+
+/// Code of the command
 const CONST_CMD: &str = "touch";
 
 /// Min amount of arguments besides of the command.
