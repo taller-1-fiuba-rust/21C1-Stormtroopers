@@ -1,10 +1,19 @@
 //! The flow that the user request goes in order to be parsed, executed and its result returned.
 use crate::command::command_parser::obtain_str_command;
 use crate::constants::END_FLAG;
-use crate::handle_connection::handle_monitor::publish_monitor;
+use crate::handles::handle_monitor::publish_monitor;
 use crate::server::app_info::AppInfo;
 use crate::Connection;
 
+///Process the request itself.
+///
+///Through commandBuilder it allows to retrieve a command, which is previously retrieved from the request.
+///
+///Retrieve the command to execute and its parameters using the CommandParser.
+///
+///Then post to monitor via handler_monitor.
+///
+///Run run for the command retrieved from the Builder.
 pub fn process_request(
     request: String,
     app_info: &AppInfo,
@@ -40,7 +49,9 @@ pub fn process_request(
         Err(cmd) => cmd.to_string(),
     }
 }
-
+///Exit run command. Send a END_FLAG to process_request for finalize the execution.
+///
+///Desactive the thead. Inform the AppInfo to take it into account in the statistics
 pub fn run_exit_cmd(
     connect_client: Connection<String>,
     app_info: &mut AppInfo,

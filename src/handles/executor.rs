@@ -1,12 +1,18 @@
 //! Responsible of setting and executing the main threadpool.
 use crate::constants::THREAD_POOL_COUNT;
 use crate::data_base::filedump::{load_filedump, start_filedump};
-use crate::handle_connection::handle_threadpool::{threadpool_read, threadpool_write};
+use crate::handles::handle_threadpool::{threadpool_read, threadpool_write};
 use crate::server::app_info::AppInfo;
 use crate::server::threadpool::ThreadPool;
 use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 
+///Initial server run.
+/// * Get the server time out for connections.
+/// * Run the ttl_scheduler
+/// * Start the filedump process
+/// * Open the connection to listen the messages
+/// * Run the threadpool reader & threadpool writer
 pub fn exec_server(address: &str, app_info: &mut AppInfo) -> Result<(), std::io::Error> {
     let threadpool = ThreadPool::new(THREAD_POOL_COUNT);
 

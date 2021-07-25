@@ -49,7 +49,18 @@ impl Default for TtlScheduler {
         TtlScheduler::new()
     }
 }
-
+///Module that actively implements the key lifetime logic.
+///
+/// Every so often, which is configurable, the Scheduler checks the keys that it has stored within a map with Unix time keys.
+///
+///If the keys are equal to the time that Scheduler is running then it removes them from the map and from the database.
+///
+///The map has the value of all the keys to be removed.
+///
+///Additionally there is a reverse map; which has the expiration time for a key.
+///
+///
+///The TTL Scheduler has the handling of expiration keys.
 impl TtlScheduler {
     pub fn new() -> TtlScheduler {
         let ttl_map = Arc::new(Mutex::new(HashMap::new()));

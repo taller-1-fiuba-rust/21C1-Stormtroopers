@@ -14,6 +14,7 @@ const INFO_LOAD_FILE_CONFIG: &str = "Init load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_OK: &str = "Load file config OK\n";
 const PATH_FILE_CONFIG_DEFAULT: &str = "./redis.config";
 
+///Reader of file lines from a file path.
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where
     P: AsRef<Path>,
@@ -47,7 +48,11 @@ impl Clone for ConfigServer {
         Self { props }
     }
 }
-
+///It is responsible for loading the server configuration from a file passed by parameter
+///or using a default address (./ redis.config).
+///
+///The configuration file has the form key=value and they are used at the start
+///of the server startup.
 impl ConfigServer {
     pub fn new() -> ConfigServer {
         let map = HashMap::new();
