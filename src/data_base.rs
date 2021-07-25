@@ -1,6 +1,4 @@
-/*
-    This is to expose the database submodule to main.rs
-*/
+//! The database implementation, and some functionality attached to it.
 pub mod data_db;
 pub mod db_list;
 pub mod db_resolver;

@@ -1,3 +1,14 @@
+//! Sets an expiration time for a key, given with a valid UNIX timestamp in seconds.
+//!
+//! Example:
+//! ```text
+//! > set key value
+//! OK
+//! > expireat key 1627169941
+//! OK
+//! > ttl key
+//! 60
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -7,17 +18,32 @@ use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 use crate::server::utils::timestamp_now;
 
+/// Information string of the command.
 const INFO_EXPIREAT_COMMAND: &str = "Run command EXPIRE_AT\n";
-const CLIENT_ID: &str = "ExpireAtCommmand";
+
+/// Name of the command.
+const CLIENT_ID: &str = "ExpireAtCommand";
+
+/// Failure string for the command.
 const WRONG_TTL_TYPE: &str = "Can't parse to expire time.\n";
+
+/// A whitespace string.
 const WHITESPACE: &str = " ";
+
+/// Code of the command.
 const CONST_CMD: &str = "expireat";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 2;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct ExpireAtCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

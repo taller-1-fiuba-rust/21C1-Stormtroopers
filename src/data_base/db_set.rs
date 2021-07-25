@@ -1,3 +1,4 @@
+//! Database structure in charge of storing and processing Sets.
 use crate::data_base::data_db::data_set::DataSet;
 use crate::data_base::db_list::{list_can_be_parsed, parse_list, sort_parsed_list};
 use crate::errors::run_error::RunError;
@@ -206,7 +207,7 @@ impl DataBaseSet<String> {
         data
     }
 
-    fn return_all_keys(&self) -> Vec<String> {
+    fn return_all_keys(&self) -> Result<Vec<String>, RunError> {
         let mut response = vec![];
         let hash = self.db_set.lock().unwrap();
 
@@ -214,23 +215,29 @@ impl DataBaseSet<String> {
             response.push(key.clone());
         }
 
-        response
+        Ok(response)
     }
 
-    pub fn keys(&self, pattern: &str) -> Vec<String> {
+    pub fn keys(&self, pattern: &str) -> Result<Vec<String>, RunError> {
         if pattern == "*" {
             return self.return_all_keys();
         }
         let mut keys_vec = Vec::<String>::new();
         let db = self.db_set.lock().unwrap();
-        let re = Regex::new(pattern).unwrap();
+        match Regex::new(pattern) {
+            Ok(re) => {
+                for key in db.keys() {
+                    if re.is_match(&key) {
+                        keys_vec.push((*(key.clone())).to_string());
+                    }
+                }
 
-        for key in db.keys() {
-            if re.is_match(&key) {
-                keys_vec.push((*(key.clone())).to_string());
+                Ok(keys_vec)
             }
+            Err(_) => Err(RunError {
+                message: "Could not find match".to_string(),
+                cause: "Malformed pattern\n".to_string(),
+            }),
         }
-
-        keys_vec
     }
 }

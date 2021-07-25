@@ -1,3 +1,18 @@
+//! Removes the expiration time of the given key.
+//!
+//! Example:
+//! ```text
+//! > set key value
+//! OK
+//! > expire key 60
+//! OK
+//! > ttl key
+//! 60
+//! > persist key
+//! OK
+//! > ttl key
+//! -1
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,15 +21,26 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string of the command.
 const INFO_EXPIRE_COMMAND: &str = "Run command TTL\n";
-const CLIENT_ID: &str = "PersistCommmand";
+
+/// Name of the command.
+const CLIENT_ID: &str = "PersistCommand";
+
+/// Code of the command.
 const CONST_CMD: &str = "persist";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 1;
 
+/// Main struct of the command.
 pub struct PersistCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

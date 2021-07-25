@@ -1,3 +1,18 @@
+//! Changes the name of the key, keeping the ttl unchanged.
+//!
+//! Example:
+//! ```text
+//! > set key value
+//! OK
+//! > expire key 60
+//! OK
+//! > rename key other
+//! OK
+//! > get other
+//! value
+//! > ttl other
+//! 60
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,15 +21,26 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command RENAME\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "RenameCommand";
+
+/// Code of the command.
 const CONST_CMD: &str = "rename";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 2;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct RenameCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 
@@ -64,10 +90,6 @@ impl Command for RenameCommand {
             .get_db_resolver()
             .copy(key_src, key_target, true, app_info.get_ttl_scheduler())?
             .to_string();
-
-        //app_info
-        //    .get_ttl_scheduler()
-        //    .update_key(String::from(key_src), String::from(key_target));
 
         Ok(RESPONSE_SIMPLE_STRING.to_string())
     }

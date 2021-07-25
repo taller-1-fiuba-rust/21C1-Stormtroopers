@@ -1,3 +1,4 @@
+//! Some of the common constants used in various crates.
 /** Data base types **/
 pub static TYPE_STRING: &str = "String";
 pub static TYPE_LIST: &str = "List";
@@ -19,4 +20,4 @@ pub const TTL_CHECK_RANGE: u64 = 30;
 pub const TTL_SLEEP_TIME: u64 = 10;
 
 /** Default values **/
-pub static SHARING_COUNT_DEFAULT: u32 = 4;
+pub static SHARDING_COUNT_DEFAULT: u32 = 4;

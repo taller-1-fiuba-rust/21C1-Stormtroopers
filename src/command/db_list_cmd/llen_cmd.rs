@@ -1,3 +1,10 @@
+//! Returns the length of the list.
+//!
+//! Example:
+//! ```text
+//! > llen key
+//! 4
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,15 +13,24 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command LLEN\n";
-const CLIENT_ID: &str = "LLenCommmand";
+
+/// Name of the command.
+const CLIENT_ID: &str = "LLenCommand";
 const LLEN_CMD: &str = "llen";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 1;
 
+/// Main struct of the command.
 pub struct LLenCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

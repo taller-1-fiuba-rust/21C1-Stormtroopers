@@ -1,14 +1,47 @@
+//! A command group that ables the client to create and subscribe to channels of information.
+//!
+//! Example pubsub suscribe:
+//! ```text
+//! > pubsub suscribe channel1
+//! OK
+//! ```
+//! Example pubsub publish:
+//! ```text
+//! > pubsub publish channel1 "Hello world!"
+//! OK
+//! ```
+//! Example pubsub channels:
+//! ```text
+//! > pubsub channels
+//! ["channel1"]
+//! ```
+//! Example pubsub unsuscribe:
+//! ```text
+//! > pubsub unsuscribe channel1
+//!
+//! ```
+//! Example pubsub numsub:
+//! ```text
+//! > pubsub numsub
+//! [("channel1", 1)]
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
+
+/// Information string to log.
 const INFO_RUN_COMMAND: &str = "Run command PUBSUB\n";
 
+/// Code of the command.
 const CONST_CMD: &str = "pubsub";
 
+/// Main structure of the command.
 pub struct PubsubCommand {
+    /// Id of the thread running.
     id_job: u32,
+    ///
     logger: Logger<String>,
 }
 

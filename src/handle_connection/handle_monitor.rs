@@ -1,3 +1,4 @@
+//! Prints the arguments in a human readable format.
 use crate::server::app_info::AppInfo;
 use crate::server::utils::format_timestamp_now;
 

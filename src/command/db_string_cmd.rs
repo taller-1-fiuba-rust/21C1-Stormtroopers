@@ -1,3 +1,4 @@
+//! Commands related to Strings and their functionality.
 pub mod append_cmd;
 pub mod db_string_generator;
 pub mod decrby_cmd;

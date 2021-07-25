@@ -1,3 +1,12 @@
+//! If the data is a string that can be parsed as a number, it increments it by the amount entered.
+//!
+//! Example:
+//! ```text
+//! > set key 1
+//! OK
+//! > incrby key 2
+//! 3
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,15 +15,26 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_DBSIZE_COMMAND: &str = "Run command INCRBY\n";
-const CLIENT_ID: &str = "DecrbyCommmand";
+
+/// Name of the command.
+const CLIENT_ID: &str = "DecrbyCommand";
+
+/// Code of the command.
 const CONST_CMD: &str = "incrby";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 2;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct IncrbyCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

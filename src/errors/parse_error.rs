@@ -1,3 +1,4 @@
+//! Related to errors and exceptions that occur while parsing the user message into command + arguments.
 use std::fmt;
 
 const NUMERIC_VALUE_MSG: &str = "Numeric values are not allowed.\n";

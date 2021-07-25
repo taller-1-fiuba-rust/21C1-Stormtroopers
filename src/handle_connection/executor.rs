@@ -1,3 +1,4 @@
+//! Responsible of setting and executing the main threadpool.
 use crate::constants::THREAD_POOL_COUNT;
 use crate::data_base::filedump::{load_filedump, start_filedump};
 use crate::handle_connection::handle_threadpool::{threadpool_read, threadpool_write};

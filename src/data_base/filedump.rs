@@ -1,3 +1,4 @@
+//! Crate in charge of saving and loading snapshots of the database.
 use crate::constants::{DBDUMP_INTERVAL_SECS, DBDUMP_PATH, ERROR_DBFILE_CREATE};
 use crate::server::app_info::AppInfo;
 use crate::server::utils::timestamp_now;
