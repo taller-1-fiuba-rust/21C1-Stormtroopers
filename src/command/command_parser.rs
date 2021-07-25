@@ -92,7 +92,7 @@ pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
     Ok(ParsedMessage { command, arguments })
 }
 
-/*
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -106,7 +106,7 @@ mod tests {
 
         let parsed_msg = result_msg.unwrap();
         assert_eq!(parsed_msg.command, "test_command");
-        assert_eq!(parsed_msg.arguments, "test_single_argument");
+        assert_eq!(parsed_msg.arguments, vec!["test_single_argument"]);
     }
 
     #[test]
@@ -120,12 +120,13 @@ mod tests {
         assert_eq!(parsed_msg.command, "test_command");
         assert_eq!(
             parsed_msg.arguments,
-            "test_argument_1 test_argument_2 test_argument_3"
+            vec!["test_argument_1", "test_argument_2","test_argument_3"]
         );
     }
 
     #[test]
     fn test_parse_command_and_no_arguments() {
+        let empty_vec: Vec<String> = Vec::new();
         let test_msg = "test_command";
 
         let result_msg = obtain_str_command(test_msg);
@@ -133,7 +134,7 @@ mod tests {
 
         let parsed_msg = result_msg.unwrap();
         assert_eq!(parsed_msg.command, "test_command");
-        assert_eq!(parsed_msg.arguments, "");
+        assert_eq!(parsed_msg.arguments, empty_vec);
     }
 
     #[test]
@@ -166,7 +167,7 @@ mod tests {
         assert_eq!(parsed_msg.command, "test_command");
         assert_eq!(
             parsed_msg.arguments,
-            "test_argument_1 test_argument_2 test_argument_3"
+            vec!["test_argument_1","test_argument_2","test_argument_3"]
         );
     }
-}*/
+}
