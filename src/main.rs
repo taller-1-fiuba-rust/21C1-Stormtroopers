@@ -45,3 +45,25 @@ fn main() {
     println!("Execute listener ...");
     let _listener = exec_server(&server_port, &mut server);
 }
+
+/*
+#[cfg(test)]
+mod tests {
+    use super::*;
+    extern crate redis;
+    const REDIS_HOST_TEST: &str = "redis://127.0.0.1:8081";
+    #[test]
+    fn redis_it() -> redis::RedisResult<()> {
+            let client = redis::Client::open(REDIS_HOST_TEST)?;
+            let mut con = client.get_connection()?;
+
+            /* do something here */
+
+            let res : () = redis::cmd("SET").arg("my_key").arg(42).query(&mut con)?;
+            let res2 = redis::cmd("GET").arg("my_key").query(&mut con);
+            assert!(true);
+            assert_eq!(res2, Ok("42".to_string()));
+        Ok(())
+    }
+}
+ */
