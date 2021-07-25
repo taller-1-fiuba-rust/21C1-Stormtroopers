@@ -40,7 +40,14 @@ impl ConnectionResolver {
     }
 
     pub fn disconnect_client(&self, id_client: usize) {
-        let mut connections = self.connections.lock().unwrap();
+        let mut connections;
+        loop {
+            if let Ok(val) = self.connections.lock() {
+                connections = val;
+                break;
+            }
+        }
+        //let mut connections = self.connections.lock().unwrap();
         connections.remove(&id_client).expect("Remove failed");
     }
 

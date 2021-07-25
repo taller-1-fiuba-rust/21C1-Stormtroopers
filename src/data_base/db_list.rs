@@ -228,7 +228,7 @@ impl DataBaseList<String> {
             return Ok(list.get_value().len());
         }
 
-        Ok(EMPTY_LIST) //lista vacía por no existir
+        Ok(EMPTY_LIST) //empty list -> the list doesn't exist.
     }
 
     pub fn lset(&self, key: String, pos: String, value: String) -> Result<String, RunError> {
@@ -240,8 +240,6 @@ impl DataBaseList<String> {
         Ok(SUCCESS.to_string())
     }
 
-    //TODO: falta implementar bien el retorno del size de la lista un vez insertado los valores.
-    //TODO: OJO que no es completamente thread safety!
     pub fn rpushx(&self, key_list: String, values: Vec<&str>) -> Result<u32, RunError> {
         {
             let db_list = self.db_list.lock().unwrap();
@@ -333,9 +331,10 @@ impl DataBaseList<String> {
         insertions
     }
 
+    //se usa cuando la clave ya está, por eso el unwrap
     fn get_value(&self, key: String) -> DataList<String> {
         let db = self.db_list.lock().unwrap();
-        db.get(&key).unwrap().clone() //chequear que este OK
+        db.get(&key).unwrap().clone()
     }
 
     fn get_list(&self, key: String) -> Result<Vec<String>, RunError> {
@@ -443,7 +442,15 @@ impl DataBaseList<String> {
 
     fn return_all_keys(&self) -> Result<Vec<String>, RunError> {
         let mut response = vec![];
-        let hash = self.db_list.lock().unwrap();
+        let hash;
+        if let Ok(val) = self.db_list.lock() {
+            hash = val;
+        } else {
+            return Err(RunError {
+                message: "Could not lock the data base".to_string(),
+                cause: "Race condition\n".to_string(),
+            });
+        }
 
         for key in hash.keys() {
             response.push(key.clone());

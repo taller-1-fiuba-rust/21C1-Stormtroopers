@@ -117,7 +117,6 @@ fn create_databases(count_dbs: u32) -> DataBaseResolver {
 }
 
 fn create_private_pubsub() -> Pubsub {
-    //ver si lo necesito, o con los sucribe de los comandos ya basta
     let mut pubsub = Pubsub::new();
     pubsub.create_channel("MONITOR".to_string());
     pubsub

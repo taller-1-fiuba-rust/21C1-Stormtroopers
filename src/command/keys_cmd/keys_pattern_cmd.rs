@@ -21,6 +21,7 @@
 //! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
 use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
@@ -34,6 +35,12 @@ const CLIENT_ID: &str = "KeysCommand";
 
 /// Code of the command.
 const CONST_CMD: &str = "keys";
+
+/// Min amount of arguments besides of the command.
+const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides of the command.
+const MAX_VALID_ARGS: i32 = -1;
 
 /// Main struct of the command.
 pub struct KeysCommand {
@@ -79,6 +86,8 @@ impl Command for KeysCommand {
     ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
+
+        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
         let db = app_info.get_db_resolver();
         let keys = db.keys(&String::from(args[0]));

@@ -375,7 +375,15 @@ impl DataBaseString<String> {
 
     fn return_all_keys(&self) -> Result<Vec<String>, RunError> {
         let mut response = vec![];
-        let hash = self.db.lock().unwrap();
+        let hash;
+        if let Ok(val) = self.db.lock() {
+            hash = val;
+        } else {
+            return Err(RunError {
+                message: "Could not lock the data base".to_string(),
+                cause: "Race condition\n".to_string(),
+            });
+        }
 
         for key in hash.keys() {
             response.push(key.clone());

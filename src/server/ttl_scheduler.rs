@@ -83,7 +83,6 @@ impl TtlScheduler {
             let app_info = app_info.clone();
 
             //https://doc.rust-lang.org/std/primitive.u64.html#method.overflowing_sub
-            //con la resta común no anda
             let time = query_time.overflowing_sub(n).0;
             let time_str = time.to_string();
             match ttl_scheduler.delete_ttl(time_str.clone()) {
@@ -287,7 +286,6 @@ impl TtlScheduler {
     }
 
     pub fn update_key(&self, src: String, new: String) {
-        // Buscarla a key_map y actualizar
         let ttl = self.delete_ttl_key(src).unwrap();
         let _ = self.set_ttl(ttl.parse::<u64>().unwrap(), new);
     }

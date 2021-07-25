@@ -55,7 +55,6 @@ impl DataBaseResolver {
         data_base_general.insert(key_db, values);
     }
 
-    //tiene que estar el doble for porque antes solo se fijaba en val[0]
     pub fn dbsize(&self) -> usize {
         let mut cont = 0;
         let data_base = self.data_bases.lock().unwrap();
@@ -332,7 +331,6 @@ impl DataBaseResolver {
 
     pub fn valid_key_type_lock(&self, _db: &DataBaseString<String>, _key: &str) {}
 
-    //TODO: threadsafety?
     pub fn check_db_string(&self, key: String) -> bool {
         let db_string = self.get_string_db_sharding(key.as_str());
         db_string.contains(key)
