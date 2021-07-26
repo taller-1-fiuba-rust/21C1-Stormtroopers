@@ -41,10 +41,6 @@ TEST18="ttl a"
 TEST19="get a"
 
 
-#Grupo Set
-
-#Grupo List
-
 ### Funciones ###
 
 function test(){
@@ -68,14 +64,14 @@ function test(){
   	fi
 }
 
-echo "#############################"
-echo "### Load Redis server ... ###"
-echo "#############################"
-./target/debug/proyecto_taller_1 > /dev/null 2>&1 &
-sleep 2
-echo
-pid_redis=$(pidof proyecto_taller_1)
-echo "PID redis_server: ${pid_redis}"
+#echo "#############################"
+#echo "### Load Redis server ... ###"
+#echo "#############################"
+#./target/debug/proyecto_taller_1 > /dev/null 2>&1 &
+#sleep 2
+#echo
+#pid_redis=$(pidof proyecto_taller_1)
+#echo "PID redis_server: ${pid_redis}"
 
 
 ### Main ###  
@@ -312,12 +308,80 @@ do
 
 done < $LOG
 
-#list_test=("$TEST4" "$TEST5")
-#j=4
-#for test in "${list_test[@]}"; do
-#  test $j "$line" "RES" 
-#  j=$((j+1))  
-#done
+echo "################################"
+echo "### Exec it tests Grupo List ###"
+echo "################################"
 
-kill ${pid_redis}
+TEST0="lpush e 0 1 2 3"
+TEST1="lrange e 0 -1"
+TEST2="lindex e 2"
+TEST3="llen e"
+TEST4="llen x"
+TEST5="lpop e"
+TEST6="lpop e 2"
+TEST7="lpop e 1"
+TEST8="lpop e"
+TEST9="lpop e"
+
+#TEST11="lrem e"
+
+rm $LOG
+{ 
+  echo $TEST0;
+  echo $TEST1;
+  echo $TEST2;
+  echo $TEST3;
+  echo $TEST4;
+  echo $TEST5;
+  echo $TEST6;
+  echo $TEST7;
+  echo $TEST8;
+  echo $TEST9;
+
+  echo "exit"
+  echo "exit"
+  sleep 1;
+} | telnet $HOST_REDIS 1>$LOG 2>&1
+
+sleep 1;
+
+i=1
+while IFS= read -r line
+do
+    line=$(echo "$line")
+    if [[ $i == "4" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}4" "$TEST0"
+    elif [[ $i == "5" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}0) 3" "$TEST1"
+    elif [[ $i == "6" ]]; then
+    test $i "$line" "1) 2" "$TEST1"
+    elif [[ $i == "7" ]]; then
+    test $i "$line" "2) 1" "$TEST1"
+    elif [[ $i == "8" ]]; then
+    test $i "$line" "3) 0" "$TEST1"
+    elif [[ $i == "9" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}1" "$TEST2"
+    elif [[ $i == "10" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}4" "$TEST3"
+    elif [[ $i == "11" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}0" "$TEST4"
+    elif [[ $i == "12" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}0) 3" "$TEST5"
+    elif [[ $i == "13" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}0) 2" "$TEST6"
+    elif [[ $i == "14" ]]; then
+    test $i "$line" "1) 1" "$TEST6"
+    elif [[ $i == "14" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}0) 0" "$TEST7"
+    elif [[ $i == "15" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}0) 0" "$TEST8"
+    elif [[ $i == "16" ]]; then
+    test $i "$line" "${RES_NIL}" "$TEST9"
+    fi
+  i=$((i+1))
+
+done < $LOG
+
+#kill ${pid_redis}
+
 echo "Exit it test"
