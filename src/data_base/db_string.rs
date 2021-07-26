@@ -101,7 +101,6 @@ impl DataBaseString<String> {
         .unwrap();
     }
 
-    //TODO: refactor impl please!
     pub fn mget(&self, keys: Vec<&str>) -> Vec<String> {
         let mut db = self.clone();
         let mut keys_sender = String::from("");
@@ -186,16 +185,14 @@ impl DataBaseString<String> {
 
     pub fn exists(&self, keys: Vec<&str>) -> u32 {
         let mut count = 0_u32;
-        let db = self.db.lock().unwrap();
         for key in keys.iter() {
-            if db.contains_key(*key) {
+            if self.contains(key.to_string()) {
                 count += 1
             }
         }
         count
     }
 
-    //TODO: similar al exists. Ver de remover.
     pub fn contains(&self, key: String) -> bool {
         let db = self.db.lock().unwrap().clone();
         db.contains_key(&key)

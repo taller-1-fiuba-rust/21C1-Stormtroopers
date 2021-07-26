@@ -268,7 +268,7 @@ impl TtlScheduler {
         map: &mut Arc<Mutex<HashMap<u64, Vec<String>>>>,
     ) -> Result<Vec<String>, String> {
         let key = self.receiver.lock().unwrap().recv().unwrap();
-        let key_parsed = key.parse::<u64>().unwrap(); //ojo con este unwrap
+        let key_parsed = key.parse::<u64>().unwrap();
         let mut map = map.lock().unwrap();
         match map.remove(&key_parsed) {
             Some(v) => Ok(v),

@@ -130,11 +130,7 @@ mod tests {
 
     #[test]
     fn multiple_request() {
-        let log = Logger::new(
-            "log".to_string(),
-            "/tmp".to_string(), //no sé qué otro path ponerle
-        )
-        .unwrap();
+        let log = Logger::new("log".to_string(), "/tmp".to_string()).unwrap();
 
         log.info(&Client(1, 1), "hola", false).unwrap();
         log.info(&Client(2, 1), "hola", false).unwrap();

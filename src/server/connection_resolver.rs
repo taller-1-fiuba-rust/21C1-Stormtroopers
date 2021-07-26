@@ -47,7 +47,7 @@ impl ConnectionResolver {
                 break;
             }
         }
-        //let mut connections = self.connections.lock().unwrap();
+
         connections.remove(&id_client).expect("Remove failed");
     }
 

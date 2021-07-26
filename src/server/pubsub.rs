@@ -60,7 +60,7 @@ impl Clone for Client {
 }
 
 pub struct Pubsub {
-    suscribers: Arc<Mutex<HashMap<usize, Client>>>, //cada cliente tiene su id
+    suscribers: Arc<Mutex<HashMap<usize, Client>>>,
     channels: Arc<Mutex<HashMap<String, BTreeSet<usize>>>>,
 }
 

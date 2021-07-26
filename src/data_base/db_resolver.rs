@@ -447,12 +447,7 @@ impl DataBaseResolver {
     pub fn keys(&self, pattern: &str) -> Result<Vec<String>, RunError> {
         let mut keys_vec = Vec::<String>::new();
         let mut error: Option<RunError> = None;
-        // for i in 0..self.sharding_count_db {
-        //     keys_vec.extend(self.get_string_db(i as usize).keys(pattern));
-        //     keys_vec.extend(self.get_list_db(i as usize).keys(pattern));
-        //     keys_vec.extend(self.get_set_db(i as usize).keys(pattern));
-        // }
-        // keys_vec
+
         for i in 0..self.sharding_count_db {
             match self.get_string_db(i as usize).keys(pattern) {
                 Ok(vec) => keys_vec.extend(vec),
