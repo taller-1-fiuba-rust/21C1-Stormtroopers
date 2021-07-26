@@ -54,8 +54,6 @@ Ejecuta el archivo binario compilado:
 ./target/debug/proyecto_taller_1
 ```
 
-## Referencia rápida
-
 ## Documentación
 * **Seteo de cantidad de clientes disponibles:** Se tiene una constante `THREAD_POOL_COUNT` que se puede modificar. Tener en cuenta que cada cliente establece dos conexiones del ThreadPool (una para enviar y otra para enviar información a través del Servidor de Redis).
 
@@ -63,8 +61,7 @@ Ejecuta el archivo binario compilado:
 
 * **Documentación de cada entidad:** En el código se puede encontrar para qué sirve cada entidad creada, junto con algunos ejemplos de ciertos comandos, funciones o comportamiento general.
 
-
-## Versionado
+* **Diagramas:** En la carpeta `docs` se encuentran los distintos diagramas de clases y secuencias elaborados. 
 
 ## Autores
 * **Cristian Queirolo** - *Trabajo Inicial* - [cristianqueirolo](https://github.com/cqueirolo)
