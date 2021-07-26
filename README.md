@@ -55,12 +55,12 @@ Ejecuta el archivo binario compilado:
 ```
 
 ## Documentación
+* **Corrida inicial:** Con `cargo run` arranca el proyecto. Para conectarse a través de un cliente se puede ingresar, por ejemplo `nc localhost 8081` si el puerto no fue seteado (la configuración original está en ese puerto).
+* **Seteo de la configuración:** En el archivo `redis.config` se pueden setear distintos parámetros, como el puerto de la conexión, el nombre del filedump, el nombre del logger, entre otros.
+* **Ruta del archivo de configuración:** Se puede modificar con `cargo run --ruta_de_acceso`
 * **Seteo de cantidad de clientes disponibles:** Se tiene una constante `THREAD_POOL_COUNT` que se puede modificar. Tener en cuenta que cada cliente establece dos conexiones del ThreadPool (una para enviar y otra para enviar información a través del Servidor de Redis).
-
 * **Distribución de los módulos:** Distribuimos los distintos módulos a través de las carpetas `command`, `data_base`, `errors`, `handles`, `server`, además de la ejecución del main en primera instancia.
-
 * **Documentación de cada entidad:** En el código se puede encontrar para qué sirve cada entidad creada, junto con algunos ejemplos de ciertos comandos, funciones o comportamiento general.
-
 * **Diagramas:** En la carpeta `docs` se encuentran los distintos diagramas de clases y secuencias elaborados. 
 
 ## Autores
