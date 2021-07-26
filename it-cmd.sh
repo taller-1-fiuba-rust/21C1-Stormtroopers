@@ -1,12 +1,15 @@
 #!/bin/bash
 
 LOG=/tmp/it_log
+LOG_SRV=/tmp/it_log_srv
 
 HOST_REDIS="127.0.0.1 8081"
-
+RES_HOST_REDIS="127.0.0.1:8081> "
 ### Variables testing ###
 RES_OK="127.0.0.1:8081> OK"
 RES_NIL="127.0.0.1:8081> (nil)"
+RES_EMPTY_SET_LIST="(empty list or set)"
+
 RES_0="127.0.0.1:8081> 0"
 RES_1="127.0.0.1:8081> 1"
 RES_2="127.0.0.1:8081> 2"
@@ -65,13 +68,32 @@ function test(){
   	fi
 }
 
-### Main ###
-#echo "Load Redis server ..."
-#./target/debug/proyecto_taller_1 &
-#sleep 2
-#echo
+echo "#############################"
+echo "### Load Redis server ... ###"
+echo "#############################"
+./target/debug/proyecto_taller_1 > /dev/null 2>&1 &
+sleep 2
+echo
+pid_redis=$(pidof proyecto_taller_1)
+echo "PID redis_server: ${pid_redis}"
 
-echo "Exec it tests ..."
+
+### Main ###  
+echo "###############"
+echo "### flushdb ###"
+echo "###############"
+{
+  echo $TEST10
+  echo "exit"
+  echo "exit"
+  sleep 1;
+} | telnet $HOST_REDIS 1>$LOG 2>&1
+echo
+
+echo "#########################################"
+echo "### Exec it tests Grupo Keys & Server ###"
+echo "#########################################"
+rm $LOG
 
 { 
 	echo $TEST4;
@@ -91,7 +113,10 @@ echo "Exec it tests ..."
   echo $TEST17;
   echo $TEST18;
   echo $TEST19;
-
+  #echo $TEST19;
+  #echo $TEST19;
+  #echo $TEST18;
+  #echo $TEST19;
   #Necesario para cerrar la conexion y que la misma no quede colgada.
   echo "exit"
 	sleep 1;
@@ -103,9 +128,9 @@ while IFS= read -r line
 do
 
   line=$(echo "$line")
-    if [ $i == "3" ] || [ $i = "2" ] || [ $i == "1" ]; then
-  	 echo "Reading: "$line
-    elif [[ $i == "4" ]]; then
+    #if [ $i == "3" ] || [ $i = "2" ] || [ $i == "1" ]; then
+  	#echo "Reading: "$line
+    if [[ $i == "4" ]]; then
   	test $i "$line" "$RES_OK" "$TEST4"
     elif [[ $i == "5" ]]; then
   	test $i "$line" "$RES_1" "$TEST5"
@@ -128,22 +153,29 @@ do
     elif [[ $i == "15" ]]; then
     test $i "$line" "$RES_OK" "$TEST4"
     elif [[ $i == "16" ]]; then
-    test $i "$line" "$RES_2" "$TEST15"
+    test $i "$line" "$RES_1" "$TEST15"
     elif [[ $i == "17" ]]; then
     test $i "$line" "$RES_0" "$TEST16"
     elif [[ $i == "18" ]]; then
     test $i "$line" "$RES_OK" "$TEST17"
     elif [[ $i == "19" ]]; then
-    sleep 1
-    test $i "$line" "$RES_1" "$TEST18"
+    test $i "$line" "$RES_2" "$TEST18"
     elif [[ $i == "20" ]]; then
-    sleep 2
-    test $i "$line" "$RES_NIL" "$TEST19"
+    test $i "$line" "$RES_1" "$TEST19"
+    #elif [[ $i == "21" ]]; then
+    #test $i "$line" "$RES_NIL" "$TEST19"
+    #elif [[ $i == "22" ]]; then
+    #test $i "$line" "$RES_NIL" "$TEST19"
+    #elif [[ $i == "23" ]]; then
+    #test $i "$line" "$RES_1" "$TEST18"
+    #elif [[ $i == "24" ]]; then
+    #test $i "$line" "$RES_NIL" "$TEST19"
     fi
 
   i=$((i+1))
 
 done < $LOG
+
 
 TEST15="exists a"
 TEST16="exists notexist"
@@ -151,8 +183,9 @@ TEST16="exists notexist"
 TEST17="expire a 2"
 TEST18="ttl a"
 TEST19="get a"
-
-echo "Exec it tests Grupo Server"
+echo "##################################"
+echo "### Exec it tests Grupo Server ###"
+echo "##################################"
 rm $LOG
 { 
   echo $TEST0;
@@ -177,9 +210,9 @@ while IFS= read -r line
 do
   #echo "in"
     line=$(echo "$line")
-    if [ $i == "4" ] || [ $i == "3" ] || [ $i = "2" ] || [ $i == "1" ]; then
-    echo "Reading: "$line
-    elif [[ $i == "5" ]]; then
+    #if [ $i == "4" ] || [ $i == "3" ] || [ $i = "2" ] || [ $i == "1" ]; then
+    #echo "Reading: "$line
+    if [[ $i == "5" ]]; then
     test $i "$line" "-> connected_clients: 1" "$TEST0"
     elif [[ $i == "6" ]]; then
     test $i "$line" "-> tcp_port: 127.0.0.1:8081" "$TEST0"
@@ -189,34 +222,95 @@ do
     test $i "$line" "-> uptime_days: 0" "$TEST0"
     elif [[ $i == "11" ]]; then
     test $i "$line" "-> actives_threads: 2" "$TEST0"
-    elif [[ $i == "12" ]]; then
-    test $i "$line" "-> Config Server:" "$TEST0"
-    elif [[ $i == "13" ]]; then
-    test $i "$line" '0) "verbose": "false"' "$TEST0"
-    elif [[ $i == "14" ]]; then
-    test $i "$line" '0) "verbose": "false"' "$TEST0"
-    elif [[ $i == "15" ]]; then
-    test $i "$line" '2) "server": "127.0.0.1"' "$TEST0"
-    elif [[ $i == "16" ]]; then
-    test $i "$line" '3) "port": "8081"' "$TEST0"
+
+    #Comento estas lineas porque el orden es arbitrario
+
+    #elif [[ $i == "12" ]]; then
+    #test $i "$line" "-> Config Server:" "$TEST0"
+    #elif [[ $i == "13" ]]; then
+    #test $i "$line" '0) "server": "127.0.0.1"' "$TEST0"
+    #elif [[ $i == "17" ]]; then
+    #test $i "$line" '0) "verbose": "false"' "$TEST0"
+    #elif [[ $i == "15" ]]; then
+    #test $i "$line" '2) "dbfilename": "dump.rdb"' "$TEST0"
+    #elif [[ $i == "16" ]]; then
+    #test $i "$line" '3) "port": "8081"' "$TEST0"
     
     fi
   i=$((i+1))
 
 done < $LOG
 
+echo "###############################"
+echo "### Exec it tests Grupo Set ###"
+echo "###############################"
 
-echo "Exec it tests Grupo Server"
+TEST0="sadd s 1 2 3"
+TEST01="scard s"
+TEST1="sismember s 1"
+TEST2="sismember s 2"
+TEST3="sismember s 4"
+TEST4="smembers s"
+TEST5="srem s a"
+TEST6="srem s 1"
+TEST7="srem s 2 3"
+TEST8="smembers s"
+
 rm $LOG
 { 
   echo $TEST0;
+  echo $TEST01;
+  echo $TEST1;
+  echo $TEST2;
+  echo $TEST3;
+  echo $TEST4;
+  echo $TEST5;
+  echo $TEST6;
+  echo $TEST7;
+  echo $TEST8;
   #Necesario para cerrar la conexion y que la misma no quede colgada.
+  echo "exit"
   echo "exit"
   sleep 1;
 } | telnet $HOST_REDIS 1>$LOG 2>&1
 
 sleep 1;
 
+i=1
+while IFS= read -r line
+do
+  #echo "in"
+    line=$(echo "$line")
+    #if [ $i == "3" ] || [ $i = "2" ] || [ $i == "1" ]; then
+    #echo "Reading: "$line
+    if [[ $i == "4" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}3" "$TEST0"
+    elif [[ $i == "5" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}3" "$TEST01"
+    elif [[ $i == "6" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}1" "$TEST1"
+    elif [[ $i == "7" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}1" "$TEST2"
+    elif [[ $i == "8" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}0" "$TEST3"
+    elif [[ $i == "9" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}0) 1" "$TEST4"
+    elif [[ $i == "10" ]]; then
+    test $i "$line" "1) 2" "$TEST4"
+    elif [[ $i == "11" ]]; then
+    test $i "$line" "2) 3" "$TEST4"
+    elif [[ $i == "12" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}0" "$TEST5"
+    elif [[ $i == "13" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}1" "$TEST6"
+    elif [[ $i == "14" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}2" "$TEST7"
+    elif [[ $i == "15" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}${RES_EMPTY_SET_LIST}" "$TEST8"
+    fi
+  i=$((i+1))
+
+done < $LOG
 
 #list_test=("$TEST4" "$TEST5")
 #j=4
@@ -225,5 +319,5 @@ sleep 1;
 #  j=$((j+1))  
 #done
 
-
+kill ${pid_redis}
 echo "Exit it test"
