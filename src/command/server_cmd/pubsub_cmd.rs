@@ -77,41 +77,18 @@ impl Command for PubsubCommand {
         &self,
         args: Vec<&str>,
         app_info: &AppInfo,
-        id_client: usize,
+        _id_client: usize,
     ) -> Result<String, RunError> {
         let _log_info_res = self
             .logger
             .info(self, INFO_RUN_COMMAND, app_info.get_verbose());
 
         let arg = args[0];
-        let mut response = "".to_string();
+        let response;
 
-        let mut pubsub = app_info.get_pubsub();
+        let pubsub = app_info.get_pubsub();
 
         match arg {
-            "suscribe" => {
-                pubsub.suscribe(args[1].to_string(), id_client);
-                response = "OK\n".to_string();
-            }
-            "len_channel" => {
-                let len: usize = pubsub.len_channel(args[1].to_string());
-                response = format!("{:?}\n", len);
-            }
-            "suscribers_for_channel" => {
-                let suscribers_vec = pubsub.get_suscribers(args[1].to_string());
-                response = format!("{:?}\n", suscribers_vec);
-            }
-            "publish" => {
-                let val = pubsub.publish(args[1].to_string(), args[2].to_string(), false);
-                response = "OK\n".to_string();
-                if val.is_none() {
-                    return Err(RunError {
-                        message: "Error Command pubsub".to_string(),
-                        cause: "Channel does not exist".to_string(),
-                    });
-                }
-            }
-            "unsuscribe" => pubsub.unsuscribe(args[1].to_string(), id_client),
             "CHANNELS" | "channels" => {
                 if args.len() == 1 {
                     let channels_vec = pubsub.available_channels();

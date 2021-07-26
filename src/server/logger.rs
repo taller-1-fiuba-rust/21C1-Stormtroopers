@@ -8,9 +8,6 @@ use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-//TODO: ver de cambiar el id_client por un String que indique el nombre del servicio
-//TODO: por ahi el timestamp puede ser calculado por el Logger directamente
-
 ///Use a channel to send and receive messages that are stored in a "log" file.
 pub trait Loggable {
     fn get_id_client(&self) -> &str;
@@ -133,11 +130,7 @@ mod tests {
 
     #[test]
     fn multiple_request() {
-        let log = Logger::new(
-            "log".to_string(),
-            "/tmp".to_string(), //no sé qué otro path ponerle
-        )
-        .unwrap();
+        let log = Logger::new("log".to_string(), "/tmp".to_string()).unwrap();
 
         log.info(&Client(1, 1), "hola", false).unwrap();
         log.info(&Client(2, 1), "hola", false).unwrap();

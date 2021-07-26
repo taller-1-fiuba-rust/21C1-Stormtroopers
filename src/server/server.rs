@@ -21,7 +21,6 @@ pub struct Server {
     server_args: Vec<String>,
     config_server: ConfigServer,
     logger: Logger<String>,
-    //command_builder: CommandBuilder,
     pub structure: StructureString<String>,
 }
 
@@ -29,14 +28,12 @@ impl Clone for Server {
     fn clone(&self) -> Server {
         let config_server = self.config_server.clone();
         let logger = self.logger.clone();
-        //let command_builder = self.command_builder.clone();
         let server_args = self.server_args.clone();
         let structure = self.structure.clone();
         Self {
             server_args,
             config_server,
             logger,
-            //command_builder,
             structure,
         }
     }
@@ -51,13 +48,11 @@ impl Server {
         let config_server = ConfigServer::new();
         let logger =
             Logger::new(LOG_NAME.to_string(), LOG_PATH.to_string()).expect(ERROR_LOG_CREATE);
-        //let command_builder = CommandBuilder::new(99, logger.clone());
         let structure = StructureString::new();
         Self {
             server_args,
             config_server,
             logger,
-            //command_builder,
             structure,
         }
     }

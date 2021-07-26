@@ -37,10 +37,16 @@ const SUB_CMD_GET: &str = "get";
 const SUB_CMD_SET: &str = "set";
 
 /// Min amount of arguments besides the command name.
-const MIN_VALID_ARGS: i32 = 1;
+const MIN_VALID_ARGS_GET: i32 = 0;
 
 /// Max amount of arguments besides the command name.
-const MAX_VALID_ARGS: i32 = 3;
+const MAX_VALID_ARGS_GET: i32 = 0;
+
+/// Min amount of arguments besides the command name.
+const MIN_VALID_ARGS_SET: i32 = 2;
+
+/// Max amount of arguments besides the command name.
+const MAX_VALID_ARGS_SET: i32 = 2;
 
 /// Main structure of the command.
 pub struct ConfigCommand {
@@ -89,15 +95,15 @@ impl Command for ConfigCommand {
             .info(self, INFO_RUN_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
 
-        ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
-
         let config_server = app_info.get_config_server();
         let cmd = args.remove(0);
 
         let mut response: String;
         if cmd == SUB_CMD_GET {
+            ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS_GET, MAX_VALID_ARGS_GET)?;
             response = config_server.get();
         } else if cmd == SUB_CMD_SET {
+            ParsedMessage::validate_args(args.clone(), MIN_VALID_ARGS_SET, MAX_VALID_ARGS_SET)?;
             response = config_server.set(args[0].to_string(), args[1].to_string())?;
         } else {
             return Err(RunError {

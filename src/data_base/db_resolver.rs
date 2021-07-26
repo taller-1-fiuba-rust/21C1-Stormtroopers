@@ -1,9 +1,11 @@
 //! Redirects the request to the apropiate database, and handles logic that is type agnostic.
+use crate::constants::RESPONSE_SIMPLE_STRING;
 use crate::constants::{SHARDING_COUNT_DEFAULT, TYPE_LIST, TYPE_SET, TYPE_STRING};
 use crate::data_base::db_list::DataBaseList;
 use crate::data_base::db_set::DataBaseSet;
 use crate::data_base::db_string::DataBaseString;
 use crate::errors::run_error::RunError;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -55,7 +57,6 @@ impl DataBaseResolver {
         data_base_general.insert(key_db, values);
     }
 
-    //tiene que estar el doble for porque antes solo se fijaba en val[0]
     pub fn dbsize(&self) -> usize {
         let mut cont = 0;
         let data_base = self.data_bases.lock().unwrap();
@@ -254,62 +255,96 @@ impl DataBaseResolver {
         &self,
         key_src: &str,
         key_target: &str,
-        del_src_key: bool,
         ttl_scheduler: TtlScheduler,
-    ) -> Result<u32, RunError> {
-        return match self.type_key(key_src.to_string()) {
+    ) -> Result<String, RunError> {
+        match self.type_key(key_src.to_string()) {
             Ok(typee) => {
-                return match typee.as_str() {
+                self.clear_key(key_target.to_string());
+                match typee.as_str() {
                     "String" => {
-                        let value_src;
-                        if del_src_key {
-                            value_src = match self
-                                .get_string_db_sharding(key_src)
-                                .get_del(key_src.to_string())
-                            {
-                                Ok(val) => val,
-                                Err(_e) => return Ok(0),
-                            };
-                        } else {
-                            value_src = self
-                                .get_string_db_sharding(key_src)
-                                .get_string(key_src.to_string());
-                        }
+                        let value = self
+                            .get_string_db_sharding(key_src)
+                            .get_string(key_src.to_string());
                         self.get_string_db_sharding(key_target)
-                            .set_string(key_target.to_string(), value_src);
-
-                        //pasarlo al scheduler
-                        match ttl_scheduler.get_ttl_key(key_src.to_string()) {
-                            Ok(ttl_str) => {
-                                match ttl_str.parse::<u64>() {
-                                    Ok(ttl) => {
-                                        ttl_scheduler
-                                            .set_ttl(ttl, String::from(key_target))
-                                            .unwrap();
-                                        if del_src_key {
-                                            ttl_scheduler
-                                                .delete_ttl_key(key_src.to_string())
-                                                .unwrap_or_else(|_| String::from(""));
-                                        }
-                                    }
-                                    Err(_e) => {
-                                        self.get_string_db_sharding(key_target)
-                                            .delete(vec![key_target]);
-                                        return Ok(0);
-                                    }
-                                };
-                            }
-                            Err(_e) => {}
-                        }
-                        Ok(1)
+                            .set_string(key_target.to_string(), value);
                     }
-                    "List" => return Ok(0),
-                    "Set" => return Ok(0),
-                    _ => Ok(0),
-                };
+                    "List" => {
+                        let value = self
+                            .get_list_db_sharding(key_src)
+                            .get_list(key_src.to_string())
+                            .unwrap();
+                        self.get_list_db_sharding(key_target)
+                            .rpush(key_target.to_string(), value.iter().map(|s| &**s).collect())?;
+                    }
+                    "Set" => {
+                        let value = self
+                            .get_set_db_sharding(key_src)
+                            .get_set(key_src.to_string())?;
+                        self.get_set_db_sharding(key_target).sadd(
+                            set_to_vec(value, key_target.to_string())
+                                .iter()
+                                .map(|s| &**s)
+                                .collect(),
+                        );
+                    }
+                    _ => {
+                        return Err(RunError {
+                            message: "ERR WRONGTYPE.".to_string(),
+                            cause: "Operation against a key holding the wrong kind of value"
+                                .to_string(),
+                        })
+                    }
+                }
             }
-            Err(_e) => Err(_e),
+            Err(_e) => return Err(_e),
         };
+
+        ttl_scheduler.copy_ttl_key(key_src.to_string(), key_target.to_string());
+        Ok(RESPONSE_SIMPLE_STRING.to_string())
+    }
+
+    pub fn rename(
+        &self,
+        key_src: &str,
+        key_target: &str,
+        ttl_scheduler: TtlScheduler,
+    ) -> Result<String, RunError> {
+        match self.type_key(key_src.to_string()) {
+            Ok(typee) => {
+                self.clear_key(key_target.to_string());
+                match typee.as_str() {
+                    "String" => {
+                        let value = self
+                            .get_string_db_sharding(key_src)
+                            .get_del(key_src.to_string())?;
+                        self.get_string_db_sharding(key_target)
+                            .set_string(key_target.to_string(), value);
+                    }
+                    "List" => {
+                        let value = self
+                            .get_list_db_sharding(key_src)
+                            .get_del(key_src.to_string())?;
+                        self.get_list_db_sharding(key_target)
+                            .rpush(key_target.to_string(), value.iter().map(|s| &**s).collect())?;
+                    }
+                    _ => {
+                        let value = self
+                            .get_set_db_sharding(key_src)
+                            .get_del(key_src.to_string())?;
+                        self.get_set_db_sharding(key_target).sadd(
+                            set_to_vec(value, key_target.to_string())
+                                .iter()
+                                .map(|s| &**s)
+                                .collect(),
+                        );
+                    }
+                }
+            }
+            Err(_e) => return Err(_e),
+        };
+
+        ttl_scheduler.update_key(key_src.to_string(), key_target.to_string());
+        Ok(RESPONSE_SIMPLE_STRING.to_string())
     }
 
     pub fn valid_key_type(&self, key: &str, key_type: &str) -> Result<bool, RunError> {
@@ -330,9 +365,6 @@ impl DataBaseResolver {
         }
     }
 
-    pub fn valid_key_type_lock(&self, _db: &DataBaseString<String>, _key: &str) {}
-
-    //TODO: threadsafety?
     pub fn check_db_string(&self, key: String) -> bool {
         let db_string = self.get_string_db_sharding(key.as_str());
         db_string.contains(key)
@@ -415,12 +447,7 @@ impl DataBaseResolver {
     pub fn keys(&self, pattern: &str) -> Result<Vec<String>, RunError> {
         let mut keys_vec = Vec::<String>::new();
         let mut error: Option<RunError> = None;
-        // for i in 0..self.sharding_count_db {
-        //     keys_vec.extend(self.get_string_db(i as usize).keys(pattern));
-        //     keys_vec.extend(self.get_list_db(i as usize).keys(pattern));
-        //     keys_vec.extend(self.get_set_db(i as usize).keys(pattern));
-        // }
-        // keys_vec
+
         for i in 0..self.sharding_count_db {
             match self.get_string_db(i as usize).keys(pattern) {
                 Ok(vec) => keys_vec.extend(vec),
@@ -449,4 +476,13 @@ impl DataBaseResolver {
             None => Ok(keys_vec),
         }
     }
+}
+
+fn set_to_vec(set: BTreeSet<String>, key: String) -> Vec<String> {
+    let mut vec_response = vec![key];
+    for elem in set.iter() {
+        vec_response.push(elem.to_string());
+    }
+
+    vec_response
 }

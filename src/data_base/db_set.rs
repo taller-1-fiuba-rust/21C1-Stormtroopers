@@ -24,16 +24,16 @@ impl Clone for DataBaseSet<String> {
 }
 
 impl DataBaseSet<String> {
-    #[allow(dead_code)]
     pub fn new() -> Self {
         let db_set = Arc::new(Mutex::new(HashMap::new()));
         Self { db_set }
     }
 
+    //ya está antes, es un método que sirve para modularizar (por eso el unwrap)
     fn get_value(&self, key: String) -> DataSet<String> {
         let db = self.db_set.lock().unwrap();
 
-        db.get(&key).unwrap().clone() //TODO: chequear que esté antes
+        db.get(&key).unwrap().clone()
     }
 
     pub fn delete(&mut self, args: Vec<&str>) -> u32 {
@@ -47,7 +47,12 @@ impl DataBaseSet<String> {
         count
     }
 
-    #[allow(dead_code)]
+    pub fn get_del(&mut self, key: String) -> Result<BTreeSet<String>, RunError> {
+        let set = self.get_set(key.clone())?;
+        self.delete(vec![&key]);
+        Ok(set)
+    }
+
     pub fn sadd(&self, mut args: Vec<&str>) -> u32 {
         let mut db_set = self.db_set.lock().unwrap();
         let key = args.remove(0);
@@ -126,7 +131,6 @@ impl DataBaseSet<String> {
         }
     }
 
-    #[allow(dead_code)]
     pub fn get_set(&self, key: String) -> Result<BTreeSet<String>, RunError> {
         let db = self.db_set.lock().unwrap();
         if let Some(set) = db.get(&key) {
@@ -139,14 +143,12 @@ impl DataBaseSet<String> {
         })
     }
 
-    #[allow(dead_code)]
     pub fn clean_all_data(&self) -> bool {
         let mut db_set = self.db_set.lock().unwrap();
         db_set.clear();
         db_set.is_empty()
     }
 
-    #[allow(dead_code)]
     pub fn dbsize(&self) -> usize {
         let db_set = self.db_set.lock().unwrap();
         db_set.len()
@@ -209,7 +211,15 @@ impl DataBaseSet<String> {
 
     fn return_all_keys(&self) -> Result<Vec<String>, RunError> {
         let mut response = vec![];
-        let hash = self.db_set.lock().unwrap();
+        let hash;
+        if let Ok(val) = self.db_set.lock() {
+            hash = val;
+        } else {
+            return Err(RunError {
+                message: "Could not lock the data base".to_string(),
+                cause: "Race condition\n".to_string(),
+            });
+        }
 
         for key in hash.keys() {
             response.push(key.clone());

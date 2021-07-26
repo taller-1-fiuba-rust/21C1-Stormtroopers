@@ -101,7 +101,6 @@ impl DataBaseString<String> {
         .unwrap();
     }
 
-    //TODO: refactor impl please!
     pub fn mget(&self, keys: Vec<&str>) -> Vec<String> {
         let mut db = self.clone();
         let mut keys_sender = String::from("");
@@ -186,16 +185,14 @@ impl DataBaseString<String> {
 
     pub fn exists(&self, keys: Vec<&str>) -> u32 {
         let mut count = 0_u32;
-        let db = self.db.lock().unwrap();
         for key in keys.iter() {
-            if db.contains_key(*key) {
+            if self.contains(key.to_string()) {
                 count += 1
             }
         }
         count
     }
 
-    //TODO: similar al exists. Ver de remover.
     pub fn contains(&self, key: String) -> bool {
         let db = self.db.lock().unwrap().clone();
         db.contains_key(&key)
@@ -375,7 +372,15 @@ impl DataBaseString<String> {
 
     fn return_all_keys(&self) -> Result<Vec<String>, RunError> {
         let mut response = vec![];
-        let hash = self.db.lock().unwrap();
+        let hash;
+        if let Ok(val) = self.db.lock() {
+            hash = val;
+        } else {
+            return Err(RunError {
+                message: "Could not lock the data base".to_string(),
+                cause: "Race condition\n".to_string(),
+            });
+        }
 
         for key in hash.keys() {
             response.push(key.clone());

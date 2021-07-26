@@ -71,7 +71,6 @@ impl ConfigServer {
         println!("Load file config {}", path_file);
         if let Ok(lines) = read_lines(path_file) {
             for line in lines.into_iter().flatten() {
-                //let mut props = props.clone();
                 let prop_slited: Vec<&str> = line.split('=').collect();
                 println!(
                     "Load prop config '{}' -> {}",
@@ -115,19 +114,19 @@ impl ConfigServer {
 
     pub fn get_verbose(&self) -> bool {
         let props = self.props.lock().unwrap();
-        let verbose = props.get("verbose").unwrap(); //hacerlo bien
+        let verbose = props.get("verbose").unwrap();
         parse_value(verbose.to_string(), false)
     }
 
     pub fn get_timeout(&self) -> u64 {
         let props = self.props.lock().unwrap();
-        let timeout = props.get("timeout").unwrap(); //hacerlo bien
+        let timeout = props.get("timeout").unwrap();
         parse_value(timeout.to_string(), 0)
     }
 
     pub fn get_dumpfile(&self) -> String {
         let props = self.props.lock().unwrap();
-        let dumpfile = props.get("dbfilename").unwrap(); //hacerlo bien
+        let dumpfile = props.get("dbfilename").unwrap();
         dumpfile.to_string()
     }
 

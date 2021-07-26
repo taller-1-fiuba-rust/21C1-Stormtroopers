@@ -63,7 +63,7 @@ impl Clone for ExistsCommand {
         }
     }
 }
-//TODO: ver thread safety impl
+
 impl Command for ExistsCommand {
     fn run(
         &self,

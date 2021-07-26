@@ -24,10 +24,12 @@ impl ParsedMessage {
             return Ok(true);
         }
 
-        let msg_err = "Invalid number of arguments for the command".to_string();
         Err(RunError {
-            message: "ERR.".to_string(),
-            cause: msg_err,
+            message: "ERROR: Invalid number of arguments for the command".to_string(),
+            cause: format!(
+                "The command accepts\n    as a minimum of {} args\n    and maximum of {}",
+                min_num_args_valid, max_num_args_valid
+            ),
         })
     }
 }
@@ -100,7 +102,6 @@ pub fn obtain_str_command(msg: &str) -> Result<ParsedMessage, ParseError> {
     Ok(ParsedMessage { command, arguments })
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -128,7 +129,7 @@ mod tests {
         assert_eq!(parsed_msg.command, "test_command");
         assert_eq!(
             parsed_msg.arguments,
-            vec!["test_argument_1", "test_argument_2","test_argument_3"]
+            vec!["test_argument_1", "test_argument_2", "test_argument_3"]
         );
     }
 
@@ -175,7 +176,7 @@ mod tests {
         assert_eq!(parsed_msg.command, "test_command");
         assert_eq!(
             parsed_msg.arguments,
-            vec!["test_argument_1","test_argument_2","test_argument_3"]
+            vec!["test_argument_1", "test_argument_2", "test_argument_3"]
         );
     }
 }

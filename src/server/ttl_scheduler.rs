@@ -83,7 +83,6 @@ impl TtlScheduler {
             let app_info = app_info.clone();
 
             //https://doc.rust-lang.org/std/primitive.u64.html#method.overflowing_sub
-            //con la resta común no anda
             let time = query_time.overflowing_sub(n).0;
             let time_str = time.to_string();
             match ttl_scheduler.delete_ttl(time_str.clone()) {
@@ -269,7 +268,7 @@ impl TtlScheduler {
         map: &mut Arc<Mutex<HashMap<u64, Vec<String>>>>,
     ) -> Result<Vec<String>, String> {
         let key = self.receiver.lock().unwrap().recv().unwrap();
-        let key_parsed = key.parse::<u64>().unwrap(); //ojo con este unwrap
+        let key_parsed = key.parse::<u64>().unwrap();
         let mut map = map.lock().unwrap();
         match map.remove(&key_parsed) {
             Some(v) => Ok(v),
@@ -287,8 +286,24 @@ impl TtlScheduler {
     }
 
     pub fn update_key(&self, src: String, new: String) {
-        // Buscarla a key_map y actualizar
-        let ttl = self.delete_ttl_key(src).unwrap();
+        let ttl;
+        if let Ok(val) = self.delete_ttl_key(src) {
+            ttl = val;
+        } else {
+            return;
+        }
+
+        let _ = self.set_ttl(ttl.parse::<u64>().unwrap(), new);
+    }
+
+    pub fn copy_ttl_key(&self, src: String, new: String) {
+        let ttl;
+        if let Ok(val) = self.get_ttl_key(src) {
+            ttl = val;
+        } else {
+            return;
+        }
+
         let _ = self.set_ttl(ttl.parse::<u64>().unwrap(), new);
     }
 }

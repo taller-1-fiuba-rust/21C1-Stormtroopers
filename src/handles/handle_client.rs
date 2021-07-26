@@ -33,7 +33,7 @@ pub fn handle_client(
     let mut request = "".to_string();
 
     for line in lines {
-        if request != *"monitor" {
+        if request != *"monitor" || !connection_resolver.monitor(id_client) {
             let mut app_info = app_info.clone();
             request = line.unwrap_or_else(|_| String::from(END_FLAG));
 
