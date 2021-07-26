@@ -117,12 +117,12 @@ fn create_databases(count_dbs: u32) -> DataBaseResolver {
 }
 
 fn create_private_pubsub() -> Pubsub {
-    //ver si lo necesito, o con los sucribe de los comandos ya basta
     let mut pubsub = Pubsub::new();
     pubsub.create_channel("MONITOR".to_string());
     pubsub
 }
 
+///It carries out the insertions of all the commands by group.
 fn command_builder_generator(logger: Logger<String>) -> CommandBuilder {
     let command_builder = CommandBuilder::new(0);
 
@@ -134,7 +134,8 @@ fn command_builder_generator(logger: Logger<String>) -> CommandBuilder {
 
     command_builder
 }
-
+///It orchestrates the server and the interaction of the different modules throughout the application.
+///It provides convenience functions and access to different resources.
 impl AppInfo {
     pub fn new(args: Vec<String>) -> Result<AppInfo, RunError> {
         let config_server = ConfigServer::new();
@@ -223,28 +224,16 @@ impl AppInfo {
         self.args[0].to_owned()
     }
 
-    /* Impl of sharing db */
     pub fn get_string_db_sharding(&self, key: &str) -> DataBaseString<String> {
         self.db_resolver.get_string_db_sharding(key)
     }
 
-    /*
-       pub fn get_string_db(&self) -> DataBaseString<String> {
-           self.db_resolver.get_string_db()
-       }
-
-
-       pub fn get_list_db(&self) -> DataBaseList<String> {
-           self.db_resolver.get_list_db()
-       }
-    */
     pub fn get_list_db_sharding(&self, key: &str) -> DataBaseList<String> {
         self.db_resolver.get_list_db_sharding(key)
     }
 
     pub fn get_set_db_sharding(&self, key: &str) -> DataBaseSet<String> {
         self.db_resolver.get_set_db_sharding(key)
-        //self.db_resolver.get_set_db()
     }
 
     pub fn get_server_port(&self) -> String {

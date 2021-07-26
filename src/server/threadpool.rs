@@ -14,7 +14,9 @@ enum Message {
     NewJob(Job),
     Terminate,
 }
-
+///Module to manage several threads and avoid the overload of creating and destroying them.
+///
+///The threads are kept in a pool; which are dispensed once they are needed.
 impl ThreadPool {
     pub fn new(size: usize) -> ThreadPool {
         assert!(size > 0);

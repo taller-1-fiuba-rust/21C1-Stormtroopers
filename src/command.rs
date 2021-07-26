@@ -1,6 +1,4 @@
-/*
-    This is to expose the commands submodule to main.rs
-*/
+//! Crate that has responsibility over processing the user's messages to the server.
 pub mod cmd_trait;
 pub mod command_builder;
 pub mod command_parser;

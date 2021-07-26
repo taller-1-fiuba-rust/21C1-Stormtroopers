@@ -1,3 +1,4 @@
+//! List data type.
 use std::time::SystemTime;
 
 pub struct DataList<String> {

@@ -1,3 +1,20 @@
+//! Returns the element at the given index.
+//!
+//! Example:
+//! ```text
+//! > lrange key 0 -1
+//! 0) value1
+//! 1) value2
+//! 2) value3
+//! 3) value4
+//! > lindex key 0
+//! value1
+//! > lindex key 2
+//! value3
+//! > lindex key 4
+//! Error running command: Position is bigger than the len of the list
+//! Cause: The argument exceeds the limits of the list
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,15 +23,26 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command LINDEX\n";
-const CLIENT_ID: &str = "LindexCommmand";
+
+/// Name of the command.
+const CLIENT_ID: &str = "LindexCommand";
+
+/// Code of the command.
 const LINDEX_CMD: &str = "lindex";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 2;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct LindexCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

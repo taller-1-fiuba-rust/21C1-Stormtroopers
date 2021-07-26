@@ -1,3 +1,17 @@
+//! Inserts all values to the given list at the end. If it doesn't exist, then creates a new one.
+//!
+//! Example:
+//! ```text
+//! > lindex key 0 -1
+//! 0) value_start
+//! > rpush key value1 value2 value3
+//! 4
+//! > lindex key 0 -1
+//! 0) value_start
+//! 1) value1
+//! 2) value2
+//! 3) value3
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,15 +20,26 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command RPUSH\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "RpushCommand";
+
+/// Code of the command.
 const RPUSH_CMD: &str = "rpush";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 2;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = -1;
 
+/// Main struct of the command.
 pub struct RpushCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

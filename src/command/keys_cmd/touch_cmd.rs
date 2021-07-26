@@ -1,3 +1,10 @@
+//! Given a key, resets last access time and, triggers cleanup if ttl is expired for that key.
+//!
+//! Example:
+//! ```text
+//! > touch key
+//! 1
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -5,15 +12,26 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command TOUCH\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "TouchCommand";
+
+/// Code of the command
 const CONST_CMD: &str = "touch";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = -1;
 
+/// Main struct of the command.
 pub struct TouchCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

@@ -1,3 +1,15 @@
+//! If the list exits, then insert all given values at the end.
+//!
+//! Example:
+//! ```text
+//! > lrange lkey 0 -1
+//! 0) value1
+//! > rpushx lkey value2
+//! 2
+//! > lrange lkey 0 -1
+//! 0) value1
+//! 1) value2
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,15 +18,25 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command RPUSHX\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "RpushxCommand";
+
+/// Code of the command.
 const RPUSHX_CMD: &str = "rpushx";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 2;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = -1;
 
 pub struct RpushxCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

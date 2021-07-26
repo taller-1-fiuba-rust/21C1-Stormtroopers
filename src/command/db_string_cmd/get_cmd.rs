@@ -1,3 +1,12 @@
+//! Get the value of the String given by the key.
+//!
+//! Example:
+//! ```text
+//! > set key value
+//! OK
+//! > get key
+//! "value"
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,15 +15,26 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_RUN_COMMAND: &str = "Run command GET\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "GetCommand";
+
+/// Code of the command.
 const CONST_CMD: &str = "get";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 1;
 
+/// Main struct of the command.
 pub struct GetCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

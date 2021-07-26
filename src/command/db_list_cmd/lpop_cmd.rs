@@ -1,3 +1,22 @@
+//! Returns and removes the first element/s of the list, given by the user.
+//!
+//! Example:
+//! ```text
+//! > lrange key 0 -1
+//! 0) value1
+//! 1) value2
+//! 2) value3
+//! 3) value4
+//! > lpop key
+//! "value1"
+//! > lrange key 0 -1
+//! 0) value2
+//! 1) value3
+//! 2) value4
+//! lpop key 2
+//! 0) value2
+//! 1) value3
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,16 +25,25 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command LPOP\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "LpopCommand";
 const RESPONSE_EMPTY: &str = "(nil)\n";
 const LPOP_CMD: &str = "lpop";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct LpopCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

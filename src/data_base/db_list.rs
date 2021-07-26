@@ -1,3 +1,4 @@
+//! Database structure in charge of storing and processing Lists.
 use crate::data_base::data_db::data_list::DataList;
 use crate::errors::run_error::RunError;
 use regex::Regex;
@@ -41,6 +42,12 @@ impl DataBaseList<String> {
             }
         }
         count
+    }
+
+    pub fn get_del(&mut self, key: String) -> Result<Vec<String>, RunError> {
+        let list = self.get_list(key.clone())?;
+        self.delete(vec![&key]);
+        Ok(list)
     }
 
     pub fn lpush(&self, args: Vec<&str>) -> u32 {
@@ -227,7 +234,7 @@ impl DataBaseList<String> {
             return Ok(list.get_value().len());
         }
 
-        Ok(EMPTY_LIST) //lista vacía por no existir
+        Ok(EMPTY_LIST) //empty list -> the list doesn't exist.
     }
 
     pub fn lset(&self, key: String, pos: String, value: String) -> Result<String, RunError> {
@@ -239,8 +246,6 @@ impl DataBaseList<String> {
         Ok(SUCCESS.to_string())
     }
 
-    //TODO: falta implementar bien el retorno del size de la lista un vez insertado los valores.
-    //TODO: OJO que no es completamente thread safety!
     pub fn rpushx(&self, key_list: String, values: Vec<&str>) -> Result<u32, RunError> {
         {
             let db_list = self.db_list.lock().unwrap();
@@ -274,6 +279,10 @@ impl DataBaseList<String> {
     pub fn sort(&self, key: String) -> Result<Vec<String>, RunError> {
         if let Ok(list) = self.get_list(key) {
             let mut list_client = list;
+            if list_can_be_parsed(list_client.clone()) {
+                let response = parse_list(sort_parsed_list(list_client));
+                return Ok(response);
+            }
             list_client.sort();
             return Ok(list_client);
         }
@@ -291,16 +300,8 @@ impl DataBaseList<String> {
         0
     }
 
-    /*pub fn touch(&self, keys: Vec<String>) -> usize {
-        let mut cont = 0;
-        for key in keys {
-            cont += self.touch_key(key);
-        }
-        cont
-    }*/
-
     pub fn clear_key(&self, key: String) {
-        let mut db = self.db_list.lock().unwrap().clone();
+        let mut db = self.db_list.lock().unwrap();
         if db.contains_key(&key) {
             db.remove(&key);
         }
@@ -336,12 +337,13 @@ impl DataBaseList<String> {
         insertions
     }
 
+    //se usa cuando la clave ya está, por eso el unwrap
     fn get_value(&self, key: String) -> DataList<String> {
         let db = self.db_list.lock().unwrap();
-        db.get(&key).unwrap().clone() //chequear que este OK
+        db.get(&key).unwrap().clone()
     }
 
-    fn get_list(&self, key: String) -> Result<Vec<String>, RunError> {
+    pub fn get_list(&self, key: String) -> Result<Vec<String>, RunError> {
         self.validate_or_insert_key(key.clone());
 
         let db = self.db_list.lock().unwrap();
@@ -444,19 +446,89 @@ impl DataBaseList<String> {
         data
     }
 
-    pub fn keys(&self, pattern: &str) -> Vec<String> {
-        let mut keys_vec = Vec::<String>::new();
-        let db = self.db_list.lock().unwrap();
-        let re = Regex::new(pattern).unwrap();
-
-        for key in db.keys() {
-            if re.is_match(&key) {
-                keys_vec.push((*(key.clone())).to_string());
-            }
+    fn return_all_keys(&self) -> Result<Vec<String>, RunError> {
+        let mut response = vec![];
+        let hash;
+        if let Ok(val) = self.db_list.lock() {
+            hash = val;
+        } else {
+            return Err(RunError {
+                message: "Could not lock the data base".to_string(),
+                cause: "Race condition\n".to_string(),
+            });
         }
 
-        keys_vec
+        for key in hash.keys() {
+            response.push(key.clone());
+        }
+
+        Ok(response)
     }
+
+    pub fn keys(&self, pattern: &str) -> Result<Vec<String>, RunError> {
+        if pattern == "*" {
+            return self.return_all_keys();
+        }
+        let mut keys_vec = Vec::<String>::new();
+        let db = self.db_list.lock().unwrap();
+        match Regex::new(pattern) {
+            Ok(re) => {
+                for key in db.keys() {
+                    if re.is_match(&key) {
+                        keys_vec.push((*(key.clone())).to_string());
+                    }
+                }
+
+                Ok(keys_vec)
+            }
+            Err(_) => Err(RunError {
+                message: "Could not find match".to_string(),
+                cause: "Malformed pattern\n".to_string(),
+            }),
+        }
+    }
+}
+
+pub fn validate_elem(elem: String) -> Result<i32, RunError> {
+    if let Ok(val) = elem.parse::<i32>() {
+        Ok(val)
+    } else {
+        Err(RunError {
+            message: "Element is not an integer".to_string(),
+            cause: "The argument cannot be interpreted as an integer".to_string(),
+        })
+    }
+}
+
+pub fn sort_parsed_list(list: Vec<String>) -> Vec<i32> {
+    let mut return_list = vec![];
+    for elem in list {
+        return_list.push(validate_elem(elem).unwrap());
+    }
+    return_list.sort_unstable();
+    return_list
+}
+
+pub fn parse_list(list: Vec<i32>) -> Vec<String> {
+    let mut response = vec![];
+    for elem in list {
+        response.push(elem.to_string());
+    }
+
+    response
+}
+
+pub fn list_can_be_parsed(list: Vec<String>) -> bool {
+    for elem in list {
+        if !elem_can_be_parsed(elem.clone()) {
+            return false;
+        }
+    }
+    true
+}
+
+pub fn elem_can_be_parsed(elem: String) -> bool {
+    validate_elem(elem).is_ok()
 }
 
 #[cfg(test)]

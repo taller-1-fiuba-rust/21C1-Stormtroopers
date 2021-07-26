@@ -1,20 +1,43 @@
+//! Gets the values of several keys passed as arguments.
+//!
+//! Example:
+//! ```text
+//! > set key1 value
+//! OK
+//! > get key2
+//! (nil)
+//! > mget key1 key2
+//! 0) "value"
+//! 1) (nil)
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
-use crate::constants::{LINE_BREAK, MARK_BULLET};
+
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command MGET\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "MgetCommand";
+
+/// Code of the command.
 const CONST_CMD: &str = "mget";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = -1;
 
+/// Main struct of the command.
 pub struct MgetCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 
@@ -44,7 +67,7 @@ impl Clone for MgetCommand {
         }
     }
 }
-//TODO: review impl!
+
 impl Command for MgetCommand {
     fn run(
         &self,
@@ -66,11 +89,7 @@ impl Command for MgetCommand {
         let mut to_return = "".to_string();
         let mut i = 1;
         for res in res.iter() {
-            to_return.push_str(i.to_string().as_str());
-            to_return.push_str(MARK_BULLET);
-            let mut item = res.clone();
-            item.push(LINE_BREAK);
-            to_return.push_str(&item);
+            to_return.push_str(&format!("{}) {}\n", i, res.clone()));
             i += 1;
         }
         Ok(to_return)

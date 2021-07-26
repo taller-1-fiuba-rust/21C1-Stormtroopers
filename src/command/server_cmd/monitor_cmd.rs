@@ -1,16 +1,38 @@
+//! Logs in the screen all inputs and outputs made by all clients and the server.
+//!
+//! Example
+//! ```text
+//! > monitor
+//! OK
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
+use crate::command::command_parser::ParsedMessage;
 use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command MONITOR\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "MonitorCommand";
+
+/// Code of the command.
 const CONST_CMD: &str = "monitor";
 
+/// Min amount of arguments besides the command name.
+const MIN_VALID_ARGS: i32 = 0;
+
+/// Max amount of arguments besides the command name.
+const MAX_VALID_ARGS: i32 = 0;
+
+/// Main structure of the command.
 pub struct MonitorCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 
@@ -50,6 +72,8 @@ impl Command for MonitorCommand {
     ) -> Result<String, RunError> {
         let log_info_res = self.logger.info(self, INFO_COMMAND, app_info.get_verbose());
         if let Ok(_r) = log_info_res {}
+
+        ParsedMessage::validate_args(_args.clone(), MIN_VALID_ARGS, MAX_VALID_ARGS)?;
 
         let mut private_pubsub = app_info.get_private_pubsub();
         private_pubsub.suscribe("MONITOR".to_string(), id_client);

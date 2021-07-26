@@ -1,3 +1,4 @@
+//! Commands related to Lists and their functionality.
 pub mod db_list_generator;
 pub mod lindex_cmd;
 pub mod llen_cmd;

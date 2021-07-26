@@ -1,6 +1,7 @@
+//! The logic that the threadpool uses to read and write streams.
 use crate::constants::MSG_OVER;
-use crate::handle_connection::executor::write_redis_msg;
-use crate::handle_connection::handle_client::handle_client;
+use crate::handles::executor::write_redis_msg;
+use crate::handles::handle_client::handle_client;
 use crate::server::threadpool::ThreadPool;
 use crate::AppInfo;
 use crate::ConnectionResolver;

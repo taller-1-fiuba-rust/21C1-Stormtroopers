@@ -1,3 +1,4 @@
+//! Set data type.
 use std::collections::BTreeSet;
 use std::time::SystemTime;
 

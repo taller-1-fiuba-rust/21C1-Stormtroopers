@@ -1,3 +1,4 @@
+//! Helper function that instanciate all of the string related commands.
 use crate::command::command_builder::CommandBuilder;
 use crate::command::db_string_cmd::append_cmd::AppendCommand;
 use crate::command::db_string_cmd::decrby_cmd::DecrbyCommand;
@@ -12,6 +13,7 @@ use crate::command::db_string_cmd::strlen_cmd::StrlenCommand;
 use crate::server::logger::Logger;
 use std::process;
 
+/// Each command is instanciated and stored in the command_builder Hashmap structure.
 pub fn insert_commands(command_builder: CommandBuilder, logger: Logger<String>) {
     AppendCommand::new(process::id(), logger.clone(), command_builder.clone());
     DecrbyCommand::new(process::id(), logger.clone(), command_builder.clone());
