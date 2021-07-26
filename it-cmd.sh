@@ -64,14 +64,14 @@ function test(){
   	fi
 }
 
-#echo "#############################"
-#echo "### Load Redis server ... ###"
-#echo "#############################"
-#./target/debug/proyecto_taller_1 > /dev/null 2>&1 &
-#sleep 2
-#echo
-#pid_redis=$(pidof proyecto_taller_1)
-#echo "PID redis_server: ${pid_redis}"
+echo "#############################"
+echo "### Load Redis server ... ###"
+echo "#############################"
+./target/debug/proyecto_taller_1 > /dev/null 2>&1 &
+sleep 2
+echo
+pid_redis=$(pidof proyecto_taller_1)
+echo "PID redis_server: ${pid_redis}"
 
 
 ### Main ###  
@@ -322,6 +322,9 @@ TEST6="lpop e 2"
 TEST7="lpop e 1"
 TEST8="lpop e"
 TEST9="lpop e"
+TEST10="lpush x 1 2 3 3 4 3 5"
+TEST11="lrem x 3 -1"
+TEST12="lrem x 3 0"
 
 #TEST11="lrem e"
 
@@ -337,7 +340,10 @@ rm $LOG
   echo $TEST7;
   echo $TEST8;
   echo $TEST9;
-
+  echo $TEST10;
+  echo $TEST11;
+  echo $TEST12;
+  
   echo "exit"
   echo "exit"
   sleep 1;
@@ -377,11 +383,20 @@ do
     test $i "$line" "${RES_HOST_REDIS}0) 0" "$TEST8"
     elif [[ $i == "16" ]]; then
     test $i "$line" "${RES_NIL}" "$TEST9"
+    elif [[ $i == "18" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}7" "$TEST10"
+    elif [[ $i == "19" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}1" "$TEST11"
+    elif [[ $i == "20" ]]; then
+    test $i "$line" "${RES_HOST_REDIS}2" "$TEST12"
     fi
   i=$((i+1))
 
 done < $LOG
 
-#kill ${pid_redis}
+kill ${pid_redis}
 
 echo "Exit it test"
+
+TEST11="lrem x 3 -1"
+TEST12="lrem x 3 0"
