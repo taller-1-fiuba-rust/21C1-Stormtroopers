@@ -1,3 +1,4 @@
+//! String data type.
 use std::time::SystemTime;
 
 pub struct DataString<String> {

@@ -1,3 +1,4 @@
+//! Helper function for manage time and format timestamp.
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn timestamp_now() -> u64 {

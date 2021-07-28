@@ -1,4 +1,5 @@
 use crate::constants::LINE_BREAK;
+use crate::errors::run_error::RunError;
 use regex::Regex;
 use std::collections::{BTreeSet, HashMap};
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -8,7 +9,7 @@ use std::sync::Mutex;
 const PUBLISH_CONSTANT: &str = "Reading pubsub messages...";
 
 pub struct Client {
-    sender: Arc<Mutex<Sender<String>>>, //puedo agregarle después a cuántos canales se suscribió
+    sender: Arc<Mutex<Sender<String>>>,
     receiver: Arc<Mutex<Receiver<String>>>,
 }
 
@@ -32,10 +33,13 @@ impl Client {
         self.receiver.clone()
     }
 
-    pub fn publish(&self, msg: String) {
+    pub fn publish(&self, msg: String, name_channel: String) {
         let sender = self.sender.lock().unwrap();
 
-        let response = format!("\n{}\n{}\n", PUBLISH_CONSTANT, msg);
+        let response = format!(
+            "\n{}\nFrom Channel: {}\n{}\n",
+            PUBLISH_CONSTANT, name_channel, msg
+        );
         sender.send(response).unwrap();
     }
 
@@ -56,7 +60,7 @@ impl Clone for Client {
 }
 
 pub struct Pubsub {
-    suscribers: Arc<Mutex<HashMap<usize, Client>>>, //cada cliente tiene su id
+    suscribers: Arc<Mutex<HashMap<usize, Client>>>,
     channels: Arc<Mutex<HashMap<String, BTreeSet<usize>>>>,
 }
 
@@ -66,6 +70,9 @@ impl Default for Pubsub {
     }
 }
 
+///Module that implements all the logic of the model publish/subscriber of messages through Redis-style channels.
+///
+///The subscription of a client to a channel does not imply the suspension of the client to send messages.
 impl Pubsub {
     pub fn new() -> Self {
         let suscribers = Arc::new(Mutex::new(HashMap::new()));
@@ -139,7 +146,7 @@ impl Pubsub {
             for suscriber in channel.iter() {
                 let client = suscribers.get(&suscriber).unwrap();
                 if !private {
-                    client.publish(msg.clone());
+                    client.publish(msg.clone(), name_channel.clone());
                 } else {
                     client.private_publish(msg.clone());
                 }
@@ -151,12 +158,17 @@ impl Pubsub {
         Some(())
     }
 
-    pub fn unsuscribe(&self, name_channel: String, client: usize) {
+    pub fn unsuscribe(&self, name_channel: String, client: usize) -> Result<String, RunError> {
         let mut channels = self.channels.lock().unwrap();
-        //let channel: &BTreeSet<usize> = channels.get(&name_channel).unwrap();
 
         if let Some(subbed_clients) = channels.get_mut(&name_channel) {
             subbed_clients.remove(&client);
+            Ok("OK\n".to_string())
+        } else {
+            Err(RunError {
+                message: "Failed to unsubscribe from channel".to_string(),
+                cause: "You are not subscribed to the channel\n".to_string(),
+            })
         }
     }
 

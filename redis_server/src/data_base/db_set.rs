@@ -1,4 +1,6 @@
+//! Database structure in charge of storing and processing Sets.
 use crate::data_base::data_db::data_set::DataSet;
+use crate::data_base::db_list::{list_can_be_parsed, parse_list, sort_parsed_list};
 use crate::errors::run_error::RunError;
 use regex::Regex;
 use std::collections::{BTreeSet, HashMap};
@@ -22,16 +24,16 @@ impl Clone for DataBaseSet<String> {
 }
 
 impl DataBaseSet<String> {
-    #[allow(dead_code)]
     pub fn new() -> Self {
         let db_set = Arc::new(Mutex::new(HashMap::new()));
         Self { db_set }
     }
 
+    //ya está antes, es un método que sirve para modularizar (por eso el unwrap)
     fn get_value(&self, key: String) -> DataSet<String> {
         let db = self.db_set.lock().unwrap();
 
-        db.get(&key).unwrap().clone() //TODO: chequear que esté antes
+        db.get(&key).unwrap().clone()
     }
 
     pub fn delete(&mut self, args: Vec<&str>) -> u32 {
@@ -45,7 +47,12 @@ impl DataBaseSet<String> {
         count
     }
 
-    #[allow(dead_code)]
+    pub fn get_del(&mut self, key: String) -> Result<BTreeSet<String>, RunError> {
+        let set = self.get_set(key.clone())?;
+        self.delete(vec![&key]);
+        Ok(set)
+    }
+
     pub fn sadd(&self, mut args: Vec<&str>) -> u32 {
         let mut db_set = self.db_set.lock().unwrap();
         let key = args.remove(0);
@@ -124,7 +131,6 @@ impl DataBaseSet<String> {
         }
     }
 
-    #[allow(dead_code)]
     pub fn get_set(&self, key: String) -> Result<BTreeSet<String>, RunError> {
         let db = self.db_set.lock().unwrap();
         if let Some(set) = db.get(&key) {
@@ -137,14 +143,12 @@ impl DataBaseSet<String> {
         })
     }
 
-    #[allow(dead_code)]
     pub fn clean_all_data(&self) -> bool {
         let mut db_set = self.db_set.lock().unwrap();
         db_set.clear();
         db_set.is_empty()
     }
 
-    #[allow(dead_code)]
     pub fn dbsize(&self) -> usize {
         let db_set = self.db_set.lock().unwrap();
         db_set.len()
@@ -159,6 +163,10 @@ impl DataBaseSet<String> {
         let mut list = Vec::<String>::new();
         for elem in set {
             list.push(elem);
+        }
+        if list_can_be_parsed(list.clone()) {
+            let response = parse_list(sort_parsed_list(list));
+            return response;
         }
         list.sort();
         list
@@ -182,14 +190,6 @@ impl DataBaseSet<String> {
         0
     }
 
-    /*pub fn touch(&self, keys: Vec<String>) -> usize {
-        let mut cont = 0;
-        for key in keys {
-            cont += self.touch_key(key);
-        }
-        cont
-    }*/
-
     fn parse_data(&self, set: BTreeSet<String>) -> String {
         let mut parsed_data = String::from("");
         for item in set.iter() {
@@ -209,17 +209,45 @@ impl DataBaseSet<String> {
         data
     }
 
-    pub fn keys(&self, pattern: &str) -> Vec<String> {
-        let mut keys_vec = Vec::<String>::new();
-        let db = self.db_set.lock().unwrap();
-        let re = Regex::new(pattern).unwrap();
-
-        for key in db.keys() {
-            if re.is_match(&key) {
-                keys_vec.push((*(key.clone())).to_string());
-            }
+    fn return_all_keys(&self) -> Result<Vec<String>, RunError> {
+        let mut response = vec![];
+        let hash;
+        if let Ok(val) = self.db_set.lock() {
+            hash = val;
+        } else {
+            return Err(RunError {
+                message: "Could not lock the data base".to_string(),
+                cause: "Race condition\n".to_string(),
+            });
         }
 
-        keys_vec
+        for key in hash.keys() {
+            response.push(key.clone());
+        }
+
+        Ok(response)
+    }
+
+    pub fn keys(&self, pattern: &str) -> Result<Vec<String>, RunError> {
+        if pattern == "*" {
+            return self.return_all_keys();
+        }
+        let mut keys_vec = Vec::<String>::new();
+        let db = self.db_set.lock().unwrap();
+        match Regex::new(pattern) {
+            Ok(re) => {
+                for key in db.keys() {
+                    if re.is_match(&key) {
+                        keys_vec.push((*(key.clone())).to_string());
+                    }
+                }
+
+                Ok(keys_vec)
+            }
+            Err(_) => Err(RunError {
+                message: "Could not find match".to_string(),
+                cause: "Malformed pattern\n".to_string(),
+            }),
+        }
     }
 }

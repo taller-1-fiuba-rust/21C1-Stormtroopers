@@ -1,3 +1,4 @@
+//! Database structure in charge of storing and processing Strings.
 use crate::data_base::data_db::data_string::DataString;
 use crate::errors::run_error::RunError;
 use regex::Regex;
@@ -100,7 +101,6 @@ impl DataBaseString<String> {
         .unwrap();
     }
 
-    //TODO: refactor impl please!
     pub fn mget(&self, keys: Vec<&str>) -> Vec<String> {
         let mut db = self.clone();
         let mut keys_sender = String::from("");
@@ -120,8 +120,8 @@ impl DataBaseString<String> {
     }
 
     pub fn clean_all_data(&self) -> bool {
-        let mut db_string = self.clone();
         let mut data = self.db.clone();
+        let mut db_string = self.clone();
         thread::spawn(move || {
             db_string.sender.send(String::from("")).unwrap();
             db_string.clean(&mut data);
@@ -185,16 +185,14 @@ impl DataBaseString<String> {
 
     pub fn exists(&self, keys: Vec<&str>) -> u32 {
         let mut count = 0_u32;
-        let db = self.db.lock().unwrap();
         for key in keys.iter() {
-            if db.contains_key(*key) {
+            if self.contains(key.to_string()) {
                 count += 1
             }
         }
         count
     }
 
-    //TODO: similar al exists. Ver de remover.
     pub fn contains(&self, key: String) -> bool {
         let db = self.db.lock().unwrap().clone();
         db.contains_key(&key)
@@ -267,15 +265,6 @@ impl DataBaseString<String> {
         }
         0
     }
-
-    /*pub fn touch(&self, keys: Vec<String>) -> Vec<u64> {
-        //let mut cont = 0;
-        let mut vec = vec![];
-        for key in keys {
-            vec.push(self.touch_key(key));
-        }
-        vec
-    }*/
 
     fn get_value(&self, key: String) -> DataString<String> {
         let db = self.db.lock().unwrap();
@@ -381,18 +370,46 @@ impl DataBaseString<String> {
         data
     }
 
-    pub fn keys(&self, pattern: &str) -> Vec<String> {
-        let mut keys_vec = Vec::<String>::new();
-        let db = self.db.lock().unwrap();
-        let re = Regex::new(pattern).unwrap();
-
-        for key in db.keys() {
-            if re.is_match(&key) {
-                keys_vec.push((*(key.clone())).to_string());
-            }
+    fn return_all_keys(&self) -> Result<Vec<String>, RunError> {
+        let mut response = vec![];
+        let hash;
+        if let Ok(val) = self.db.lock() {
+            hash = val;
+        } else {
+            return Err(RunError {
+                message: "Could not lock the data base".to_string(),
+                cause: "Race condition\n".to_string(),
+            });
         }
 
-        keys_vec
+        for key in hash.keys() {
+            response.push(key.clone());
+        }
+
+        Ok(response)
+    }
+
+    pub fn keys(&self, pattern: &str) -> Result<Vec<String>, RunError> {
+        if pattern == "*" {
+            return self.return_all_keys();
+        }
+        let mut keys_vec = Vec::<String>::new();
+        let db = self.db.lock().unwrap();
+        match Regex::new(pattern) {
+            Ok(re) => {
+                for key in db.keys() {
+                    if re.is_match(&key) {
+                        keys_vec.push((*(key.clone())).to_string());
+                    }
+                }
+
+                Ok(keys_vec)
+            }
+            Err(_) => Err(RunError {
+                message: "Could not find match".to_string(),
+                cause: "Malformed pattern\n".to_string(),
+            }),
+        }
     }
 }
 

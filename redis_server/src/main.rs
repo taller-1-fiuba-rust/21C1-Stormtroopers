@@ -1,4 +1,18 @@
-use crate::handle_connection::executor::exec_server;
+//! Este proyecto es una implementación acotada de Redis hecha en Rust, como trabajo integrador de la materia
+//! Taller de Programación I, cátedra Deimonnaz.
+//!
+//! El objetivo principal de este trabajo es integrar los nuevos conceptos presentados en la materia,
+//! en particular Web Sockets y Concurrencia básica.
+//!
+//! Corrector:
+//! Kelman, Uriel
+//!
+//! Alumnos:
+//! Sabatino, Gonzalo
+//! Verón, Lucas
+//! Queirolo Dominguez, Cristian Daniel
+//!
+use crate::handles::executor::exec_server;
 use crate::server::app_info::AppInfo;
 use crate::server::connection::Connection;
 use crate::server::connection_resolver::ConnectionResolver;
@@ -8,9 +22,11 @@ mod command;
 mod constants;
 mod data_base;
 mod errors;
-mod handle_connection;
+mod handles;
 mod server;
 
+/// Main function of the app, this works as it's main entrance point.
+/// Is in charge of reading the command line arguments and creates the server 'facade' structure and executes it.
 fn main() {
     let argv = args().collect::<Vec<String>>();
 
@@ -29,3 +45,25 @@ fn main() {
     println!("Execute listener ...");
     let _listener = exec_server(&server_port, &mut server);
 }
+
+/*
+#[cfg(test)]
+mod tests {
+    use super::*;
+    extern crate redis;
+    const REDIS_HOST_TEST: &str = "redis://127.0.0.1:8081";
+    #[test]
+    fn redis_it() -> redis::RedisResult<()> {
+            let client = redis::Client::open(REDIS_HOST_TEST)?;
+            let mut con = client.get_connection()?;
+
+            /* do something here */
+
+            let res : () = redis::cmd("SET").arg("my_key").arg(42).query(&mut con)?;
+            let res2 = redis::cmd("GET").arg("my_key").query(&mut con);
+            assert!(true);
+            assert_eq!(res2, Ok("42".to_string()));
+        Ok(())
+    }
+}
+ */

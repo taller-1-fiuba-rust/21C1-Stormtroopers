@@ -4,13 +4,15 @@ use std::time::SystemTime;
 
 const SECS_IN_DAY: u64 = 86400;
 
-//application statistics
+/* Application statistics */
 pub struct SystemInfo {
     start_time: SystemTime,
     actives_threads: usize,
     max_clients: usize,
 }
-
+///Statistics application. Retrieves and formats statistical information from the server.
+///
+/// It is used for the "info" command of the server group.
 impl SystemInfo {
     pub fn new(max_clients: usize) -> Self {
         Self {

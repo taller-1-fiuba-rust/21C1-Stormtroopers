@@ -2,6 +2,11 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
+///It has a "monitor" which you can activate and deactivate.
+///
+///It also allows you to recover the ends of a connection per channel.
+///
+///Handles reconnection and end of connection by timeout.
 pub struct Connection<String> {
     sender: Arc<Mutex<Sender<String>>>,
     receiver: Arc<Mutex<Receiver<String>>>,

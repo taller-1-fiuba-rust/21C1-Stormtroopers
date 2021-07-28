@@ -38,7 +38,10 @@ impl Clone for Server {
         }
     }
 }
-
+///Convenience module containing:
+///* Logger
+///* ConfigServer
+///Allows you to obtain the name of the Redis server and load the initial configuration.
 impl Server {
     pub fn new(args: Vec<String>) -> Self {
         let server_args = args;

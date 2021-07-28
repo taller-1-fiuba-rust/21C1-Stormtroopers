@@ -1,3 +1,10 @@
+//! Returns the size of the set.
+//!
+//! Example:
+//! ```text
+//! > scard set_key
+//! 0
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,15 +13,26 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command SCARD\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "ScardCommand";
+
+/// Code of the command.
 const CONST_CMD: &str = "scard";
 
+/// Max number of arguments besides the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Min number of arguments besides the command.
 const MAX_VALID_ARGS: i32 = 1;
 
+/// Main struct of the command.
 pub struct ScardCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

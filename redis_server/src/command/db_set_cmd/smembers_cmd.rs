@@ -1,3 +1,13 @@
+//! Returns all elements of the set.
+//!
+//! Example:
+//! ```text
+//! > smembers set_key
+//! 0) value1
+//! 1) value2
+//! 2) value3
+//! 3) value4
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
@@ -6,16 +16,29 @@ use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command SMEMBERS\n";
-const CLIENT_ID: &str = "SmembersCommmand";
+
+/// Name of the command.
+const CLIENT_ID: &str = "SmembersCommand";
+
+/// Response of the command when is empty.
 const RESPONSE_EMPTY: &str = "(empty list or set)\n";
+
+/// Code of the command.
 const CONST_CMD: &str = "smembers";
 
+/// Min amount of arguments besides the command.
 const MIN_VALID_ARGS: i32 = 1;
+
+/// Max amount of arguments besides the command.
 const MAX_VALID_ARGS: i32 = 1;
 
+/// Main struc of the command.
 pub struct SmembersCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 

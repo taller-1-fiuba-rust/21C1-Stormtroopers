@@ -1,20 +1,41 @@
+//! Copies the contents of one key to another passed.
+//!
+//! Example:
+//! ```text
+//! > set key value
+//! OK
+//! > copy key other
+//! OK
+//! > get other
+//! value
+//! ```
 use crate::command::cmd_trait::Command;
 use crate::command::command_builder::CommandBuilder;
 use crate::command::command_parser::ParsedMessage;
-use crate::constants::LINE_BREAK;
 use crate::errors::run_error::RunError;
 use crate::server::app_info::AppInfo;
 use crate::server::logger::{Loggable, Logger};
 
+/// Information string to log.
 const INFO_COMMAND: &str = "Run command COPY\n";
+
+/// Name of the command.
 const CLIENT_ID: &str = "CopyCommand";
+
+// Code of the command.
 const CONST_CMD: &str = "copy";
 
+/// Min amount of arguments besides of the command.
 const MIN_VALID_ARGS: i32 = 2;
+
+/// Max amount of arguments besides of the command.
 const MAX_VALID_ARGS: i32 = 2;
 
+/// Main struct of the command.
 pub struct CopyCommand {
+    /// Id of the thread running.
     id_job: u32,
+    /// Logger entity.
     logger: Logger<String>,
 }
 
@@ -61,11 +82,10 @@ impl Command for CopyCommand {
         let src_key = args[0];
         let target_key = args[1];
 
-        let mut res = app_info
-            .get_db_resolver()
-            .copy(src_key, target_key, false, app_info.get_ttl_scheduler())?
-            .to_string();
-        res.push(LINE_BREAK);
+        let res =
+            app_info
+                .get_db_resolver()
+                .copy(src_key, target_key, app_info.get_ttl_scheduler())?;
         Ok(res)
     }
 }

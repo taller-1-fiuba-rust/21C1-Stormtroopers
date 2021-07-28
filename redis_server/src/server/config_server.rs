@@ -7,13 +7,14 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use crate::constants::SHARING_COUNT_DEFAULT;
+use crate::constants::SHARDING_COUNT_DEFAULT;
 use crate::server::logger::{Loggable, Logger};
 
 const INFO_LOAD_FILE_CONFIG: &str = "Init load file config ...\n";
 const INFO_LOAD_FILE_CONFIG_OK: &str = "Load file config OK\n";
 const PATH_FILE_CONFIG_DEFAULT: &str = "./redis.config";
 
+///Reader of file lines from a file path.
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where
     P: AsRef<Path>,
@@ -47,7 +48,11 @@ impl Clone for ConfigServer {
         Self { props }
     }
 }
-
+///It is responsible for loading the server configuration from a file passed by parameter
+///or using a default address (./ redis.config).
+///
+///The configuration file has the form key=value and they are used at the start
+///of the server startup.
 impl ConfigServer {
     pub fn new() -> ConfigServer {
         let map = HashMap::new();
@@ -109,19 +114,19 @@ impl ConfigServer {
 
     pub fn get_verbose(&self) -> bool {
         let props = self.props.lock().unwrap();
-        let verbose = props.get("verbose").unwrap(); //hacerlo bien
+        let verbose = props.get("verbose").unwrap();
         parse_value(verbose.to_string(), false)
     }
 
     pub fn get_timeout(&self) -> u64 {
         let props = self.props.lock().unwrap();
-        let timeout = props.get("timeout").unwrap(); //hacerlo bien
+        let timeout = props.get("timeout").unwrap();
         parse_value(timeout.to_string(), 0)
     }
 
     pub fn get_dumpfile(&self) -> String {
         let props = self.props.lock().unwrap();
-        let dumpfile = props.get("dbfilename").unwrap(); //hacerlo bien
+        let dumpfile = props.get("dbfilename").unwrap();
         dumpfile.to_string()
     }
 
@@ -129,7 +134,7 @@ impl ConfigServer {
         let props = self.props.lock().unwrap();
         let count = match props.get("sharing_count") {
             Some(sc) => parse_value(sc.to_string(), 1),
-            None => SHARING_COUNT_DEFAULT,
+            None => SHARDING_COUNT_DEFAULT,
         };
         if count < 1 {
             return Err(RunError {
