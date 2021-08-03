@@ -7,10 +7,6 @@ use std::str;
 use std::time::{Duration, SystemTime};
 use std::env::args;
 
-/* Constants */
-const HTTP_GET_INDEX: &[u8; 21] = b"GET /index HTTP/1.1\r\n";
-const HTTP_POST_REDIS: &[u8; 22] = b"POST /redis HTTP/1.1\r\n";
-
 fn main() {
     let argv = args().collect::<Vec<String>>();
     if argv.len() != 3 {
@@ -62,9 +58,9 @@ fn handle_connection(stream: &mut TcpStream, stream_redis: &mut TcpStream, host_
     }
     println!("Command received: {}", cmd);
 
-    if buffer.starts_with(HTTP_GET_INDEX) {
+    if buffer.starts_with(b"GET / HTTP/1.1\r\n") {
         process_get_index(stream);
-    } else if buffer.starts_with(HTTP_POST_REDIS) {
+    } else if buffer.starts_with(b"POST /redis HTTP/1.1\r\n") {
         process_redis(stream, stream_redis, cmd, host_port_redis);
     } else {
         let status_line = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
