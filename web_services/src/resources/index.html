@@ -1,41 +1,3 @@
-<!--<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
-    <script>
-      // Attach a submit handler to the form
-      $("#redis-form").submit(function (event) {
-        event.preventDefault();
-
-        var $form = $(this),
-          url = $form.attr("action");
-        var term = $form.find("input[name='message']").val();
-
-        var posting = $.ajax({
-          type: "POST",
-          beforeSend: function (request) {
-            request.setRequestHeader(
-              "Content-type",
-              "text/html; charset=utf-8"
-            );
-          },
-          url: url,
-          data: "command=" + term,
-          success: function (data) {
-            let dt = new Date();
-            let time =
-              dt.getHours() + ":" + dt.getMinutes() + ":" + dt.getSeconds();
-            let term_show = "> " + term;
-            $("#result").prepend(
-              '<p class="font-monospace">' +
-                time +
-                term_show +
-                "<br>" +
-                data +
-                "</p>"
-            );
-          },
-        });
-      });
-    </script>-->
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -74,11 +36,11 @@
       </nav>
       <!-- MAIN CONTAINER -->
       <div class="row justify-content-center mt-3">
-        <div data-bs-spy="scroll" tabindex="0" id="result" class="col-9 border border-3 rounded mt-3" style="height: 600px; background-color: whitesmoke; overflow-y: scroll;"></div>
+        <div data-bs-spy="scroll" tabindex="0" id="result" class="col-7 border border-3 rounded mt-3" style="height: 600px; background-color: whitesmoke; overflow-y: scroll;"></div>
       </div>
       <div class="row justify-content-center mt-3">
         <form class="col-5" id="redis-form" action="/redis">
-          <input type="text" class="form-control" name="message" aria-describedby="inputHelp">
+          <input id="redis-form-input" type="text" class="form-control" name="message" aria-describedby="inputHelp" autocomplete="off">
         </form>      
       </div>
     <!-- TOAST -->
@@ -126,12 +88,12 @@
       // Attach a submit handler to the form
       $("#redis-form").submit(function (event) {
         event.preventDefault();
-
-        var $form = $(this),
+        
+        let $form = $(this),
           url = $form.attr("action");
-        var term = $form.find("input[name='message']").val();
-
-        var posting = $.ajax({
+        let term = $form.find("input[name='message']").val();
+        document.getElementById("redis-form-input").value = "";
+        let posting = $.ajax({
           type: "POST",
           beforeSend: function (request) {
             request.setRequestHeader(
@@ -159,8 +121,8 @@
                 "</p>"
             );
             document.getElementById(time).style.color = "#0c860c";
-            var container = document.getElementById("result");
-            var rowToScrollTo = document.getElementById(time);
+            let container = document.getElementById("result");
+            let rowToScrollTo = document.getElementById(time);
 
             container.scrollTop = rowToScrollTo.offsetTop;
           },
@@ -168,8 +130,8 @@
       });
       // Toast logic
       document.getElementById("show-toast").onclick = function () {
-        var toastElList = [].slice.call(document.querySelectorAll(".toast"));
-        var toastList = toastElList.map(function (toastEl) {
+        let toastElList = [].slice.call(document.querySelectorAll(".toast"));
+        let toastList = toastElList.map(function (toastEl) {
           let option = {
             animation: true,
             autohide: false,
