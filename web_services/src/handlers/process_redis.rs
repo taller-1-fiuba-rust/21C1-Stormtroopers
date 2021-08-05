@@ -1,3 +1,4 @@
+use crate::handlers::command_filter::filter_cmd;
 use core::time::Duration;
 use std::io::prelude::*;
 use std::net::TcpStream;
@@ -9,8 +10,8 @@ pub fn process_redis(
     host_port_redis: &str,
 ) {
     println!("Execute Redis command..");
+    let mut msg = filter_cmd(msg_redis);
 
-    let mut msg = msg_redis;
     msg.push('\n');
     stream_redis.write_all(msg.as_bytes()).unwrap();
     stream_redis.flush().unwrap();

@@ -29,11 +29,11 @@ impl<'a> Server<'a> {
             let mut stream = stream.unwrap();
             println!("Execute listener!");
 
-            let mut buffer = [0; 2048]; //server run
-            let _len = stream.read(&mut buffer).unwrap(); //server run
+            let mut buffer = [0; 2048];
+            let _len = stream.read(&mut buffer).unwrap();
 
             let req_string: String = String::from_utf8_lossy(&buffer).to_string();
-            let req: HttpRequest = String::from_utf8(buffer.to_vec()).unwrap().into(); //server run junto con el into y el HttpRequest
+            let req: HttpRequest = String::from_utf8(buffer.to_vec()).unwrap().into();
 
             handle_connection(
                 &mut stream,

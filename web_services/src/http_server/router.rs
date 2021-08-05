@@ -1,7 +1,7 @@
+use crate::handlers::process_get_index::process_get_index;
+use crate::handlers::process_not_found::process_not_found;
+use crate::handlers::process_redis::process_redis;
 use crate::http::http_request::{HttpRequest, Method};
-use crate::http_server::process_get_index::process_get_index;
-use crate::http_server::process_not_found::process_not_found;
-use crate::http_server::process_redis::process_redis;
 use std::net::TcpStream;
 
 pub struct Router;
