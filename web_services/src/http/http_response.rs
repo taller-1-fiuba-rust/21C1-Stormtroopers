@@ -75,66 +75,37 @@ impl From<HttpResponse> for String {
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_response_struct_creation_200() {
         let response_actual = HttpResponse::new(
-            "200",
-            None,
-            Some("Item was shipped on 21st Dec 2020".into()),
+            "HTTP/1.1".to_string(),
+            "200".to_string(),
+            "OK".to_string(),
+            "Contenido del Response".to_string(),
         );
         let response_expected = HttpResponse {
-            version: "HTTP/1.1",
-            status_code: "200",
-            status_text: "OK",
-            headers: {
-                let mut h = HashMap::new();
-                h.insert("Content-Type", "text/html");
-                Some(h)
-            },
-            body: Some("Item was shipped on 21st Dec 2020".into()),
+            version: "HTTP/1.1".to_string(),
+            status_code: "200".to_string(),
+            status_text: "OK".to_string(),
+            content: "Contenido del Response".to_string(),
         };
         assert_eq!(response_actual, response_expected);
     }
-    #[test]
-    fn test_response_struct_creation_404() {
-        let response_actual = HttpResponse::new(
-            "404",
-            None,
-            Some("Item was shipped on 21st Dec 2020".into()),
-        );
-        let response_expected = HttpResponse {
-            version: "HTTP/1.1",
-            status_code: "404",
-            status_text: "Not Found",
-            headers: {
-                let mut h = HashMap::new();
-                h.insert("Content-Type", "text/html");
-                Some(h)
-            },
-            body: Some("Item was shipped on 21st Dec 2020".into()),
-        };
-        assert_eq!(response_actual, response_expected);
-    }
+
     #[test]
     fn test_http_response_creation() {
         let response_expected = HttpResponse {
-            version: "HTTP/1.1",
-            status_code: "404",
-            status_text: "Not Found",
-            headers: {
-                let mut h = HashMap::new();
-                h.insert("Content-Type", "text/html");
-                Some(h)
-            },
-            body: Some("Item was shipped on 21st Dec 2020".into()),
+            version: "HTTP/1.1".to_string(),
+            status_code: "404".to_string(),
+            status_text: "Not Found".to_string(),
+            content: "Contenido del Response".to_string(),
         };
         let http_string: String = response_expected.into();
-        let response_actual = "HTTP/1.1 404 Not Found\r\nContent-Type:text/html\r\nContent-Length: 33\r\n\r\nItem was shipped on 21st Dec 2020";
+        let response_actual =
+            "HTTP/1.1 404 Not Found\r\nContent-Length: 22\r\n\r\nContenido del Response";
         assert_eq!(http_string, response_actual);
     }
 }
-*/
