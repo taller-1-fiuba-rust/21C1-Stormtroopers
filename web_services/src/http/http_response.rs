@@ -1,98 +1,81 @@
-use std::collections::HashMap;
-use std::io::{Result, Write};
+use std::io::Write;
+use std::net::TcpStream;
+
 #[derive(Debug, PartialEq, Clone)]
-pub struct HttpResponse<'a> {
-    version: &'a str,
-    status_code: &'a str,
-    status_text: &'a str,
-    headers: Option<HashMap<&'a str, &'a str>>,
-    body: Option<String>,
+pub struct HttpResponse {
+    version: String,
+    status_code: String,
+    status_text: String,
+    pub content: String,
 }
-impl<'a> Default for HttpResponse<'a> {
+
+impl Default for HttpResponse {
     fn default() -> Self {
         Self {
-            version: "HTTP/1.1",
-            status_code: "200",
-            status_text: "OK",
-            headers: None,
-            body: None,
+            version: "HTTP/1.1".to_string(),
+            status_code: "200".to_string(),
+            status_text: "OK".to_string(),
+            content: "".to_string(),
         }
     }
 }
-impl<'a> HttpResponse<'a> {
-    pub fn new(
-        status_code: &'a str,
-        headers: Option<HashMap<&'a str, &'a str>>,
-        body: Option<String>,
-    ) -> HttpResponse<'a> {
-        let mut response: HttpResponse<'a> = HttpResponse::default();
-        if status_code != "200" {
-            response.status_code = status_code;
-        };
-        response.headers = match &headers {
-            Some(_h) => headers,
-            None => {
-                let mut h = HashMap::new();
-                h.insert("Content-Type", "text/html");
-                Some(h)
-            }
-        };
-        response.status_text = match response.status_code {
-            "200" => "OK",
-            "400" => "Bad Request",
-            "404" => "Not Found",
-            "500" => "Internal Server Error",
-            _ => "Not Found",
-        };
-        response.body = body;
-        response
+
+impl HttpResponse {
+    pub fn new(version: String, status_code: String, status_text: String, content: String) -> Self {
+        Self {
+            version,
+            status_code,
+            status_text,
+            content,
+        }
     }
-    pub fn send_response(&self, write_stream: &mut impl Write) -> Result<()> {
+
+    pub fn response_with_content(mut http_response: HttpResponse, content: String) -> Self {
+        http_response.content = content;
+        http_response
+    }
+
+    pub fn send_response(&self, stream: &mut TcpStream) {
         let res = self.clone();
         let response_string: String = String::from(res);
-        let _ = write!(write_stream, "{}", response_string);
-        Ok(())
+        stream.write_all(response_string.as_bytes()).unwrap();
+        stream.flush().unwrap();
     }
 }
-impl<'a> HttpResponse<'a> {
-    fn version(&self) -> &str {
-        self.version
+
+impl HttpResponse {
+    fn version(&self) -> String {
+        self.version.clone()
     }
-    fn status_code(&self) -> &str {
-        self.status_code
+
+    fn status_code(&self) -> String {
+        self.status_code.clone()
     }
-    fn status_text(&self) -> &str {
-        self.status_text
+
+    fn status_text(&self) -> String {
+        self.status_text.clone()
     }
-    fn headers(&self) -> String {
-        let map: HashMap<&str, &str> = self.headers.clone().unwrap();
-        let mut header_string: String = "".into();
-        for (k, v) in map.iter() {
-            header_string = format!("{}{}:{}\r\n", header_string, k, v);
-        }
-        header_string
-    }
-    pub fn body(&self) -> &str {
-        match &self.body {
-            Some(b) => b.as_str(),
-            None => "",
-        }
+
+    pub fn content(&self) -> String {
+        self.content.clone()
     }
 }
-impl<'a> From<HttpResponse<'a>> for String {
+
+impl From<HttpResponse> for String {
     fn from(res: HttpResponse) -> String {
         let res1 = res.clone();
         format!(
-            "{} {} {}\r\n{}Content-Length: {}\r\n\r\n{}",
-            &res1.version(),
-            &res1.status_code(),
-            &res1.status_text(),
-            &res1.headers(),
-            &res.body.unwrap().len(),
-            &res1.body()
+            "{} {} {}\r\nContent-Length: {}\r\n\r\n{}",
+            res1.version(),
+            res1.status_code(),
+            res1.status_text(),
+            res.content().len(),
+            res1.content()
         )
     }
 }
+
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -154,3 +137,4 @@ mod tests {
         assert_eq!(http_string, response_actual);
     }
 }
+*/

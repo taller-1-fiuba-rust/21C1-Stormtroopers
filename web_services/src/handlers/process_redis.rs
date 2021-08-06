@@ -1,4 +1,5 @@
 use crate::handlers::command_filter::filter_cmd;
+use crate::handlers::process_get_index::process_generate_response;
 use core::time::Duration;
 use std::io::prelude::*;
 use std::net::TcpStream;
@@ -17,7 +18,6 @@ pub fn process_redis(
     stream_redis.flush().unwrap();
     let max_read = 4;
     let _len = 0;
-    let _eof = false;
 
     let mut buffer = "".to_string();
     let _buffer2 = vec![0; max_read];
@@ -45,11 +45,13 @@ pub fn process_redis(
     let res_clean = _res.replace(replace_host_redis.as_str(), "");
     println!("Response Redis clean: {}", res_clean);
 
-    let response = format!(
+    /*let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
         res_clean.len(),
         res_clean
-    ); //String::from_utf8_lossy(&buffer)
+    );
     stream.write_all(response.as_bytes()).unwrap();
-    stream.flush().unwrap();
+    stream.flush().unwrap();*/
+
+    process_generate_response(stream, res_clean);
 }

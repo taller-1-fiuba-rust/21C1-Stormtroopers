@@ -10,7 +10,7 @@ pub fn filter_cmd(cmd: String) -> String {
         || cmds[0] == "unsuscribe"
         || cmds[0] == "exit"
     {
-        "".to_string()
+        format!("DISABLED COMMAND: {:?} ", cmd)
     } else {
         cmd
     }

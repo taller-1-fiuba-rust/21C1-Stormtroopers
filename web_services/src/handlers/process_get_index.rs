@@ -1,3 +1,4 @@
+use crate::http::http_response::HttpResponse;
 use std::fs::File;
 use std::io::prelude::*;
 use std::net::TcpStream;
@@ -8,12 +9,12 @@ pub fn process_get_index(stream: &mut TcpStream) {
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
 
-    let response = format!(
-        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
-        contents.len(),
-        contents
-    );
+    /*let response = HttpResponse::response_with_content(HttpResponse::default(), contents);
+    response.send_response(stream);*/
+    process_generate_response(stream, contents);
+}
 
-    stream.write_all(response.as_bytes()).unwrap();
-    stream.flush().unwrap();
+pub fn process_generate_response(stream: &mut TcpStream, contents: String) {
+    let response = HttpResponse::response_with_content(HttpResponse::default(), contents);
+    response.send_response(stream);
 }
