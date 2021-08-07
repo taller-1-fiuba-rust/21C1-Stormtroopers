@@ -1,16 +1,17 @@
 use crate::help::help;
-use crate::http_server::server::Server;
+use crate::http_server::server::{Server, run};
 use std::env::args;
-
+use threadpool::ThreadPool;
 mod handlers;
 pub mod help;
 mod http;
 mod http_server;
+mod threadpool;
 
 fn main() {
-    //delegarle esto a otra instancia
     let argv = args().collect::<Vec<String>>();
-    if argv[1] == "help" {
+
+    if argv.len() == 1 {
         help();
         return;
     }
@@ -22,6 +23,6 @@ fn main() {
     let host_port_redis = &argv[2];
     //hasta acá -> quizás puede ser el mismo server o un validator extra
 
-    let server = Server::new(host_port, host_port_redis);
-    server.run();
+    let _server = Server::new(host_port.to_string(), host_port_redis.to_string());
+    run(host_port.to_string(), host_port_redis.to_string());
 }

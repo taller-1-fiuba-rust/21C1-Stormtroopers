@@ -23,12 +23,12 @@ pub fn process_redis(
     let _buffer2 = vec![0; max_read];
     let mut _res = "".to_string();
     stream_redis
-        .set_read_timeout(Some(Duration::from_millis(500)))
+        .set_read_timeout(Some(Duration::from_millis(20)))
         .unwrap();
     loop {
         match stream_redis.read_to_string(&mut buffer) {
             Ok(_n) => {
-                println!("Reding: {} -> {}", _len, buffer);
+                println!("Reading: {} -> {}", _len, buffer);
             }
             _ => {
                 println!("Nothing to read in Redis stream");
@@ -38,20 +38,28 @@ pub fn process_redis(
     }
 
     _res = buffer;
+    let mut replace_host_redis = host_port_redis.to_string();
+    replace_host_redis.push_str(">");
+    println!("Redis replace: {} ", replace_host_redis);
+    println!("Redis buffer: {} ", _res);
 
+    let res_splited: Vec<&str> = _res.split(host_port_redis).collect();
+
+    for res in res_splited {
+        println!("##########");
+        println!("Response Redis clean: {}", res);
+        println!("##########");
+        process_generate_response(stream, res.to_string());
+    }
+    /*
     println!("Response Redis: {}", _res);
     let mut replace_host_redis = host_port_redis.to_string();
     replace_host_redis.push('>');
     let res_clean = _res.replace(replace_host_redis.as_str(), "");
     println!("Response Redis clean: {}", res_clean);
 
-    /*let response = format!(
-        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
-        res_clean.len(),
-        res_clean
-    );
-    stream.write_all(response.as_bytes()).unwrap();
-    stream.flush().unwrap();*/
-
     process_generate_response(stream, res_clean);
+     */
+
+
 }
